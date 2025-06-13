@@ -1,0 +1,8 @@
+version: '3.8'
+services:
+  har_inference:
+    build: .
+    container_name: har_container
+    command: ["/app/src/real_time_inference.py", "/app", "wifi_project", "har_config.properties", "False"]
+    volumes:
+      - .:/app
