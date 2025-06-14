@@ -9,6 +9,7 @@ import os
 import warnings
 import pandas as pd
 from config_reader import ConfigReader
+from flask_cors import CORS
 
 # Suppress TensorFlow warnings
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
@@ -44,6 +45,7 @@ def predict_activity(model, csi_data):
 
 # Flask app
 app = Flask(__name__)
+CORS(app)  # <-- Add here
 
 # Load config and model at startup
 CONFIG_FILE = os.environ.get('CONFIG_FILE', 'config/har_infer_config.properties')
@@ -73,15 +75,24 @@ activity_labels = [
     "Climbing Up", "Climbing Down", "Jumping", "Falling", "Idle"
 ]
 
+print(f"INIT DONE: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
-@app.route('/predict', methods=['POST'])
+from flask import send_from_directory
+
+@app.route('/har/index.html', methods=['GET'])
+def serve_index():
+    return send_from_directory('static', 'index.html')
+
+
+@app.route('/har/predict', methods=['POST'])
 def predict():
     try:
         data = request.get_json()
+        print(f"Received data: {data}")
         if not data or 'csi_data' not in data:
             return jsonify({'error': 'Missing csi_data in request'}), 400
         csi_data = data['csi_data']
-
+        print(f"Received csi_data: {csi_data}")
         # Handle input shape: flatten if needed, then reshape
         arr = np.array(csi_data)
         # If shape is (batch, 1, 90), squeeze to (batch, 90)
@@ -92,8 +103,11 @@ def predict():
             arr = arr[..., np.newaxis]
         # Now arr should be (batch, 90, 1)
         processed_data = arr.astype(np.float32)
-
+        print(f"Processed csi_data shape: {processed_data.shape}")
         predicted_class, confidence = predict_activity(model, processed_data)
+
+        print(f"Predicted class: {predicted_class}, Confidence: {confidence}")
+
         result = [
             {
                 'predicted_activity': activity_labels[int(predicted_class[i])],
@@ -101,6 +115,8 @@ def predict():
             }
             for i in range(len(predicted_class))
         ]
+        print(f"Prediction result: {result}")
+
         return jsonify(result)
     except Exception as e:
         logging.error(f"Prediction error: {e}")
