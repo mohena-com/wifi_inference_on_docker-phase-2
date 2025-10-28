@@ -204,6 +204,7 @@ try:
     except Exception:
         device = torch.device('cpu')
     model_instance = instantiate_from_runname(params, device=device)
+    print(f"device used: {device}")
     print(f"Created model instance: {model_instance.__class__.__name__}")
     total_params = sum(p.numel() for p in model_instance.parameters())
     print(f"Total parameters: {total_params}")
