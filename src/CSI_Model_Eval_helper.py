@@ -34,7 +34,7 @@ from DL_MobileNetV3 import MobileNetV3_1D_LSTM
 # EfficientNet1D would be imported similarly
 
 # --- Logging setup (use your CSI_ID.py pattern) ---
-cr = ConfigReader("../confing/har_infer_config.properties")
+cr = ConfigReader("../config/har_infer_config.properties")
 
 def parse_run_name(run_name: str) -> dict:
     """
