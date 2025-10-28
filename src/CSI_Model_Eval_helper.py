@@ -104,7 +104,111 @@ def parse_run_name(run_name: str) -> dict:
         # If parsing fails, return None or raise an exception
         raise ValueError(f"Failed to parse run name '{run_name}': {str(e)}")
 
+def create_model_instance(model_class, model_name, batch, device):
+    print(f"Creating model instance for {model_class} / {model_name} ")
+        # Model instantiation according to constructor
+    model = None
+    if model_name == "CSILSTMNet":
+        model = model_class(
+            csi_input_size=batch["csi_seq"].shape[2],
+            meta_input_size=batch["metadata_seq"].shape[2],
+            window_size=batch["metadata_seq"].shape[1],
+            num_classes=31
+        ) 
+    elif model_name in ["DenseNet1D", "MobileNetV3_1D_LSTM"]:
+        model = model_class(
+            csi_channels=batch["csi_seq"].shape[2],
+            meta_feature_dim=batch["metadata_seq"].shape[2],
+            num_classes=31
+        ) 
+    elif model_name == "EfficientNet1DLSTM":
+        model = model_class(
+            csi_input_channels=batch["csi_seq"].shape[2],
+            meta_input_size=batch["metadata_seq"].shape[-1],
+            num_classes=31
+        ) 
+    else:
+        raise ValueError("Unknown model")
+    return model.to(device)
+
+
+
+
+# Instantiate model depending on parsed model name
+def instantiate_from_runname(params, device=None):
+    """Given params from parse_run_name, pick the model class and create an instance using create_model_instance.
+
+    This function looks for known model identifiers inside params['model_name'] and maps them to
+    the imported model classes above.
+    """
+
+
+    raw_name = params.get('model_name', '')
+
+    # known model keys and corresponding classes
+    model_map = {
+        'CSILSTMNet': CSILSTMNet,
+        'DenseNet1D': DenseNet1D,
+        'MobileNetV3_1D_LSTM': MobileNetV3_1D_LSTM,
+        'EfficientNet1DLSTM': EfficientNet1DLSTM,
+    }
+
+    # find which known model appears in the raw_name
+    chosen_key = None
+    for key in model_map.keys():
+        if key in raw_name:
+            chosen_key = key
+            break
+
+    if chosen_key is None:
+        raise ValueError(f"Could not infer model class from run name '{raw_name}'")
+
+    model_class = model_map[chosen_key]
+
+    # Build a synthetic sample batch with shapes matching expectations
+    # These sizes are typical for your dataset; adapt if needed.
+    batch_size = max(1, int(params.get('batch_size', 1)))
+    window_size = 128
+    csi_channels = 99
+    meta_features = 12
+
+    # Torch tensors with shape (batch, window, features)
+    sample_batch = {
+        'csi_seq': torch.zeros((batch_size, window_size, csi_channels), dtype=torch.float32),
+        'metadata_seq': torch.zeros((batch_size, window_size, meta_features), dtype=torch.float32),
+        'label': torch.zeros((batch_size,), dtype=torch.long)
+    }
+
+    # create model instance
+    model = create_model_instance(model_class, chosen_key, sample_batch, device)
+    return model
 
 run_name = "best_overall_model_final_MobileNetV3_1D_LSTM_lr5e-04_bs16_adam_wd1e-04_ep100_valacc0.9656.pt"
 params = parse_run_name(run_name)
 print(params)
+# Example: create model from parsed params
+try:
+    # Select device: prefer MPS (Apple Silicon) -> CUDA -> CPU
+    try:
+        if getattr(torch.backends, 'mps', None) is not None and torch.backends.mps.is_available():
+            device = torch.device('mps')
+            # optional: improve matmul precision on MPS
+            try:
+                torch.set_float32_matmul_precision('high')
+            except Exception:
+                pass
+        elif torch.cuda.is_available():
+            device = torch.device('cuda')
+        else:
+            device = torch.device('cpu')
+    except Exception:
+        device = torch.device('cpu')
+    model_instance = instantiate_from_runname(params, device=device)
+    print(f"Created model instance: {model_instance.__class__.__name__}")
+    total_params = sum(p.numel() for p in model_instance.parameters())
+    print(f"Total parameters: {total_params}")
+except Exception as e:
+    print(f"Failed to instantiate model: {e}")
+
+
+
