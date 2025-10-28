@@ -183,33 +183,35 @@ def instantiate_from_runname(params, device=None):
     model = create_model_instance(model_class, chosen_key, sample_batch, device)
     return model
 
-run_name = "best_overall_model_final_MobileNetV3_1D_LSTM_lr5e-04_bs16_adam_wd1e-04_ep100_valacc0.9656.pt"
-params = parse_run_name(run_name)
-print(params)
-# Example: create model from parsed params
-try:
-    # Select device: prefer MPS (Apple Silicon) -> CUDA -> CPU
+def get_best_model_and_params():
+    run_name = "best_overall_model_final_MobileNetV3_1D_LSTM_lr5e-04_bs16_adam_wd1e-04_ep100_valacc0.9656.pt"
+    params = parse_run_name(run_name)
+    print(params)
+    # Example: create model from parsed params
     try:
-        if getattr(torch.backends, 'mps', None) is not None and torch.backends.mps.is_available():
-            device = torch.device('mps')
-            # optional: improve matmul precision on MPS
-            try:
-                torch.set_float32_matmul_precision('high')
-            except Exception:
-                pass
-        elif torch.cuda.is_available():
-            device = torch.device('cuda')
-        else:
+        # Select device: prefer MPS (Apple Silicon) -> CUDA -> CPU
+        try:
+            if getattr(torch.backends, 'mps', None) is not None and torch.backends.mps.is_available():
+                device = torch.device('mps')
+                # optional: improve matmul precision on MPS
+                try:
+                    torch.set_float32_matmul_precision('high')
+                except Exception:
+                    pass
+            elif torch.cuda.is_available():
+                device = torch.device('cuda')
+            else:
+                device = torch.device('cpu')
+        except Exception:
             device = torch.device('cpu')
-    except Exception:
-        device = torch.device('cpu')
-    model_instance = instantiate_from_runname(params, device=device)
-    print(f"device used: {device}")
-    print(f"Created model instance: {model_instance.__class__.__name__}")
-    total_params = sum(p.numel() for p in model_instance.parameters())
-    print(f"Total parameters: {total_params}")
-except Exception as e:
-    print(f"Failed to instantiate model: {e}")
+        model_instance = instantiate_from_runname(params, device=device)
+        print(f"device used: {device}")
+        print(f"Created model instance: {model_instance.__class__.__name__}")
+        total_params = sum(p.numel() for p in model_instance.parameters())
+        print(f"Total parameters: {total_params}")
+    except Exception as e:
+        print(f"Failed to instantiate model: {e}")
 
+get_best_model_and_params()
 
 

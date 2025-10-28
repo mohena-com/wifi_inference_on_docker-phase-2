@@ -121,17 +121,8 @@ def load_test_data(base_dir, gait_filename):
     import glob
     """Load test data from CSV file"""
     try:
-
         filelist = glob.glob(os.path.join(base_dir, '**', gait_filename), recursive=True)
-
-        dataset = WifiCSIDataset(logger, filelist, window_size=128, stride=64)
-
-        # Read CSV file
-        # df = pd.read_csv(test_data_path)
-        
-        # Separate features and labels
-        # features = df.iloc[:, :-1].values  # All columns except last
-        # labels = df.iloc[:, -1].values     # Last column
+        dataset = WifiCSIDataset(logger, filelist, window_size=128, stride=64)    
         
         logging.info(f"Loaded test data: {len(dataset)} samples")
         return dataset
@@ -220,44 +211,9 @@ def process_test_data(model, test_data, config):
         logging.error(f"Error in test data processing: {e}")
         raise
 
-def find_best_model(model_save_dir):
-    """Find the best model across all folds based on validation accuracy."""
-    try:
-        logging.info(f"Searching for model files in: {model_save_dir}")
 
-        model_dir = Path(model_save_dir)
-        if not model_dir.exists():
-            raise FileNotFoundError(f"Model directory does not exist: {model_save_dir}")
-
-        # Search for common model file extensions and patterns
-        candidates = []
-        for pattern in ('best_model_*.keras', 'best_model_*.h5', 'best_overall_model_*.pt', '*.pt', '*.pth', '*.keras', '*.h5', '*.hdf5'):
-            candidates.extend(list(model_dir.glob(pattern)))
-
-        # Remove duplicates and sort
-        candidates = sorted(set(candidates), key=lambda p: p.stat().st_mtime)
-        if not candidates:
-            raise FileNotFoundError(f"No model files found in {model_save_dir}")
-
-        # Return the most recently modified model file
-        best_model_path = candidates[-1]
-        logging.info(f"Selected model: {best_model_path}")
-        return best_model_path
-    except Exception as e:
-        logging.error(f"Error finding best model: {e}")
-        raise
 
 def main():
-    # Parse command line arguments
-    parser = argparse.ArgumentParser(description='Real-time HAR inference')
-    parser.add_argument('base_path', help='Base path for the project')
-    parser.add_argument('project_name', help='Project name')
-    parser.add_argument('config_file', help='Configuration file name')
-    parser.add_argument('in_colab', type=str, help='Whether running in Google Colab (True/False)')
-    args = parser.parse_args()
-    
-    # Convert in_colab string to boolean
-    in_colab = args.in_colab.lower() == 'true'
     
     # Setup logging
     log_file = setup_logging(f"{args.base_path}/logs")
@@ -265,15 +221,11 @@ def main():
     logging.info(f"Running in Colab: {in_colab}")
     
     # Load configuration
-    config = ConfigReader(f"{args.base_path}/{args.project_name}/config/{args.config_file}")
+    config = ConfigReader(f"../config/har_infer_config.properties")
     
     # Find and load best model
     model_save_dir = Path(config.get('model_save_path'))
-    try:
-        best_model_path = find_best_model(model_save_dir)
-        if not best_model_path.exists():
-            raise FileNotFoundError(f"Best model not found at: {best_model_path}")
-        
+    try:        
         model = load_best_model(str(best_model_path), config)
         logging.info(f"Successfully loaded best model from: {best_model_path}")
         
