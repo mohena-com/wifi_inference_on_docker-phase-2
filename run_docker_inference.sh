@@ -10,5 +10,5 @@ CONTAINER_PROJECT_PATH="/app"
 docker run --rm \
   -v "$HOST_PROJECT_PATH":"$CONTAINER_PROJECT_PATH" \
   -v "$HOST_PROJECT_PATH/logs":"$CONTAINER_PROJECT_PATH/logs" \
-  har_inference \
-  "$CONTAINER_PROJECT_PATH" wifi_project har_config.properties False
+  gait_id_inference \
+  "$CONTAINER_PROJECT_PATH" wifi_project gait_id_config.properties False
