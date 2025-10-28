@@ -32,7 +32,7 @@ from DL_DenseNet1D import DenseNet1D
 from DL_EfficientNet1DLSTM import EfficientNet1DLSTM
 from DL_MobileNetV3 import MobileNetV3_1D_LSTM
  
-cr = ConfigReader("../config/har_infer_config.properties")
+cr = ConfigReader("config/har_infer_config.properties")
 
 def parse_run_name(run_name: str) -> dict:
     """
