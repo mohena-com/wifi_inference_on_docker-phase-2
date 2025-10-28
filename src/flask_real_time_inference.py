@@ -49,12 +49,12 @@ print(f"INIT DONE: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
 from flask import send_from_directory
 
-@app.route('/har/index.html', methods=['GET'])
+@app.route('/gait_id/index.html', methods=['GET'])
 def serve_index():
     return send_from_directory('static', 'index.html')
 
 
-@app.route('/har/predict', methods=['POST'])
+@app.route('/gait_id/predict', methods=['POST'])
 def predict():
     try:
         data = request.get_json()
