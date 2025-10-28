@@ -3,5 +3,5 @@
 (base) sanjeev@Sanjeevs-MacBook-Pro ~ % conda activate har-env
 (har-env) sanjeev@Sanjeevs-MacBook-Pro ~ %
 
-pip install -r requirements.txt
+pip3.11 install -r requirements.txt
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define absolute host path (update if your directory path changes)
-HOST_PROJECT_PATH="/Users/sanjeev/VNIT/FINAL_PROJECT"
+HOST_PROJECT_PATH="/Users/sanjeev/VNIT/FINAL_PRJ_PHASE2"
 
 # Define container path
 CONTAINER_PROJECT_PATH="/app"

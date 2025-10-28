@@ -16,33 +16,6 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 warnings.filterwarnings('ignore', category=DeprecationWarning)
 warnings.filterwarnings('ignore', category=FutureWarning)
 
-def load_best_model(model_path):
-    try:
-        model = tf.keras.models.load_model(model_path)
-        return model
-    except Exception as e:
-        logging.error(f"Error loading model: {e}")
-        raise
-
-def preprocess_csi_data(csi_data, input_shape):
-    try:
-        csi_data = np.array(csi_data).reshape(-1, *input_shape)
-        csi_data = csi_data.astype(np.float32)
-        return csi_data
-    except Exception as e:
-        logging.error(f"Error preprocessing data: {e}")
-        raise
-
-def predict_activity(model, csi_data):
-    try:
-        predictions = model.predict(csi_data, verbose=0)
-        predicted_class = np.argmax(predictions, axis=1)
-        confidence = np.max(predictions, axis=1)
-        return predicted_class, confidence
-    except Exception as e:
-        logging.error(f"Error making prediction: {e}")
-        raise
-
 # Flask app
 app = Flask(__name__)
 CORS(app)  # <-- Add here
@@ -50,30 +23,27 @@ CORS(app)  # <-- Add here
 # Load config and model at startup
 CONFIG_FILE = os.environ.get('CONFIG_FILE', 'config/har_infer_config.properties')
 config = ConfigReader(CONFIG_FILE)
-print(f"Using config file: {CONFIG_FILE}")
-print(f"Using config file: {config}")
-input_shape = config.get_tuple('input_shape')
-print(f"Input shape for model: {input_shape}")
-print(f"model path: {config.get('model_save_path')}")
-
+print(f"0. Using config file: CONFIG_FILE:{CONFIG_FILE} config:{config}")
+ 
+best_model_pattern = config.get('best_model_pattern')   
+print(f"Model path: {config.get('model_save_path')}")
 model_save_dir = Path(config.get('model_save_path'))
 print(f"Model save directory: {model_save_dir.resolve()}")
 
-best_model_pattern = config.get('best_model_pattern')
 model_files = list(model_save_dir.glob(best_model_pattern))
 print(f"Found model files: {model_files}")
 if not model_files:
     raise FileNotFoundError("No model files found")
-fold_numbers = [int(str(f).split('_')[-1].split('.')[0]) for f in model_files]
-best_fold = max(fold_numbers)
-best_model_path = model_save_dir / f'best_model_fold_{best_fold}.keras'
+
+# Assume exactly one file matches the pattern; pick the first entry
+best_model_path = model_files[0]
 print(f"Loading best model from: {best_model_path}")
-model = load_best_model(str(best_model_path))
-print(f"Loaded model: {model} from {best_model_path}")
-activity_labels = [
-    "Walking", "Running", "Sitting", "Standing", "Lying",
-    "Climbing Up", "Climbing Down", "Jumping", "Falling", "Idle"
-]
+
+from CSI_Model_Eval_helper import get_best_model_and_params   
+model_instance, params, total_params, device = get_best_model_and_params(str(best_model_path))
+
+print(f"Loaded model: {model_instance} from {best_model_path}")
+
 
 print(f"INIT DONE: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
