@@ -21,7 +21,7 @@ app = Flask(__name__)
 CORS(app)  # <-- Add here
 
 # Load config and model at startup
-CONFIG_FILE = os.environ.get('CONFIG_FILE', 'config/gait_id_infer_config.properties')
+CONFIG_FILE = os.environ.get('CONFIG_FILE', 'config/gait_id_config.properties')
 config = ConfigReader(CONFIG_FILE)
 print(f"0. Using config file: CONFIG_FILE:{CONFIG_FILE} config:{config}")
  
