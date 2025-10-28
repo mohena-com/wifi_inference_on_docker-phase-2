@@ -207,7 +207,7 @@ def get_best_model_and_params(best_model_fname=None):
         print(f"Total parameters: {total_params}")
     except Exception as e:
         print(f"Failed to instantiate model: {e}")
-        return model_instance, params, total_params, device
+    return model_instance, params, total_params, device
 
 run_name = "best_overall_model_final_MobileNetV3_1D_LSTM_lr5e-04_bs16_adam_wd1e-04_ep100_valacc0.9656.pt"
 get_best_model_and_params(run_name)
