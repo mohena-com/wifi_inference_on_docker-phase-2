@@ -31,9 +31,7 @@ from DL_CSILSTMNet import CSILSTMNet
 from DL_DenseNet1D import DenseNet1D
 from DL_EfficientNet1DLSTM import EfficientNet1DLSTM
 from DL_MobileNetV3 import MobileNetV3_1D_LSTM
-# EfficientNet1D would be imported similarly
-
-# --- Logging setup (use your CSI_ID.py pattern) ---
+ 
 cr = ConfigReader("../config/har_infer_config.properties")
 
 def parse_run_name(run_name: str) -> dict:
@@ -141,8 +139,6 @@ def instantiate_from_runname(params, device=None):
     This function looks for known model identifiers inside params['model_name'] and maps them to
     the imported model classes above.
     """
-
-
     raw_name = params.get('model_name', '')
 
     # known model keys and corresponding classes
@@ -183,13 +179,13 @@ def instantiate_from_runname(params, device=None):
     model = create_model_instance(model_class, chosen_key, sample_batch, device)
     return model
 
-def get_best_model_and_params():
-    run_name = "best_overall_model_final_MobileNetV3_1D_LSTM_lr5e-04_bs16_adam_wd1e-04_ep100_valacc0.9656.pt"
+def get_best_model_and_params(best_model_fname=None):
+    #run_name = "best_overall_model_final_MobileNetV3_1D_LSTM_lr5e-04_bs16_adam_wd1e-04_ep100_valacc0.9656.pt"
     params = parse_run_name(run_name)
     print(params)
-    # Example: create model from parsed params
+    model_instance = None
+    total_params = 0
     try:
-        # Select device: prefer MPS (Apple Silicon) -> CUDA -> CPU
         try:
             if getattr(torch.backends, 'mps', None) is not None and torch.backends.mps.is_available():
                 device = torch.device('mps')
@@ -211,7 +207,9 @@ def get_best_model_and_params():
         print(f"Total parameters: {total_params}")
     except Exception as e:
         print(f"Failed to instantiate model: {e}")
+        return model_instance, params, total_params, device
 
-get_best_model_and_params()
+run_name = "best_overall_model_final_MobileNetV3_1D_LSTM_lr5e-04_bs16_adam_wd1e-04_ep100_valacc0.9656.pt"
+get_best_model_and_params(run_name)
 
 
