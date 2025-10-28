@@ -22,7 +22,7 @@ COPY src/index.html /app/static/index.html
 COPY src/script.js /app/static/script.js
 
 # Expose the port your Flask app runs on
-EXPOSE 5001
+EXPOSE 5002
 
 # Set environment variable for unbuffered output (for Docker logs)
 ENV PYTHONUNBUFFERED=1
