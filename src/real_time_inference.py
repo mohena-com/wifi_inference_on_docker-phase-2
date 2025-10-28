@@ -170,12 +170,7 @@ def predict_activity(model, csi_data, config):
 def process_test_data(model, test_data, config):
     """Process test data for inference"""
     try:
-        # Activity labels (update these according to your training data)
-        activity_labels = [
-            "Walking", "Running", "Sitting", "Standing", "Lying",
-            "Climbing Up", "Climbing Down", "Jumping", "Falling", "Idle"
-        ]
-        
+       
         logging.info("Starting inference on test data...")
         print("\nTest Data Inference Started")
         print("Processing each sample...\n")
