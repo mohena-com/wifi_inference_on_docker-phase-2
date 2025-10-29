@@ -17,5 +17,6 @@ echo
 sleep 5
 echo "Testing the deployment..."
 curl -X GET http://localhost:5002/gait_id/index.html
-
+echo 
+echo 
 echo "Deployment complete."
