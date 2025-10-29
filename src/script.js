@@ -36,7 +36,7 @@ const uploadFile = async () => {
         uploadedFeatures = jsonData.features; // 3. Store features for display
 
         try {
-            const response = await fetch("/gait_id/predict", {
+            const response = await fetch("http://localhost:5002/gait_id/predict", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
