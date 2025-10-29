@@ -53,9 +53,12 @@ from flask import send_from_directory
 def serve_index():
     return send_from_directory('static', 'index.html')
 
-
-@app.route('/gait_id/predict', methods=['POST'])
+@app.route('/gait_id/predict1', methods=['POST'])
 def predict():
+    print(f"Received data: {data}")
+
+@app.route('/gait_id/predict1', methods=['POST'])
+def predict1():
     try:
         data = request.get_json()
         print(f"Received data: {data}")
