@@ -1,13 +1,20 @@
+git pull
+
 ./docker_build.sh 
 
 docker stop gait_id_inference_container
+
 docker rm gait_id_inference_container
 
 
-docker run -d -p 5002:5002 --name gait_id_inference_container gait_id_inference:latest
 docker run -e PYTHONUNBUFFERED=1 -d -p 5002:5002 --name gait_id_inference_container gait_id_inference:latest
 
-curl -X GET http://webmaster-ai:5002/har/index.html
+curl -X GET http://webmaster-ai:5002/gait_id/index.html
+
+
+docker run -d -p 5002:5002 --name gait_id_inference_container gait_id_inference:latest
+
+
 
 curl -X POST http://webmaster-ai:5002/predict \
   -H "Content-Type: application/json" \
