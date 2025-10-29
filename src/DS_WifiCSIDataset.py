@@ -37,6 +37,9 @@ class WifiCSIDataset(Dataset):
         for f in file_list:
             X_meta, X_csi, _, _, _ = self.load_csv_as_numpy(f)
             self.logger.debug(f"A_00_{i}. X_meta: {X_meta.shape} X_csi: {X_csi.shape}")
+            print(f"A_00_{i}. X_meta: {X_meta} ")            
+            print(f"A_01_{i}. X_csi: {X_csi}")
+
             all_meta.append(X_meta)
             all_csi.append(X_csi)
             i = i+1
@@ -54,6 +57,9 @@ class WifiCSIDataset(Dataset):
             X_meta, X_csi, y, _, _ = self.load_csv_as_numpy(f)
             X_meta = self.scaler_meta.transform(X_meta)
             X_csi = self.scaler_csi.transform(X_csi)
+            
+            print(f"A_01_{i}. X_meta: {X_meta} ")
+            print(f"A_01_{i}. X_csi: {X_csi} ")
 
             T = len(X_meta)
             for start in range(0, T - window_size + 1, stride):
