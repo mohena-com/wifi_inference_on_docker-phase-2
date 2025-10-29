@@ -31,10 +31,10 @@ const uploadFile = async () => {
 
     const reader = new FileReader();
     reader.onload = async (event) => {
-        const csv = event.target.result;
-        const jsonData = csvToJson(csv);
-        uploadedFeatures = jsonData.features; // 3. Store features for display
-        console.log("Converted JSON Data:", jsonData);  
+      //  const csv = event.target.result;
+      //  const jsonData = csvToJson(csv);
+      //  uploadedFeatures = jsonData.features; // 3. Store features for display
+      //  console.log("Converted JSON Data:", jsonData);  
         try {
             const response = await fetch("http://localhost:5002/gait_id/predict", {
                 method: "POST",
