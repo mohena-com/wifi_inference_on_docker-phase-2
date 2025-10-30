@@ -108,6 +108,15 @@ def predict1():
         ]
         print(f"Prediction result: {result}")
         '''
+        csi_data = arr['csi_data']
+
+        for batch_index, batch in enumerate(csi_data):
+            for sequence_index, sequence in enumerate(batch):
+                for feature_index, feature_array in enumerate(sequence):
+                    print(f"Batch {batch_index} Sequence {sequence_index} Feature array {feature_index}: {feature_array}")
+
+            # Process feature_array as needed
+
         return jsonify(arr)
     except Exception as e:
         logging.error(f"Prediction error: {e}")
