@@ -37,8 +37,9 @@ const uploadFile = async () => {
         console.log("jsonData:", jsonData);
         uploadedFeatures = jsonData.features; // 3. Store features for display
         console.log("Uploaded Features:", uploadedFeatures);    
-      /*   
+    
         try {
+            console.log("Sending POST request with CSI data:", JSON.stringify({ csi_data: jsonData.csi_data }));
             const response = await fetch("http://localhost:5002/gaitid/predict", {
                 method: "POST",
                 headers: {
@@ -46,24 +47,6 @@ const uploadFile = async () => {
                 },
                 body: JSON.stringify({ csi_data: jsonData.csi_data }),
             });
-
-            const result = await response.json();
-            console.log("  result:", result);    
-
-            displayResults(result);
-        } catch (error) {
-            console.error("Error:", error);
-        }
-        */
-        try {
-            console.log("Sending POST request with CSI data:", jsonData.csi_data);
-            const response = await fetch("http://localhost:5002/gaitid/predict", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ csi_data: jsonData.csi_data }),
-        });
         console.log("Received response status:", response.status);
         const result = await response.json();
         console.log("Response JSON:", result);
