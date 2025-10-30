@@ -40,7 +40,7 @@ const uploadFile = async () => {
     
         try {
             console.log("Sending POST request with CSI data:", JSON.stringify({ csi_data: jsonData.csi_data }));
-            const response = await fetch("http://localhost:5002/gaitid/predict", {
+            const response = await fetch("/gaitid/predict", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
