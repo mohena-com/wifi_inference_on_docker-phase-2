@@ -1,24 +1,5 @@
 let uploadedFeatures = []; // 1. Global variable
 
-const csvToJson1 = (csv) => {
-    const lines = csv.trim().split("\n").filter(line => line.trim() !== "");
-    const headers = lines[0].split(",");
-    const features = [];
-    const csi_data = [];
-
-    for (let i = 1; i < lines.length; i++) {
-        const currentLine = lines[i].split(",");
-        // Only push if the line has enough columns
-        if (currentLine.length >= 2) {
-            // Remove label (last column) for csi_data
-            csi_data.push(currentLine.slice(0, -1).map(Number));
-            // Keep the original features for display
-            features.push(currentLine.slice(0, -1));
-        }
-    }
-
-    return { csi_data, features };
-};
 
 
 const csvToJson = (csv) => {
@@ -48,37 +29,27 @@ const uploadFile = async () => {
         return;
     }
 
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-        const csv = event.target.result;
-        console.log("csv:", csv);
-        const jsonData = csvToJson(csv);
-        console.log("jsonData:", jsonData);
-        uploadedFeatures = jsonData.features; // 3. Store features for display
-        console.log("Uploaded Features:", uploadedFeatures);    
-    
-        try {
-            console.log("Sending POST request with CSI data:", JSON.stringify({ csi_data: jsonData.csi_data }));
-            const response = await fetch("/gaitid/predict", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ csi_data: jsonData.csi_data }),
-            });
+    // Prepare FormData and append the file
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+        const response = await fetch("/gaitid/predict", {
+            method: "POST",
+            body: formData, // Send the file as form data
+            // Do NOT set Content-Type header manually!
+            // The browser will set the correct multipart/form-data headers automatically
+        });
+
         console.log("Received response status:", response.status);
         const result = await response.json();
         console.log("Response JSON:", result);
-       // displayResults(result);
-        // further processing...
-        } catch (error) {
-            console.error("Error while fetching:", error);
-        }
-
-    };
-
-    reader.readAsText(file);
+        // displayResults(result);
+    } catch (error) {
+        console.error("Error while fetching:", error);
+    }
 };
+
 
 
 

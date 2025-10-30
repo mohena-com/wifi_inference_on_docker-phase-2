@@ -71,99 +71,25 @@ def serve_index():
 
 @app.route('/gaitid/predict', methods=['POST'])
 def predict():
-    try:
-        data = request.get_json()
-        #print(f"Received data: {data}")
-        if not data or 'csi_data' not in data:
-            return jsonify({'error': 'Missing csi_data in request'}), 400
-        csi_data = data['csi_data']
-        #print(f"Received csi_data: {csi_data}")
-        # Handle input shape: flatten if needed, then reshape
-        arr = np.array(csi_data)
-        # If shape is (batch, 1, 103), squeeze to (batch, 103)
-        if arr.ndim == 3 and arr.shape[1] == 1:
-            arr = arr.squeeze(1)
-        # If shape is (batch, 103), expand last dim to (batch, 103, 1)
-        if arr.ndim == 2 and arr.shape[1] == 103:
-            arr = arr[..., np.newaxis]
-        '''    
-        # Now arr should be (batch, 103, 1)
-        processed_data = arr.astype(np.float32)
-        print(f"Processed csi_data shape: {processed_data.shape}")
-        predicted_class, confidence = predict_activity(model, processed_data)
+    # List of file keys (input names)
+    file_keys = request.files.keys()
+    print("Uploaded file field names:", file_keys)
 
-        print(f"Predicted class: {predicted_class}, Confidence: {confidence}")
+    # If you want to access all files
+    uploaded_files = request.files.to_dict()
+    for key, file in uploaded_files.items():
+        print(f"File field: {key}, Filename: {file.filename}")
 
-        result = [
-            {
-                'predicted_activity': activity_labels[int(predicted_class[i])],
-                'confidence': float(confidence[i])
-            }
-            for i in range(len(predicted_class))
-        ]
-        print(f"Prediction result: {result}")
-         '''
- 
-        for batch_index, batch in enumerate(csi_data):
-            print(f"Processing Batch {batch_index}:")
-            for sequence_index, sequence in enumerate(batch):
-                print(f"  Sequence {sequence_index}:")
-                for feature_index, feature_array in enumerate(sequence):
-                    print(f"->Batch {batch_index} Sequence {sequence_index} Feature array {feature_index}: {feature_array}")
-
-            # Process feature_array as needed
-
-        return jsonify(arr)
-       
-
-        # Example usage with your nested JSON data dict, assuming it is loaded into `json_data`
-        # json_data = {...} # your JSON data here
-
-        # extracted nested array under "csi_data"
- 
-        # convert safely to numeric numpy array
-       # numeric_array = convert_nested_list(csi_data)
-
-       # print(numeric_array)
-      #  print(numeric_array.dtype)  # will likely be complex128 if any complex numbers present
-      #  return jsonify({'response': str(numeric_array)})
-    except Exception as e:
-        logging.error(f"Prediction error: {e}")
-        return jsonify({'error': str(e)}), 500
-
-
-import numpy as np
-import re
- 
-
- 
-
-def parse_complex(s):
-    if s is None or s.strip() == "":
-        return 0.0 + 0.0j  # treat missing values as 0
-    try:
-        s = s.replace('+-', '-').replace('-+', '-').replace('i', 'j')
-        return complex(s)
-    except Exception:
-        # If still not parsable, default to 0
-        return 0.0 + 0.0j
-        
-
-def convert_nested_list(data):
-    """Recursively convert nested list of strings to numpy array of numbers."""
-    if isinstance(data, list):
-        return np.array([convert_nested_list(item) for item in data])
-    elif isinstance(data, str):
-        # Convert for complex numbers
-        try:
-            return parse_complex(data)
-        except:
-            # fallback to float conversion
-            return data
+    # Process the specific file or return a message
+    if 'file' in uploaded_files:
+        file = uploaded_files['file']
+        # read/process the file
+        data = file.read()
+        return {"message": f"Received file {file.filename} of size {len(data)} bytes."}
     else:
-        return data
+        return {"error": "No files uploaded"}, 400
 
-
+ 
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5002)
