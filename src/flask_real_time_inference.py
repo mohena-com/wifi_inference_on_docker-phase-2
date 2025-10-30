@@ -119,10 +119,9 @@ def predict():
         # json_data = {...} # your JSON data here
 
         # extracted nested array under "csi_data"
-        nested_strings = json_data['csi_data']
-
+ 
         # convert safely to numeric numpy array
-        numeric_array = convert_nested_list(nested_strings)
+        numeric_array = convert_nested_list(csi_data)
 
         print(numeric_array)
         print(numeric_array.dtype)  # will likely be complex128 if any complex numbers present
