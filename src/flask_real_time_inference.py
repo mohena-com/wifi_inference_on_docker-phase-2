@@ -102,18 +102,19 @@ def predict():
             for i in range(len(predicted_class))
         ]
         print(f"Prediction result: {result}")
-        
-        csi_data = arr['csi_data']
-
+         '''
+ 
         for batch_index, batch in enumerate(csi_data):
+            print(f"Processing Batch {batch_index}:")
             for sequence_index, sequence in enumerate(batch):
+                print(f"  Sequence {sequence_index}:")
                 for feature_index, feature_array in enumerate(sequence):
                     print(f"->Batch {batch_index} Sequence {sequence_index} Feature array {feature_index}: {feature_array}")
 
             # Process feature_array as needed
 
         return jsonify(arr)
-        '''
+       
 
         # Example usage with your nested JSON data dict, assuming it is loaded into `json_data`
         # json_data = {...} # your JSON data here
@@ -121,11 +122,11 @@ def predict():
         # extracted nested array under "csi_data"
  
         # convert safely to numeric numpy array
-        numeric_array = convert_nested_list(csi_data)
+       # numeric_array = convert_nested_list(csi_data)
 
-        print(numeric_array)
-        print(numeric_array.dtype)  # will likely be complex128 if any complex numbers present
-        return jsonify({'response': str(numeric_array)})
+       # print(numeric_array)
+      #  print(numeric_array.dtype)  # will likely be complex128 if any complex numbers present
+      #  return jsonify({'response': str(numeric_array)})
     except Exception as e:
         logging.error(f"Prediction error: {e}")
         return jsonify({'error': str(e)}), 500
@@ -133,29 +134,9 @@ def predict():
 
 import numpy as np
 import re
+ 
 
-import re
-import numpy as np
-
-def parse_complex_string(s):
-    """Convert string like '6+-26i' to Python complex number."""
-    # Replace 'i' with 'j' for Python
-    s = s.replace('i', 'j')
-
-    # Use regex to match real and imaginary parts
-    pattern = re.compile(r'([+-]?\d+(?:\.\d+)?)([+-]\d+(?:\.\d+)?i)')
-    match = pattern.match(s)
-    if match:
-        real_part = float(match.group(1))
-        imag_part_str = match.group(2)
-        imag_part = float(imag_part_str.replace('i', ''))
-        return complex(real_part, imag_part)
-    else:
-        # fallback: try to directly convert to complex
-        try:
-            return complex(s)
-        except:
-            raise ValueError(f"Unable to parse complex number: {s}")
+ 
 
 def parse_complex(s):
     if s is None or s.strip() == "":
@@ -178,7 +159,7 @@ def convert_nested_list(data):
             return parse_complex(data)
         except:
             # fallback to float conversion
-            return float(data)
+            return data
     else:
         return data
 
