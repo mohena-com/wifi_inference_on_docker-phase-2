@@ -133,34 +133,41 @@ def predict():
 import numpy as np
 import re
 
+import re
+import numpy as np
+
 def parse_complex_string(s):
-    """Convert string with i notation (e.g. '6+-26i') to Python complex number."""
+    """Convert string like '6+-26i' to Python complex number."""
+    # Replace 'i' with 'j' for Python
     s = s.replace('i', 'j')
-    try:
-        return complex(s)
-    except ValueError:
-        # In case of malformed strings, try to handle gracefully
-        # Remove anything non-numeric/non+-j and try again
-        s_clean = re.sub(r'[^0-9+\-.j]', '', s)
-        return complex(s_clean)
+
+    # Use regex to match real and imaginary parts
+    pattern = re.compile(r'([+-]?\d+(?:\.\d+)?)([+-]\d+(?:\.\d+)?i)')
+    match = pattern.match(s)
+    if match:
+        real_part = float(match.group(1))
+        imag_part_str = match.group(2)
+        imag_part = float(imag_part_str.replace('i', ''))
+        return complex(real_part, imag_part)
+    else:
+        # fallback: try to directly convert to complex
+        try:
+            return complex(s)
+        except:
+            raise ValueError(f"Unable to parse complex number: {s}")
 
 def convert_nested_list(data):
-    print(f"Converting nested list: len({data})")
-    """Recursively convert nested list of strings to numpy array of appropriate numeric type."""
+    """Recursively convert nested list of strings to numpy array of numbers."""
     if isinstance(data, list):
         return np.array([convert_nested_list(item) for item in data])
     elif isinstance(data, str):
-        # Try complex parsing first
+        # Convert for complex numbers
         try:
             return parse_complex_string(data)
         except:
             # fallback to float conversion
-            try:
-                return float(data)
-            except:
-                raise ValueError(f"Unable to convert string to number: {data}")
+            return float(data)
     else:
-        # If already a number or other type, just return
         return data
 
 
