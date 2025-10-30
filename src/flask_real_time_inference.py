@@ -72,7 +72,7 @@ def predict():
     print(f"predict called")
     data = request.get_json()
     print(f"Received data: {data}")
-
+     return jsonify(data)
 @app.route('/gait_id/predict1', methods=['POST'])
 def predict1():
     try:
