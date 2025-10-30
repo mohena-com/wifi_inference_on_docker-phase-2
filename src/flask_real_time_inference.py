@@ -78,11 +78,11 @@ def predict():
 def predict1():
     try:
         data = request.get_json()
-        print(f"Received data: {data}")
+        #print(f"Received data: {data}")
         if not data or 'csi_data' not in data:
             return jsonify({'error': 'Missing csi_data in request'}), 400
         csi_data = data['csi_data']
-        print(f"Received csi_data: {csi_data}")
+        #print(f"Received csi_data: {csi_data}")
         # Handle input shape: flatten if needed, then reshape
         arr = np.array(csi_data)
         # If shape is (batch, 1, 103), squeeze to (batch, 103)
@@ -113,7 +113,7 @@ def predict1():
         for batch_index, batch in enumerate(csi_data):
             for sequence_index, sequence in enumerate(batch):
                 for feature_index, feature_array in enumerate(sequence):
-                    print(f"Batch {batch_index} Sequence {sequence_index} Feature array {feature_index}: {feature_array}")
+                    print(f"->Batch {batch_index} Sequence {sequence_index} Feature array {feature_index}: {feature_array}")
 
             # Process feature_array as needed
 
