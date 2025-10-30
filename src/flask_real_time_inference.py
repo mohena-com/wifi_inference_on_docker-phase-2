@@ -64,7 +64,7 @@ def setup_logging(log_file_path='/tmp/uploads/app.log'):
     logger = logging.getLogger()
     logger.debug("Logger initialized")
     return logger
-    
+
 import logging
 log_file_path='/tmp/uploads/app.log'
 logger = setup_logging(log_file_path)
@@ -110,8 +110,8 @@ def predict():
     dataset = WifiCSIDataset(logger, saved_file_paths, window_size=128, stride=64)
 
     # Continue with your logic using dataset...
-
-    return {"message": f"Processed {len(saved_file_paths)} files."}
+    print(f"Dataset created with {len(dataset)} samples from uploaded files.")
+    return {"message": f"{dataset}}"}
 
 
 
