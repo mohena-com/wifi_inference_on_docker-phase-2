@@ -91,7 +91,7 @@ def predict():
     return {"message": f"Processed {len(saved_file_paths)} files."}
 
 
- def setup_logging(log_file_path='/tmp/uploads/app.log'):
+def setup_logging(log_file_path='/tmp/uploads/app.log'):
 
     for handler in logging.root.handlers[:]:
         logging.root.removeHandler(handler)
