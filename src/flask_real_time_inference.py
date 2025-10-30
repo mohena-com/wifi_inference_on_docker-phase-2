@@ -46,6 +46,8 @@ print(f"Loaded model: {model_instance} from {best_model_path}")
 
 
 print(f"INIT DONE: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+import logging
+logger = setup_logging()
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
