@@ -39,7 +39,7 @@ const uploadFile = async () => {
         console.log("Uploaded Features:", uploadedFeatures);    
          
         try {
-            const response = await fetch("http://localhost:5002/gait_id/predict", {
+            const response = await fetch("http://localhost:5002/gaitid/predict", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

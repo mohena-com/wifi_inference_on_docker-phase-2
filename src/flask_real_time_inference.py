@@ -63,16 +63,17 @@ def upload_file():
 
 from flask import send_from_directory
 
-@app.route('/gait_id/index.html', methods=['GET'])
+@app.route('/gaitid/index.html', methods=['GET'])
 def serve_index():
     return send_from_directory('static', 'index.html')
 
-@app.route('/gait_id/predict', methods=['POST'])
+@app.route('/gaitid/predict', methods=['POST'])
 def predict():
     print(f"predict called")
     data = request.get_json()
     print(f"Received data: {data}")
     return jsonify(data)
+
 @app.route('/gait_id/predict1', methods=['POST'])
 def predict1():
     try:
