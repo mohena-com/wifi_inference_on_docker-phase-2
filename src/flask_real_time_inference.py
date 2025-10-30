@@ -90,7 +90,8 @@ def serve_index():
     return send_from_directory('static', 'index.html')
 
  
-
+import glob
+import os
 from werkzeug.utils import secure_filename
 import os
 from DS_WifiCSIDataset import WifiCSIDataset
@@ -106,8 +107,10 @@ def predict():
         uploaded_file.save(save_path)
         saved_file_paths.append(save_path)
 
+    filelist = glob.glob(os.path.join('/tmp/uploads', '**', '*.csv'), recursive=True)
+
     # Now pass the saved file paths to WifiCSIDataset
-    dataset = WifiCSIDataset(logger, saved_file_paths, window_size=128, stride=64)
+    dataset = WifiCSIDataset(logger, filelist, window_size=128, stride=64)
 
     # Continue with your logic using dataset...
     print(f"Dataset created with {len(dataset)} samples from uploaded files.")
