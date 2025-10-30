@@ -69,6 +69,7 @@ def serve_index():
 
 @app.route('/gait_id/predict', methods=['POST'])
 def predict():
+    print(f"predict called")
     data = request.get_json()
     print(f"Received data: {data}")
 
