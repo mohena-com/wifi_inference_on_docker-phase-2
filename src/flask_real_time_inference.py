@@ -85,13 +85,14 @@ def predict1():
         print(f"Received csi_data: {csi_data}")
         # Handle input shape: flatten if needed, then reshape
         arr = np.array(csi_data)
-        # If shape is (batch, 1, 90), squeeze to (batch, 90)
+        # If shape is (batch, 1, 103), squeeze to (batch, 103)
         if arr.ndim == 3 and arr.shape[1] == 1:
             arr = arr.squeeze(1)
-        # If shape is (batch, 90), expand last dim to (batch, 90, 1)
-        if arr.ndim == 2 and arr.shape[1] == 90:
+        # If shape is (batch, 103), expand last dim to (batch, 103, 1)
+        if arr.ndim == 2 and arr.shape[1] == 103:
             arr = arr[..., np.newaxis]
-        # Now arr should be (batch, 90, 1)
+        '''    
+        # Now arr should be (batch, 103, 1)
         processed_data = arr.astype(np.float32)
         print(f"Processed csi_data shape: {processed_data.shape}")
         predicted_class, confidence = predict_activity(model, processed_data)
@@ -106,8 +107,8 @@ def predict1():
             for i in range(len(predicted_class))
         ]
         print(f"Prediction result: {result}")
-
-        return jsonify(result)
+        '''
+        return jsonify(arr)
     except Exception as e:
         logging.error(f"Prediction error: {e}")
         return jsonify({'error': str(e)}), 500
