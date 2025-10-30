@@ -98,7 +98,7 @@ from DS_WifiCSIDataset import WifiCSIDataset
 @app.route('/gaitid/predict', methods=['POST'])
 def predict():
     uploaded_files = request.files.getlist('file')  # if multiple files, or just request.files.values()
-
+    print(f"Received {len(uploaded_files)} files for prediction.  {uploaded_files}  ")
     saved_file_paths = []
     for uploaded_file in uploaded_files:
         filename = secure_filename(uploaded_file.filename)
