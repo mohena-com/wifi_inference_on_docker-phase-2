@@ -69,7 +69,7 @@ const uploadFile = async () => {
         console.log("Received response status:", response.status);
         const result = await response.json();
         console.log("Response JSON:", result);
-        displayResults(result);
+       // displayResults(result);
         // further processing...
         } catch (error) {
             console.error("Error while fetching:", error);
