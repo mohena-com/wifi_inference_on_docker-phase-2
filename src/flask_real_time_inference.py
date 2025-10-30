@@ -47,6 +47,20 @@ print(f"Loaded model: {model_instance} from {best_model_path}")
 
 print(f"INIT DONE: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
+@app.route('/upload', methods=['POST'])
+def upload_file():
+    uploaded_file = request.files['file']  # 'file' is the name in your form
+
+    # Create a temporary file
+    temp = tempfile.NamedTemporaryFile(delete=False)
+    uploaded_file.save(temp.name)
+
+    # You can now use temp.name for further processing
+    # Don't forget to close or cleanup the temp file when done
+
+    return f'Temp file created at {temp.name}'
+
+
 from flask import send_from_directory
 
 @app.route('/gait_id/index.html', methods=['GET'])

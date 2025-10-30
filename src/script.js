@@ -23,7 +23,7 @@ const csvToJson = (csv) => {
 const uploadFile = async () => {
     const fileInput = document.getElementById("csvFile");
     const file = fileInput.files[0];
-
+    console.log("Selected file:", file);
     if (!file) {
         alert("Please upload a CSV file.");
         return;
@@ -31,10 +31,13 @@ const uploadFile = async () => {
 
     const reader = new FileReader();
     reader.onload = async (event) => {
-      //  const csv = event.target.result;
-      //  const jsonData = csvToJson(csv);
-      //  uploadedFeatures = jsonData.features; // 3. Store features for display
-      //  console.log("Converted JSON Data:", jsonData);  
+        const csv = event.target.result;
+        console.log("csv:", csv);
+        const jsonData = csvToJson(csv);
+        console.log("jsonData:", jsonData);
+        uploadedFeatures = jsonData.features; // 3. Store features for display
+        console.log("Uploaded Features:", uploadedFeatures);    
+         
         try {
             const response = await fetch("http://localhost:5002/gait_id/predict", {
                 method: "POST",
@@ -45,6 +48,8 @@ const uploadFile = async () => {
             });
 
             const result = await response.json();
+            console.log("  result:", result);    
+
             displayResults(result);
         } catch (error) {
             console.error("Error:", error);
