@@ -156,6 +156,17 @@ def parse_complex_string(s):
         except:
             raise ValueError(f"Unable to parse complex number: {s}")
 
+def parse_complex(s):
+    if s is None or s.strip() == "":
+        return 0.0 + 0.0j  # treat missing values as 0
+    try:
+        s = s.replace('+-', '-').replace('-+', '-').replace('i', 'j')
+        return complex(s)
+    except Exception:
+        # If still not parsable, default to 0
+        return 0.0 + 0.0j
+        
+
 def convert_nested_list(data):
     """Recursively convert nested list of strings to numpy array of numbers."""
     if isinstance(data, list):
@@ -163,7 +174,7 @@ def convert_nested_list(data):
     elif isinstance(data, str):
         # Convert for complex numbers
         try:
-            return parse_complex_string(data)
+            return parse_complex(data)
         except:
             # fallback to float conversion
             return float(data)
