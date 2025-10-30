@@ -30,7 +30,7 @@ const csvToJson = (csv) => {
         const currentLine = lines[i].split(",");
         if (currentLine.length >= 2) {
             // Wrap each row (array) inside two extra arrays to get triple nesting
-            csi_data.push([ currentLine.slice(0, -1).map(Number) ]);
+            csi_data.push([ currentLine.slice(0, -1)  ]);
         }
     }
 
