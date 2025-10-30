@@ -125,6 +125,7 @@ def predict():
 
         print(numeric_array)
         print(numeric_array.dtype)  # will likely be complex128 if any complex numbers present
+        return jsonify({'response': str(numeric_array)})
     except Exception as e:
         logging.error(f"Prediction error: {e}")
         return jsonify({'error': str(e)}), 500
