@@ -102,7 +102,7 @@ def predict():
             for i in range(len(predicted_class))
         ]
         print(f"Prediction result: {result}")
-        '''
+        
         csi_data = arr['csi_data']
 
         for batch_index, batch in enumerate(csi_data):
@@ -113,9 +113,58 @@ def predict():
             # Process feature_array as needed
 
         return jsonify(arr)
+        '''
+
+        # Example usage with your nested JSON data dict, assuming it is loaded into `json_data`
+        # json_data = {...} # your JSON data here
+
+        # extracted nested array under "csi_data"
+        nested_strings = json_data['csi_data']
+
+        # convert safely to numeric numpy array
+        numeric_array = convert_nested_list(nested_strings)
+
+        print(numeric_array)
+        print(numeric_array.dtype)  # will likely be complex128 if any complex numbers present
     except Exception as e:
         logging.error(f"Prediction error: {e}")
         return jsonify({'error': str(e)}), 500
+
+
+import numpy as np
+import re
+
+def parse_complex_string(s):
+    """Convert string with i notation (e.g. '6+-26i') to Python complex number."""
+    s = s.replace('i', 'j')
+    try:
+        return complex(s)
+    except ValueError:
+        # In case of malformed strings, try to handle gracefully
+        # Remove anything non-numeric/non+-j and try again
+        s_clean = re.sub(r'[^0-9+\-.j]', '', s)
+        return complex(s_clean)
+
+def convert_nested_list(data):
+    print(f"Converting nested list: len({data})")
+    """Recursively convert nested list of strings to numpy array of appropriate numeric type."""
+    if isinstance(data, list):
+        return np.array([convert_nested_list(item) for item in data])
+    elif isinstance(data, str):
+        # Try complex parsing first
+        try:
+            return parse_complex_string(data)
+        except:
+            # fallback to float conversion
+            try:
+                return float(data)
+            except:
+                raise ValueError(f"Unable to convert string to number: {data}")
+    else:
+        # If already a number or other type, just return
+        return data
+
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5002)
