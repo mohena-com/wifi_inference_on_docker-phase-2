@@ -10,6 +10,7 @@ COPY requirements.txt .
 # Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
+RUN mkdir -p /tmp/uploads
 # Copy source code and other necessary folders
 COPY src/ /app/
 COPY config/ /app/config/

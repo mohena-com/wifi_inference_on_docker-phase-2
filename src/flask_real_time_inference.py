@@ -69,27 +69,44 @@ def serve_index():
 
  
 
+from werkzeug.utils import secure_filename
+import os
+
 @app.route('/gaitid/predict', methods=['POST'])
 def predict():
-    # List of file keys (input names)
-    file_keys = request.files.keys()
-    print("Uploaded file field names:", file_keys)
+    uploaded_files = request.files.getlist('file')  # if multiple files, or just request.files.values()
 
-    # If you want to access all files
-    uploaded_files = request.files.to_dict()
-    for key, file in uploaded_files.items():
-        print(f"File field: {key}, Filename: {file.filename}")
+    saved_file_paths = []
+    for uploaded_file in uploaded_files:
+        filename = secure_filename(uploaded_file.filename)
+        save_path = os.path.join('/tmp/uploads', filename)
+        uploaded_file.save(save_path)
+        saved_file_paths.append(save_path)
 
-    # Process the specific file or return a message
-    if 'file' in uploaded_files:
-        file = uploaded_files['file']
-        # read/process the file
-        data = file.read()
-        return {"message": f"Received file {file.filename} of size {len(data)} bytes."}
-    else:
-        return {"error": "No files uploaded"}, 400
+    # Now pass the saved file paths to WifiCSIDataset
+    dataset = WifiCSIDataset(logger, saved_file_paths, window_size=128, stride=64)
 
- 
+    # Continue with your logic using dataset...
+
+    return {"message": f"Processed {len(saved_file_paths)} files."}
+
+
+ def setup_logging(log_file_path='/tmp/uploads/app.log'):
+
+    for handler in logging.root.handlers[:]:
+        logging.root.removeHandler(handler)
+
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        handlers=[
+            logging.StreamHandler(),
+            logging.FileHandler(log_file_path, mode="w"),
+        ],
+    )
+    logger = logging.getLogger()
+    logger.debug("Logger initialized")
+    return logger
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5002)
