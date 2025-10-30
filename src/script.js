@@ -37,7 +37,7 @@ const uploadFile = async () => {
         console.log("jsonData:", jsonData);
         uploadedFeatures = jsonData.features; // 3. Store features for display
         console.log("Uploaded Features:", uploadedFeatures);    
-         
+      /*   
         try {
             const response = await fetch("http://localhost:5002/gaitid/predict", {
                 method: "POST",
@@ -54,6 +54,25 @@ const uploadFile = async () => {
         } catch (error) {
             console.error("Error:", error);
         }
+        */
+        try {
+            console.log("Sending POST request with CSI data:", jsonData.csi_data);
+            const response = await fetch("http://localhost:5002/gaitid/predict", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ csi_data: jsonData.csi_data }),
+        });
+        console.log("Received response status:", response.status);
+        const result = await response.json();
+        console.log("Response JSON:", result);
+        displayResults(result);
+        // further processing...
+        } catch (error) {
+            console.error("Error while fetching:", error);
+        }
+
     };
 
     reader.readAsText(file);
