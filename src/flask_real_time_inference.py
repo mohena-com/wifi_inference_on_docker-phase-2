@@ -107,7 +107,7 @@ def predict():
         saved_file_paths.append(save_path)
 
     # Now pass the saved file paths to WifiCSIDataset
-    dataset = WifiCSIDataset(logger, uploaded_files, window_size=128, stride=64)
+    dataset = WifiCSIDataset(logger, saved_file_paths, window_size=128, stride=64)
 
     # Continue with your logic using dataset...
     print(f"Dataset created with {len(dataset)} samples from uploaded files.")
