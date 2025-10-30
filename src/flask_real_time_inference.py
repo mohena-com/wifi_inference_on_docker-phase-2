@@ -46,6 +46,25 @@ print(f"Loaded model: {model_instance} from {best_model_path}")
 
 
 print(f"INIT DONE: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+
+
+def setup_logging(log_file_path='/tmp/uploads/app.log'):
+
+    for handler in logging.root.handlers[:]:
+        logging.root.removeHandler(handler)
+
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        handlers=[
+            logging.StreamHandler(),
+            logging.FileHandler(log_file_path, mode="w"),
+        ],
+    )
+    logger = logging.getLogger()
+    logger.debug("Logger initialized")
+    return logger
+    
 import logging
 log_file_path='/tmp/uploads/app.log'
 logger = setup_logging(log_file_path)
@@ -95,22 +114,6 @@ def predict():
     return {"message": f"Processed {len(saved_file_paths)} files."}
 
 
-def setup_logging(log_file_path='/tmp/uploads/app.log'):
-
-    for handler in logging.root.handlers[:]:
-        logging.root.removeHandler(handler)
-
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-        handlers=[
-            logging.StreamHandler(),
-            logging.FileHandler(log_file_path, mode="w"),
-        ],
-    )
-    logger = logging.getLogger()
-    logger.debug("Logger initialized")
-    return logger
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5002)
