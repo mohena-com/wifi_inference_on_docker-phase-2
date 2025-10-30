@@ -111,7 +111,7 @@ def predict():
 
     # Continue with your logic using dataset...
     print(f"Dataset created with {len(dataset)} samples from uploaded files.")
-    return jsonify({"message":  dataset})   
+    return jsonify({"message":  len(dataset)})
 
 
 
