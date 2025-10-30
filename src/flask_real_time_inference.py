@@ -71,6 +71,7 @@ def serve_index():
 
 from werkzeug.utils import secure_filename
 import os
+from DS_WifiCSIDataset import WifiCSIDataset
 
 @app.route('/gaitid/predict', methods=['POST'])
 def predict():
