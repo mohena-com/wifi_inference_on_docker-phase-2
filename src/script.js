@@ -1,6 +1,6 @@
 let uploadedFeatures = []; // 1. Global variable
 
-const csvToJson = (csv) => {
+const csvToJson1 = (csv) => {
     const lines = csv.trim().split("\n").filter(line => line.trim() !== "");
     const headers = lines[0].split(",");
     const features = [];
@@ -19,6 +19,25 @@ const csvToJson = (csv) => {
 
     return { csi_data, features };
 };
+
+
+const csvToJson = (csv) => {
+    const lines = csv.trim().split("\n").filter(line => line.trim() !== "");
+    
+    const csi_data = [];
+
+    for (let i = 1; i < lines.length; i++) {
+        const currentLine = lines[i].split(",");
+        if (currentLine.length >= 2) {
+            // Wrap each row (array) inside two extra arrays to get triple nesting
+            csi_data.push([ currentLine.slice(0, -1).map(Number) ]);
+        }
+    }
+
+    // Wrap the whole array inside another array to match triple nesting
+    return { csi_data: [csi_data] };
+};
+
 
 const uploadFile = async () => {
     const fileInput = document.getElementById("csvFile");
@@ -61,22 +80,7 @@ const uploadFile = async () => {
     reader.readAsText(file);
 };
 
-const displayResults1 = (results) => {
-    const resultsDiv = document.getElementById("results");
-    resultsDiv.innerHTML = "";
 
-    if (results.error) {
-        resultsDiv.innerHTML = `<p>Error: ${results.error}</p>`;
-        return;
-    }
-
-    results.forEach((result, index) => {
-        const inputLine = uploadedFeatures[index] ? uploadedFeatures[index].join(", ") : "";
-        const p = document.createElement("p");
-        p.innerHTML = `<b>Input:</b> [${inputLine}]<br><b>Predicted Activity:</b> ${result.predicted_activity}, <b>Confidence:</b> ${result.confidence}`;
-        resultsDiv.appendChild(p);
-    });
-};
 
 const displayResults = (results) => {
     const resultsDiv = document.getElementById("results");
