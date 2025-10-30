@@ -73,11 +73,11 @@ def serve_index():
 def predict():
     try:
         data = request.get_json()
-        print(f"Received data: {data}")
+        #print(f"Received data: {data}")
         if not data or 'csi_data' not in data:
             return jsonify({'error': 'Missing csi_data in request'}), 400
         csi_data = data['csi_data']
-        print(f"Received csi_data: {csi_data}")
+        #print(f"Received csi_data: {csi_data}")
         # Handle input shape: flatten if needed, then reshape
         arr = np.array(csi_data)
         # If shape is (batch, 1, 103), squeeze to (batch, 103)
