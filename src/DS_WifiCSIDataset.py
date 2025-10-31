@@ -57,11 +57,11 @@ class WifiCSIDataset(Dataset):
             X_meta, X_csi, y, _, _ = self.load_csv_as_numpy(f)
             X_meta = self.scaler_meta.transform(X_meta)
             X_csi = self.scaler_csi.transform(X_csi)
-            
+            T = len(X_meta)
             print(f"A_01_{i}. X_meta: {X_meta} ")
             print(f"A_01_{i}. X_csi: {X_csi} ")
             print(f"A_01_window_size:{window_size}. stride: {stride}. T: {T}")
-            T = len(X_meta)
+            
             for start in range(0, T - window_size + 1, stride):
                 m_seq = X_meta[start:start+window_size]   # (W, 12)
                 csi_seq = X_csi[start:start+window_size]  # (W, 99)
