@@ -60,7 +60,7 @@ class WifiCSIDataset(Dataset):
             
             print(f"A_01_{i}. X_meta: {X_meta} ")
             print(f"A_01_{i}. X_csi: {X_csi} ")
-
+            print(f"A_01_window_size:{window_size}. stride: {stride} ")
             T = len(X_meta)
             for start in range(0, T - window_size + 1, stride):
                 m_seq = X_meta[start:start+window_size]   # (W, 12)
