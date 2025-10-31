@@ -213,3 +213,6 @@ run_name = "best_overall_model_final_MobileNetV3_1D_LSTM_lr5e-04_bs16_adam_wd1e-
 get_best_model_and_params(run_name)
 
 
+dataset = WifiCSIDataset(logger, filelist, window_size=128, stride=64)
+
+

@@ -47,6 +47,41 @@ print(f"Loaded model: {model_instance} from {best_model_path}")
 
 print(f"INIT DONE: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
+def evalute_model_on_input_data(model, input_data):
+    model.eval()
+    running_loss, correct, total = 0.0, 0, 0
+    val_true, val_pred, val_prob = [], [], []
+    non_blocking_flag = True if device.type == "cuda" else False
+    with torch.no_grad():
+        for batch in test_loader:
+            csi_seq = batch["csi_seq"].to(device, non_blocking=non_blocking_flag)
+            meta_seq = batch["metadata_seq"].to(device, non_blocking=non_blocking_flag)
+            labels = batch["label"].squeeze().to(device, non_blocking=non_blocking_flag)
+
+            if torch.isnan(csi_seq).any() or torch.isinf(csi_seq).any():
+                csi_seq = torch.nan_to_num(csi_seq, nan=0.0, posinf=1e6, neginf=-1e6)
+            if torch.isnan(meta_seq).any() or torch.isinf(meta_seq).any():
+                meta_seq = torch.nan_to_num(meta_seq, nan=0.0, posinf=1e6, neginf=-1e6)
+
+            # same per-batch normalization used in training
+            try:
+                mean = csi_seq.mean(dim=(0, 1), keepdim=True)
+                std = csi_seq.std(dim=(0, 1), keepdim=True) + 1e-8
+                csi_seq = (csi_seq - mean) / std
+            except Exception:
+                pass
+
+            outputs = model(csi_seq, meta_seq)
+            loss = criterion(outputs, labels)
+            running_loss += float(loss.item())
+            preds = torch.argmax(outputs, dim=1)
+            correct += (preds == labels).sum().item()
+            total += labels.size(0)
+
+            val_true.extend(labels.cpu().numpy().tolist())
+            val_pred.extend(preds.cpu().numpy().tolist())
+            val_prob.extend(torch.softmax(outputs, dim=1).cpu().numpy().tolist())
+    return val_true, val_pred, val_prob
 
 def setup_logging(log_file_path='/tmp/uploads/app.log'):
 
