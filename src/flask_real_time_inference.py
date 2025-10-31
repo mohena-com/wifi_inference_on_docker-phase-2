@@ -110,7 +110,7 @@ def predict():
     filelist = glob.glob(os.path.join('/tmp/uploads', '**', '*.csv'), recursive=True)
 
     # Now pass the saved file paths to WifiCSIDataset
-    dataset = WifiCSIDataset(logger, filelist, window_size=128, stride=64)
+    dataset = WifiCSIDataset(logger, filelist, window_size=1, stride=64)
 
     # Continue with your logic using dataset...
     print(f"Dataset created with {len(dataset)} samples from uploaded files.")
