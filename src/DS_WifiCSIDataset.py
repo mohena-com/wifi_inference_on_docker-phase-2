@@ -66,7 +66,8 @@ class WifiCSIDataset(Dataset):
                 m_seq = X_meta[start:start+window_size]   # (W, 12)
                 csi_seq = X_csi[start:start+window_size]  # (W, 99)
                 self.samples.append((m_seq, csi_seq, y))
-        self.logger.critical(f"A_01. Completed Second pass: windowed sequences.")
+                self.logger.debug(f"A_03_{i}. Windowed sample added from {f}, start:{start}")   
+        self.logger.critical(f"A_01. Completed Second pass: windowed sequences. sample length:{len(self.samples)}")
        # self.logger.info(f"dataset initialized with {len(self.samples)} samples.")
 
     def __len__(self):
