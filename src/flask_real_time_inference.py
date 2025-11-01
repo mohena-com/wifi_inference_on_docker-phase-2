@@ -47,11 +47,38 @@ print(f"Loaded model: {model_instance} from {best_model_path}")
 
 print(f"INIT DONE: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
-def evalute_model_on_input_data(model, input_data):
+def create_json_message(val_true, val_pred, val_prob):
+    # Convert arrays/lists to serializable format if needed (e.g., lists)
+    message = {
+        "val_true": val_true.tolist() if hasattr(val_true, 'tolist') else val_true,
+        "val_pred": val_pred.tolist() if hasattr(val_pred, 'tolist') else val_pred,
+        "val_prob": val_prob.tolist() if hasattr(val_prob, 'tolist') else val_prob
+    }
+    json_message = json.dumps(message)
+    return json_message
+
+
+def get_test_loader(test_dataset, batch_size, device):   
+    import os
+    from torch.utils.data import DataLoader
+
+    num_workers = 0 if device.type in ["mps", "cpu"] else min(4, max(1, (os.cpu_count() or 4) // 2))
+    pin_mem = True if device.type != "cpu" else False
+
+    test_loader = DataLoader(
+        test_dataset, batch_size=batch_size, shuffle=False,
+        num_workers=num_workers, pin_memory=pin_mem, persistent_workers=(num_workers > 0)
+    )
+    batch = next(iter(test_loader))
+    return test_loader, batch
+
+def evaluate_model_on_input_data(input_data):
     from CSI_Model_Eval_helper import get_best_model_and_params
 
-    model_instance, params, total_params, device = get_best_model_and_params()  
+    model, params, total_params, device = get_best_model_and_params()  
     model.eval()
+    test_loader, batch = get_test_loader(input_data, params['batch_size'], device)
+
     running_loss, correct, total = 0.0, 0, 0
     val_true, val_pred, val_prob = [], [], []
     non_blocking_flag = True if device.type == "cuda" else False
@@ -152,7 +179,9 @@ def predict():
 
     # Continue with your logic using dataset...
     print(f"Dataset created with {len(dataset)} samples from uploaded files.")
-    return jsonify({"message":  len(dataset)})
+
+    val_true, val_pred, val_prob = evaluate_model_on_input_data(dataset)
+    return create_json_message(val_true, val_pred, val_prob)
 
 
 
