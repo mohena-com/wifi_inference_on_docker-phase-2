@@ -180,7 +180,7 @@ def instantiate_from_runname(params, device=None):
     return model
 
 def get_best_model_and_params(best_model_fname=None):
-    #run_name = "best_overall_model_final_MobileNetV3_1D_LSTM_lr5e-04_bs16_adam_wd1e-04_ep100_valacc0.9656.pt"
+    run_name = "best_overall_model_final_MobileNetV3_1D_LSTM_lr5e-04_bs16_adam_wd1e-04_ep100_valacc0.9656.pt"
     params = parse_run_name(run_name)
     print(params)
     model_instance = None

@@ -48,6 +48,9 @@ print(f"Loaded model: {model_instance} from {best_model_path}")
 print(f"INIT DONE: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
 def evalute_model_on_input_data(model, input_data):
+    from CSI_Model_Eval_helper import get_best_model_and_params
+
+    model_instance, params, total_params, device = get_best_model_and_params()  
     model.eval()
     running_loss, correct, total = 0.0, 0, 0
     val_true, val_pred, val_prob = [], [], []
