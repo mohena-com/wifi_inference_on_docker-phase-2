@@ -76,9 +76,7 @@ def get_test_loader(test_dataset, batch_size, device):
         lst = b['label'].tolist()
         for val in lst:
             print(f"  Label value: {val}")
-        mse = b['meta_seq'].tolist()
-        for val in mse:
-            print(f"  Meta value: {val}")
+
 
   #  batch = next(iter(test_loader))
     
