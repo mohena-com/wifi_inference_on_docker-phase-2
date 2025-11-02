@@ -136,12 +136,13 @@ class WifiCSIDataset(Dataset):
 
                 
                 if fromrow:
-                    subj.append(s)
-                    act.append(a)
-                else:
                     sa_row = [int(row[c]) for c in sa_cols]
                     subj.append(sa_row[0])
                     act.append(sa_row[1])
+                else:
+                    subj.append(s)
+                    act.append(a)
+                    
 
             X_meta = np.array(X_meta, dtype=np.float32)  # (T, 12)
             X_csi = np.array(X_csi, dtype=np.float32)    # (T, 99)
