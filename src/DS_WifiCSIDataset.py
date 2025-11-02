@@ -66,8 +66,8 @@ class WifiCSIDataset(Dataset):
             print(f"A_01_window_size:{window_size}. stride: {stride}. T: {T}")
             
             if T < window_size:
-                window_size = T  # Adjust window size if sequence is shorter
-                
+                window_size = T/2  # Adjust window size if sequence is shorter
+
             for start in range(0, T - window_size + 1, stride):
                 m_seq = X_meta[start:start+window_size]   # (W, 12)
                 csi_seq = X_csi[start:start+window_size]  # (W, 99)
