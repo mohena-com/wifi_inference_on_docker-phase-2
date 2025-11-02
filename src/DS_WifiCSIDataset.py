@@ -34,6 +34,7 @@ class WifiCSIDataset(Dataset):
         # First pass: collect all data for scaling
         all_meta, all_csi = [], []
         i = 0
+        print(f"A_00. Starting first pass for scaling.")
         for f in file_list:
             X_meta, X_csi, _, _, _ = self.load_csv_as_numpy(f)
             self.logger.debug(f"A_00_{i}. X_meta: {X_meta.shape} X_csi: {X_csi.shape}")
@@ -53,6 +54,7 @@ class WifiCSIDataset(Dataset):
         self.logger.debug(f"A_02. all_meta: {all_meta.shape} all_csi: {all_csi.shape}")
 
         # Second pass: windowed sequences
+        print(f"A_01. Starting Second pass: windowed sequences.")
         for f in file_list:
             X_meta, X_csi, y, _, _ = self.load_csv_as_numpy(f)
             X_meta = self.scaler_meta.transform(X_meta)
