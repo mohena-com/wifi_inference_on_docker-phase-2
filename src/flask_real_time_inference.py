@@ -180,6 +180,12 @@ import os
 import pandas as pd
 from flask import request, jsonify
 from werkzeug.utils import secure_filename
+import glob 
+from DS_WifiCSIDataset import WifiCSIDataset
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from torch.utils.data import DataLoader, random_split
 
 @app.route('/gaitid/predict', methods=['POST'])
 def predict():
