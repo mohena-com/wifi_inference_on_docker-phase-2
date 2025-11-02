@@ -201,6 +201,9 @@ def predict():
     # Continue with your logic using dataset...
     print(f"Dataset created with {len(dataset)} samples from uploaded files.")
 
+    for a in dataset.samples:
+        print(f"Sample: {a}")
+        # You can add more processing logic here if needed
     val_true, val_pred, val_prob = evaluate_model_on_input_data(dataset)
     return create_json_message(val_true, val_pred, val_prob)
 
