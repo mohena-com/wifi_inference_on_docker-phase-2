@@ -200,7 +200,7 @@ def predict():
     filelist = glob.glob(os.path.join('/tmp/uploads', '**', '*.csv'), recursive=True)
     logger.info(f"Predict: Found {len(filelist)} CSV files in /tmp/uploads for dataset creation.")  
     # Now pass the saved file paths to WifiCSIDataset
-    dataset = WifiCSIDataset(logger, filelist, window_size=1, stride=64)
+    dataset = WifiCSIDataset(logger, filelist, window_size=1, stride=1)
     
     i = 0
     for a in dataset.samples:        
@@ -218,7 +218,7 @@ def predict():
     '''
     # You can add more processing logic here if needed
     val_true, val_pred, val_prob = evaluate_model_on_input_data(dataset)
-
+    '''
     # Delete uploaded files after processing
     for file_path in saved_file_paths:
         try:
@@ -228,7 +228,7 @@ def predict():
             logger.warning(f"Failed to delete file {file_path}: {e}")
     
     return create_json_message(val_true, val_pred, val_prob)
-    '''
+    
     return {"message": "Files processed and dataset created. Check logs for details."}
 
 
