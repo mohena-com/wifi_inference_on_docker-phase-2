@@ -119,7 +119,12 @@ class WifiCSIDataset(Dataset):
             
             X_meta, X_csi = [], []
             subj, act = [], []
-          #  s, a = self.extract_S_A_numbers(os.path.basename(filename))
+            s, a = self.extract_S_A_numbers(os.path.basename(filename))
+            fromrow = False
+            if s is None or a is None:
+                fromrow = True
+            else:
+                fromrow = False
 
             for row in reader:
                 # metadata
@@ -128,9 +133,15 @@ class WifiCSIDataset(Dataset):
                 csi_row = [abs(self.parse_complex(row[c])) for c in csi_cols]
                 X_meta.append(meta_row)
                 X_csi.append(csi_row)
-                sa_row = [int(row[c]) for c in sa_cols]
-                subj.append(sa_row[0])
-                act.append(sa_row[1])
+
+                
+                if fromrow:
+                    subj.append(s)
+                    act.append(a)
+                else:
+                    sa_row = [int(row[c]) for c in sa_cols]
+                    subj.append(sa_row[0])
+                    act.append(sa_row[1])
 
             X_meta = np.array(X_meta, dtype=np.float32)  # (T, 12)
             X_csi = np.array(X_csi, dtype=np.float32)    # (T, 99)
