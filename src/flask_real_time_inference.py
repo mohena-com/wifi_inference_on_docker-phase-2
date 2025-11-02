@@ -64,7 +64,7 @@ def get_test_loader(test_dataset, batch_size, device):
 
     num_workers = 0 if device.type in ["mps", "cpu"] else min(4, max(1, (os.cpu_count() or 4) // 2))
     pin_mem = True if device.type != "cpu" else False
-    print(f"Creating DataLoader with num_workers={num_workers}, pin_memory={pin_mem}")
+    print(f"Creating DataLoader with num_workers={num_workers}, pin_memory={pin_mem}, batch_size={batch_size} ")
     test_loader = DataLoader(
         test_dataset, batch_size=batch_size, shuffle=False,
         num_workers=num_workers, pin_memory=pin_mem, persistent_workers=(num_workers > 0)
