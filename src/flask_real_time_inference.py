@@ -118,7 +118,7 @@ def evaluate_model_on_input_data(test_loader):
             outputs = model(csi_seq, meta_seq)
             probs = F.softmax(outputs, dim=1)
             preds = torch.argmax(outputs, dim=1)
-        #    print(f"CSI shape: {csi_seq.shape}, META shape: {meta_seq.shape}")
+            print(f"CSI shape: {csi_seq.shape}, META shape: {meta_seq.shape}, outputs: {outputs.shape}")
 
 
             # --- Always store predictions and probabilities ---
@@ -133,7 +133,7 @@ def evaluate_model_on_input_data(test_loader):
                 subj_tensor = batch["subject"]
                 if subj_tensor is not None and subj_tensor.numel() > 0:
                     labels = subj_tensor.squeeze()
-                    
+
             print(f"Labels : {labels}")
             # --- Compute loss only if valid label exists ---
             if labels is not None and labels.numel() > 0:
