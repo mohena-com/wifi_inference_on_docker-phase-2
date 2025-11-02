@@ -202,12 +202,19 @@ def predict():
     # Now pass the saved file paths to WifiCSIDataset
     dataset = WifiCSIDataset(logger, filelist, window_size=1, stride=64)
 
+    for a in dataset.samples:        
+        m_seq = a[0]
+        csi_seq = a[1]
+        label = a[2]
+        print(f"-------------------------------------------------------------------------------------:")
+        print(f"Metadata Sequence: {m_seq}")
+        print(f"CSI Sequence: {csi_seq}")   
+        print(f"Label: {label}")
+
     # Continue with your logic using dataset...
     print(f"Dataset created with {len(dataset)} samples from uploaded files.")
 
-    for a in dataset.samples:
-        print(f"Sample: {a}")
-        # You can add more processing logic here if needed
+    # You can add more processing logic here if needed
     val_true, val_pred, val_prob = evaluate_model_on_input_data(dataset)
 
     # Delete uploaded files after processing
