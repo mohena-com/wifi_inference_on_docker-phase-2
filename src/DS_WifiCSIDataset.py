@@ -79,6 +79,7 @@ class WifiCSIDataset(Dataset):
         m_seq, csi_seq, y = self.samples[idx]
         # Use the first subject label in the window (or last, depending on your task)
         subject_label = y["subject"][0]  # or y["subject"][-1]
+        print(f"C_00. __getitem__ idx:{idx} subject_label:{subject_label} ")
         return {
             "metadata_seq": torch.tensor(m_seq, dtype=torch.float32), # (W, 12)
             "csi_seq": torch.tensor(csi_seq, dtype=torch.float32),   # (W, 99)
