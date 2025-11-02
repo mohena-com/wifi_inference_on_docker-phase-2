@@ -226,9 +226,10 @@ def predict():
             logger.info(f"Deleted uploaded file: {file_path}")
         except Exception as e:
             logger.warning(f"Failed to delete file {file_path}: {e}")
-    
-    return create_json_message(val_true, val_pred, val_prob)
-    
+    val_json = create_json_message(val_true, val_pred, val_prob)
+    print(f"Returning JSON: {val_json}")
+    return val_json
+
     #return {"message": "Files processed and dataset created. Check logs for details."}
 
 
