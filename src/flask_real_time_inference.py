@@ -70,6 +70,7 @@ def get_test_loader(test_dataset, batch_size, device):
         num_workers=num_workers, pin_memory=pin_mem, persistent_workers=(num_workers > 0)
     )
     print(f"Created DataLoader with {len(test_loader)} batches.")
+    print(f"batch {batch}:")
     batch = next(iter(test_loader))
     print(f"Sample batch keys: {batch.keys()}")
     print(f"test_loader {test_loader.shape}:")
