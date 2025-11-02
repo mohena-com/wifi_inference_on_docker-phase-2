@@ -151,7 +151,7 @@ class WifiCSIDataset(Dataset):
                 else:
                     subj.append(s)
                     act.append(a)
-                print(f"Row {i} loaded. Subject: {subj[-1]} Activity: {act[-1]}"  )
+              #  print(f"Row {i} loaded. Subject: {subj[-1]} Activity: {act[-1]}"  )
                     
 
             X_meta = np.array(X_meta, dtype=np.float32)  # (T, 12)
