@@ -164,7 +164,7 @@ from DS_WifiCSIDataset import WifiCSIDataset
 @app.route('/gaitid/predict', methods=['POST'])
 def predict():
     uploaded_files = request.files.getlist('file')  # if multiple files, or just request.files.values()
-    print(f"Received {len(uploaded_files)} files for prediction.  {uploaded_files}  ")
+    logger.info(f"Received {len(uploaded_files)} files for prediction.  {uploaded_files}  ")
     saved_file_paths = []
     for uploaded_file in uploaded_files:
         filename = secure_filename(uploaded_file.filename)
@@ -173,7 +173,7 @@ def predict():
         saved_file_paths.append(save_path)
 
     filelist = glob.glob(os.path.join('/tmp/uploads', '**', '*.csv'), recursive=True)
-
+    logger.info(f"Predict: Found {len(filelist)} CSV files in /tmp/uploads for dataset creation.")  
     # Now pass the saved file paths to WifiCSIDataset
     dataset = WifiCSIDataset(logger, filelist, window_size=1, stride=64)
 
