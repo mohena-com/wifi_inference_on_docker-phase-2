@@ -135,7 +135,7 @@ class WifiCSIDataset(Dataset):
             
             self.logger.debug(f"B_02. Subject: {len(subj)}, Activity: {len(act)}")
             y = {"subject": subj, "activity": act}
-
+            print(f"B_03. y subject: {y['subject']} activity: {y['activity']}"  )
             
 
             return X_meta, X_csi, y, meta_cols, csi_cols
