@@ -88,9 +88,14 @@ def evaluate_model_on_input_data(input_data):
         for batch in test_loader:
             print(f"Processing batch with keys: {batch.keys()}")
             csi_seq = batch["csi_seq"].to(device, non_blocking=non_blocking_flag)
+            print(f"Batch shapes - csi_seq: {csi_seq.shape}")
+
             meta_seq = batch["metadata_seq"].to(device, non_blocking=non_blocking_flag)
+            print(f"Batch shapes - meta_seq: {meta_seq.shape}")
+
             labels = batch["label"].squeeze().to(device, non_blocking=non_blocking_flag)
-            print(f"Batch shapes - csi_seq: {csi_seq.shape}, meta_seq: {meta_seq.shape}, labels: {labels.shape}")   
+            print(f"Batch shapes - labels: {labels.shape}")
+            
             if torch.isnan(csi_seq).any() or torch.isinf(csi_seq).any():
                 csi_seq = torch.nan_to_num(csi_seq, nan=0.0, posinf=1e6, neginf=-1e6)
             if torch.isnan(meta_seq).any() or torch.isinf(meta_seq).any():
@@ -114,7 +119,7 @@ def evaluate_model_on_input_data(input_data):
             val_true.extend(labels.cpu().numpy().tolist())
             val_pred.extend(preds.cpu().numpy().tolist())
             val_prob.extend(torch.softmax(outputs, dim=1).cpu().numpy().tolist())
-            print(f"Accumulated results - running_loss: {running_loss}, correct: {correct}/{total}")    
+            print(f"Accumulated results - running_loss: {running_loss}, correct: {correct}/{total}")
     return val_true, val_pred, val_prob
 
 def setup_logging(log_file_path='/tmp/uploads/app.log'):
