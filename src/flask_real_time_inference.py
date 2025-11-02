@@ -71,6 +71,9 @@ def get_test_loader(test_dataset, batch_size, device):
     )
     print(f"Created DataLoader with {len(test_loader)} batches.")
     print(f"test_loader  :{test_loader}:")
+    for i, batch in enumerate(test_loader):
+        print(f"Batch {i} keys: {batch.keys()}")
+        
     batch = next(iter(test_loader))
     print(f"batch {batch}:")
     print(f"Sample batch keys: {batch.keys()}")
@@ -85,7 +88,8 @@ def evaluate_model_on_input_data(input_data):
     model.eval()
     print(f"Model loaded for evaluation: {model}")
     test_loader, batch = get_test_loader(input_data, params['batch_size'], device)
-    print(f"Test loader created with {len(test_loader)} batches.")
+    print(f"Test loader created with {len(test_loader)} ")
+    print(f"batches : {batch}")
     running_loss, correct, total = 0.0, 0, 0
     val_true, val_pred, val_prob = [], [], []
     non_blocking_flag = True if device.type == "cuda" else False
