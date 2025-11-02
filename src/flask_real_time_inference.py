@@ -229,7 +229,7 @@ def predict():
     
     return create_json_message(val_true, val_pred, val_prob)
     '''
-    return "Files processed and dataset created. Check logs for details."
+    return {"message": "Files processed and dataset created. Check logs for details."}
 
 
 if __name__ == '__main__':
