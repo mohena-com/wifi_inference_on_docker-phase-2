@@ -64,12 +64,15 @@ def get_test_loader(test_dataset, batch_size, device):
 
     num_workers = 0 if device.type in ["mps", "cpu"] else min(4, max(1, (os.cpu_count() or 4) // 2))
     pin_mem = True if device.type != "cpu" else False
-
+    print(f"Creating DataLoader with num_workers={num_workers}, pin_memory={pin_mem}")
     test_loader = DataLoader(
         test_dataset, batch_size=batch_size, shuffle=False,
         num_workers=num_workers, pin_memory=pin_mem, persistent_workers=(num_workers > 0)
     )
+    print(f"Created DataLoader with {len(test_loader)} batches.")
     batch = next(iter(test_loader))
+    print(f"Sample batch keys: {batch.keys()}")
+    print(f"test_loader {test_loader.shape}:")
     return test_loader, batch
 
 def evaluate_model_on_input_data(input_data):
@@ -95,7 +98,7 @@ def evaluate_model_on_input_data(input_data):
 
             labels = batch["label"].squeeze().to(device, non_blocking=non_blocking_flag)
             print(f"Batch shapes - labels: {labels.shape}")
-            
+
             if torch.isnan(csi_seq).any() or torch.isinf(csi_seq).any():
                 csi_seq = torch.nan_to_num(csi_seq, nan=0.0, posinf=1e6, neginf=-1e6)
             if torch.isnan(meta_seq).any() or torch.isinf(meta_seq).any():
