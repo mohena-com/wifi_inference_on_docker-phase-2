@@ -201,19 +201,21 @@ def predict():
     logger.info(f"Predict: Found {len(filelist)} CSV files in /tmp/uploads for dataset creation.")  
     # Now pass the saved file paths to WifiCSIDataset
     dataset = WifiCSIDataset(logger, filelist, window_size=1, stride=64)
-
+    
+    i = 0
     for a in dataset.samples:        
         m_seq = a[0]
         csi_seq = a[1]
         label = a[2]
-        print(f"-------------------------------------------------------------------------------------:")
+        print(f"-----------------------------{i}--------------------------------------------------------:")
         print(f"Metadata Sequence: {m_seq}")
         print(f"CSI Sequence: {csi_seq}")   
         print(f"Label: {label}")
+        i += 1
 
     # Continue with your logic using dataset...
     print(f"Dataset created with {len(dataset)} samples from uploaded files.")
-
+    '''
     # You can add more processing logic here if needed
     val_true, val_pred, val_prob = evaluate_model_on_input_data(dataset)
 
@@ -224,9 +226,10 @@ def predict():
             logger.info(f"Deleted uploaded file: {file_path}")
         except Exception as e:
             logger.warning(f"Failed to delete file {file_path}: {e}")
-
+    
     return create_json_message(val_true, val_pred, val_prob)
-
+    '''
+    return "Files processed and dataset created. Check logs for details."
 
 
 if __name__ == '__main__':
