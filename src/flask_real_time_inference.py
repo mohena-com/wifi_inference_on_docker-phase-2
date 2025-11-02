@@ -81,7 +81,7 @@ def get_test_loader(test_dataset, batch_size, device):
     
   #  print(f"Sample batch keys: {batch.keys()}")
     
-    return test_loader, batch
+    return test_loader
 
 def evaluate_model_on_input_data(input_data):
     from CSI_Model_Eval_helper import get_best_model_and_params
