@@ -73,7 +73,7 @@ def get_test_loader(test_dataset, batch_size, device):
     print(f"test_loader  :{test_loader}:")
     for i, batch in enumerate(test_loader):
         print(f"Batch {i} keys: {batch.keys()}")
-        
+
     batch = next(iter(test_loader))
     print(f"batch {batch}:")
     print(f"Sample batch keys: {batch.keys()}")
@@ -178,7 +178,10 @@ import os
 from werkzeug.utils import secure_filename
 import os
 from DS_WifiCSIDataset import WifiCSIDataset
-
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from torch.utils.data import DataLoader, random_split
 @app.route('/gaitid/predict', methods=['POST'])
 def predict():
     uploaded_files = request.files.getlist('file')  # if multiple files, or just request.files.values()
