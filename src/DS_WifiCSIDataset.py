@@ -154,13 +154,13 @@ class WifiCSIDataset(Dataset):
                 print(f"Row {i} loaded. Subject: {subj[-1]} Activity: {act[-1]}"  )
                     
 
-        X_meta = np.array(X_meta, dtype=np.float32)  # (T, 12)
-        X_csi = np.array(X_csi, dtype=np.float32)    # (T, 99)
-        self.logger.debug(f"B_01. X_meta: {X_meta.shape} X_csi: {X_csi.shape}")
-        
-        self.logger.debug(f"B_02. Subject: {len(subj)}, Activity: {len(act)}")
-        y = {"subject": subj, "activity": act}
-        print(f"B_03. y subject: {y['subject']} activity: {y['activity']}"  )
+            X_meta = np.array(X_meta, dtype=np.float32)  # (T, 12)
+            X_csi = np.array(X_csi, dtype=np.float32)    # (T, 99)
+            self.logger.debug(f"B_01. X_meta: {X_meta.shape} X_csi: {X_csi.shape}")
+            
+            self.logger.debug(f"B_02. Subject: {len(subj)}, Activity: {len(act)}")
+            y = {"subject": subj, "activity": act}
+            print(f"B_03. y subject: {y['subject']} activity: {y['activity']}"  )
             
 
         return X_meta, X_csi, y, meta_cols, csi_cols
