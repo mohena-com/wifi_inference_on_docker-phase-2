@@ -125,9 +125,18 @@ def evaluate_model_on_input_data(test_loader):
             val_pred.extend(preds.cpu().numpy().tolist())
             val_prob.extend(probs.cpu().numpy().tolist())
 
-            # --- Optional labels (for validation) ---
-            if "label" in batch:
-                labels = batch["label"].squeeze().to(device, non_blocking=non_blocking_flag)
+            # --- Fetch label (prefer subject) ---
+            labels = None
+            if "label" in batch and batch["label"].numel() > 0:
+                labels = batch["label"].squeeze()
+            elif "subject" in batch:  # if dataset adds subject key
+                subj_tensor = batch["subject"]
+                if subj_tensor is not None and subj_tensor.numel() > 0:
+                    labels = subj_tensor.squeeze()
+
+            # --- Compute loss only if valid label exists ---
+            if labels is not None and labels.numel() > 0:
+                labels = labels.to(device, non_blocking=non_blocking_flag)
                 loss = criterion(outputs, labels)
                 running_loss += float(loss.item())
                 correct += (preds == labels).sum().item()
@@ -135,7 +144,8 @@ def evaluate_model_on_input_data(test_loader):
                 val_true.extend(labels.cpu().numpy().tolist())
                 print(f"Batch {batch_idx + 1}: loss={loss.item():.4f}, acc={(preds == labels).sum().item()}/{labels.size(0)}")
             else:
-                print(f"Batch {batch_idx + 1}: Inference-only mode (no labels). Predictions shape: {outputs.shape}")
+                print(f"Batch {batch_idx + 1}: No valid label/subject found → inference-only mode.")
+
 
     # --- Summary ---
     if total > 0:
