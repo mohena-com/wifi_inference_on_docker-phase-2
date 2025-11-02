@@ -250,7 +250,7 @@ def predict():
         logger.exception("Prediction failed")
         return jsonify({"error": str(e)}), 500
 
-
+'''
  
 import glob
 import os
@@ -308,7 +308,7 @@ def predict():
     return val_json
 
     #return {"message": "Files processed and dataset created. Check logs for details."}
-
+'''
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5002)
