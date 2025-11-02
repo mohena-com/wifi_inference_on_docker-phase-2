@@ -84,56 +84,66 @@ def get_test_loader(test_dataset, batch_size, device):
     
     return test_loader
 
-def evaluate_model_on_input_data(input_data):
+def evaluate_model_on_input_data(test_loader):
+    """
+    Evaluate model on a DataLoader (works for inference and validation).
+    Returns: val_true (optional), val_pred, val_prob
+    """
     from CSI_Model_Eval_helper import get_best_model_and_params
+    import torch.nn.functional as F
+
     criterion = nn.CrossEntropyLoss()
-    model, params, total_params, device = get_best_model_and_params()  
-    print(f"Evaluating model on input data with params: {params} on device: {device}")
+    model, params, total_params, device = get_best_model_and_params()
+    print(f"Evaluating model on DataLoader with params: {params} on device: {device}")
+
     model.eval()
-    print(f"Model loaded for evaluation: {model}")
-    test_loader = get_test_loader(input_data, params['batch_size'], device)
-    print(f"Test loader created with {test_loader} ")
- #   print(f"batches : {batch}")
     running_loss, correct, total = 0.0, 0, 0
     val_true, val_pred, val_prob = [], [], []
-    non_blocking_flag = True if device.type == "cuda" else False
+    non_blocking_flag = (device.type == "cuda")
+
     with torch.no_grad():
-        for batch in test_loader:
-            print(f"Processing batch with keys: {batch.keys()}")
+        for batch_idx, batch in enumerate(test_loader):
+            print(f"\n🧩 Processing batch {batch_idx + 1}/{len(test_loader)}")
+
+            # --- Move inputs to device ---
             csi_seq = batch["csi_seq"].to(device, non_blocking=non_blocking_flag)
-            print(f"Batch shapes - csi_seq: {csi_seq.shape}")
-
             meta_seq = batch["metadata_seq"].to(device, non_blocking=non_blocking_flag)
-            print(f"Batch shapes - meta_seq: {meta_seq.shape}")
 
-            labels = batch["label"].squeeze().to(device, non_blocking=non_blocking_flag)
-            print(f"Batch shapes - labels: {labels.shape}")
+            # --- Clean invalid values ---
+            csi_seq = torch.nan_to_num(csi_seq, nan=0.0, posinf=1e6, neginf=-1e6)
+            meta_seq = torch.nan_to_num(meta_seq, nan=0.0, posinf=1e6, neginf=-1e6)
 
-            if torch.isnan(csi_seq).any() or torch.isinf(csi_seq).any():
-                csi_seq = torch.nan_to_num(csi_seq, nan=0.0, posinf=1e6, neginf=-1e6)
-            if torch.isnan(meta_seq).any() or torch.isinf(meta_seq).any():
-                meta_seq = torch.nan_to_num(meta_seq, nan=0.0, posinf=1e6, neginf=-1e6)
-            print(f"After NaN/Inf check - csi_seq: {csi_seq.shape}, meta_seq: {meta_seq.shape}, labels: {labels.shape}")    
-            # same per-batch normalization used in training
-            try:
-                mean = csi_seq.mean(dim=(0, 1), keepdim=True)
-                std = csi_seq.std(dim=(0, 1), keepdim=True) + 1e-8
-                csi_seq = (csi_seq - mean) / std
-            except Exception:
-                pass
-            print(f"After normalization - csi_seq: {csi_seq.shape}")    
-            outputs = model(csi_seq, meta_seq)
-            loss = criterion(outputs, labels)
-            running_loss += float(loss.item())
+            # --- Forward pass ---
+            outputs = model(meta_seq, csi_seq)
+            probs = F.softmax(outputs, dim=1)
             preds = torch.argmax(outputs, dim=1)
-            correct += (preds == labels).sum().item()
-            total += labels.size(0)
-            print(f"Batch results - loss: {loss.item()}, correct: {(preds == labels).sum().item()}/{labels.size(0)}")   
-            val_true.extend(labels.cpu().numpy().tolist())
+
+            # --- Always store predictions and probabilities ---
             val_pred.extend(preds.cpu().numpy().tolist())
-            val_prob.extend(torch.softmax(outputs, dim=1).cpu().numpy().tolist())
-            print(f"Accumulated results - running_loss: {running_loss}, correct: {correct}/{total}")
-    return val_true, val_pred, val_prob
+            val_prob.extend(probs.cpu().numpy().tolist())
+
+            # --- Optional labels (for validation) ---
+            if "label" in batch:
+                labels = batch["label"].squeeze().to(device, non_blocking=non_blocking_flag)
+                loss = criterion(outputs, labels)
+                running_loss += float(loss.item())
+                correct += (preds == labels).sum().item()
+                total += labels.size(0)
+                val_true.extend(labels.cpu().numpy().tolist())
+                print(f"Batch {batch_idx + 1}: loss={loss.item():.4f}, acc={(preds == labels).sum().item()}/{labels.size(0)}")
+            else:
+                print(f"Batch {batch_idx + 1}: Inference-only mode (no labels). Predictions shape: {outputs.shape}")
+
+    # --- Summary ---
+    if total > 0:
+        avg_loss = running_loss / len(test_loader)
+        acc = 100.0 * correct / total
+        print(f"\n✅ Validation complete: Avg Loss={avg_loss:.4f}, Accuracy={acc:.2f}%")
+    else:
+        print(f"\n✅ Inference complete: {len(val_pred)} predictions generated.")
+
+    return val_true if val_true else None, val_pred, val_prob
+
 
 def setup_logging(log_file_path='/tmp/uploads/app.log'):
 
@@ -190,13 +200,13 @@ from torch.utils.data import DataLoader, random_split
 @app.route('/gaitid/predict', methods=['POST'])
 def predict():
     uploaded_files = request.files.getlist('file')
-    logger.info(f"Received {len(uploaded_files)} files for prediction: {uploaded_files}")
+    logger.info(f"Received {len(uploaded_files)} files for prediction: {[f.filename for f in uploaded_files]}")
 
     upload_dir = '/tmp/uploads'
     os.makedirs(upload_dir, exist_ok=True)
     saved_file_paths = []
 
-    # --- Helper: pad the uploaded CSV if too short ---
+    # --- Helper: pad CSVs if too short ---
     def pad_csv_if_needed(csv_path, min_rows=128):
         """Pads short CSVs with last row to reach min_rows."""
         try:
@@ -221,40 +231,43 @@ def predict():
         uploaded_file.save(save_path)
         logger.info(f"Saved uploaded file to {save_path}")
 
-        # ✅ Pad the CSV file if needed
         pad_csv_if_needed(save_path, min_rows=128)
-
         saved_file_paths.append(save_path)
 
-    # --- Now load into your dataset for inference ---
+    # --- Load dataset and evaluate ---
     try:
         test_dataset = WifiCSIDataset(
             logger=logger,
             file_list=saved_file_paths,
-            window_size=128,  # keep same as training
+            window_size=128,
             stride=64
         )
         test_loader = DataLoader(test_dataset, batch_size=1, shuffle=False)
 
-        model.eval()
-        predictions = []
-        with torch.no_grad():
-            for batch in test_loader:
-                meta = batch["metadata_seq"].to(device)
-                csi = batch["csi_seq"].to(device)
-                outputs = model(meta, csi)
-                pred_label = torch.argmax(outputs, dim=1).cpu().item()
-                predictions.append(pred_label)
+        # Evaluate on the uploaded dataset
+        val_true, val_pred, val_prob = evaluate_model_on_input_data(test_loader)
 
+        # --- Prepare structured results ---
+        results = []
+        for i, fpath in enumerate(saved_file_paths):
+            result_entry = {
+                "file": os.path.basename(fpath),
+                "predicted_label": int(val_pred[i]) if i < len(val_pred) else None,
+                "probabilities": val_prob[i] if i < len(val_prob) else None
+            }
+            results.append(result_entry)
+
+        logger.info(f"Prediction complete for {len(saved_file_paths)} file(s).")
         return jsonify({
             "message": "Prediction successful",
-            "files": [os.path.basename(f) for f in saved_file_paths],
-            "predictions": predictions
+            "total_files": len(saved_file_paths),
+            "results": results
         })
 
     except Exception as e:
         logger.exception("Prediction failed")
         return jsonify({"error": str(e)}), 500
+
 
 '''
  
