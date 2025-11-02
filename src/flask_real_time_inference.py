@@ -102,7 +102,7 @@ def evaluate_model_on_input_data(input_data):
             meta_seq = batch["metadata_seq"].to(device, non_blocking=non_blocking_flag)
             print(f"Batch shapes - meta_seq: {meta_seq.shape}")
 
-            labels = batch["label"].squeeze().to(device, non_blocking=non_blocking_flag)
+            labels = batch["subject"].squeeze().to(device, non_blocking=non_blocking_flag)
             print(f"Batch shapes - labels: {labels.shape}")
 
             if torch.isnan(csi_seq).any() or torch.isinf(csi_seq).any():
