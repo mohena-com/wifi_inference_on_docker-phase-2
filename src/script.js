@@ -20,7 +20,8 @@ const csvToJson = (csv) => {
 };
 
 
-const uploadFile = async () => {
+const uploadFile = async () => { 
+
     const fileInput = document.getElementById("csvFile");
     const file = fileInput.files[0];
     console.log("Selected file:", file);
