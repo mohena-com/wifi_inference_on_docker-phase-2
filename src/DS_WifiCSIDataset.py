@@ -115,10 +115,12 @@ class WifiCSIDataset(Dataset):
                 'rssi_a','rssi_b','rssi_c','agc',
                 'perm_1','perm_2','perm_3'
             ]
+            sa_cols = ['subject', 'activity']
             
             X_meta, X_csi = [], []
-            subj, act = [], []
-            s, a = self.extract_S_A_numbers(os.path.basename(filename))
+             
+          #  s, a = self.extract_S_A_numbers(os.path.basename(filename))
+
             for row in reader:
                 # metadata
                 meta_row = [float(row[c]) for c in meta_cols]
@@ -126,9 +128,10 @@ class WifiCSIDataset(Dataset):
                 csi_row = [abs(self.parse_complex(row[c])) for c in csi_cols]
                 X_meta.append(meta_row)
                 X_csi.append(csi_row)
-                subj.append(s)
-                act.append(a)
-            
+                sa_row = [int(row[c]) for c in sa_cols]
+                subj.append(sa_row[0])
+                act.append(sa_row[1])
+
             X_meta = np.array(X_meta, dtype=np.float32)  # (T, 12)
             X_csi = np.array(X_csi, dtype=np.float32)    # (T, 99)
             self.logger.debug(f"B_01. X_meta: {X_meta.shape} X_csi: {X_csi.shape}")
