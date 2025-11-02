@@ -46,7 +46,7 @@ print(f"Loaded model: {model_instance} from {best_model_path}")
 
 
 print(f"INIT DONE: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-
+import json
 def create_json_message(val_true, val_pred, val_prob):
     # Convert arrays/lists to serializable format if needed (e.g., lists)
     message = {
