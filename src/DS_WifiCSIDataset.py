@@ -118,7 +118,7 @@ class WifiCSIDataset(Dataset):
             sa_cols = ['subject', 'activity']
             
             X_meta, X_csi = [], []
-             
+            subj, act = [], []
           #  s, a = self.extract_S_A_numbers(os.path.basename(filename))
 
             for row in reader:
