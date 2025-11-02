@@ -118,7 +118,7 @@ def evaluate_model_on_input_data(test_loader):
             outputs = model(csi_seq, meta_seq)
             probs = F.softmax(outputs, dim=1)
             preds = torch.argmax(outputs, dim=1)
-            print(f"CSI shape: {csi_seq.shape}, META shape: {meta_seq.shape}")
+        #    print(f"CSI shape: {csi_seq.shape}, META shape: {meta_seq.shape}")
 
 
             # --- Always store predictions and probabilities ---
@@ -145,7 +145,7 @@ def evaluate_model_on_input_data(test_loader):
     else:
         print(f"\n✅ Inference complete: {len(val_pred)} predictions generated.")
 
-    return val_true if val_true else None, val_pred, val_prob
+    return val_true if len(val_true) > 0 else None, val_pred, val_prob
 
 
 def setup_logging(log_file_path='/tmp/uploads/app.log'):
