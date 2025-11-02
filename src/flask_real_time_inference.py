@@ -76,6 +76,9 @@ def get_test_loader(test_dataset, batch_size, device):
         lst = b['label'].tolist()
         for val in lst:
             print(f"  Label value: {val}")
+        mse = b['meta_seq'].tolist()
+        for val in mse:
+            print(f"  Meta value: {val}")
 
   #  batch = next(iter(test_loader))
     
@@ -91,7 +94,7 @@ def evaluate_model_on_input_data(input_data):
     model.eval()
     print(f"Model loaded for evaluation: {model}")
     test_loader = get_test_loader(input_data, params['batch_size'], device)
-    print(f"Test loader created with {len(test_loader)} ")
+    print(f"Test loader created with {test_loader} ")
  #   print(f"batches : {batch}")
     running_loss, correct, total = 0.0, 0, 0
     val_true, val_pred, val_prob = [], [], []
