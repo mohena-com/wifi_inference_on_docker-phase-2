@@ -206,7 +206,9 @@ def predict():
     for a in dataset.samples:        
         m_seq = a[0]
         csi_seq = a[1]
-        label = a[2][i]
+        label = a[2]
+        for l in label:
+            print(f"Label {l} : {label[l]}")
         print(f"-----------------------------{i}--------------------------------------------------------:")
         print(f"Metadata Sequence: {m_seq}")
         print(f"CSI Sequence: {csi_seq}")   
