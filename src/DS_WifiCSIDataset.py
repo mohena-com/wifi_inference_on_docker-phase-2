@@ -60,6 +60,7 @@ class WifiCSIDataset(Dataset):
             T = len(X_meta)
             print(f"A_01_{i}. X_meta: {X_meta} ")
             print(f"A_01_{i}. X_csi: {X_csi} ")
+            print(f"A_01_{i}. y: {y} ")
             print(f"A_01_window_size:{window_size}. stride: {stride}. T: {T}")
             
             for start in range(0, T - window_size + 1, stride):
@@ -68,6 +69,7 @@ class WifiCSIDataset(Dataset):
                 self.samples.append((m_seq, csi_seq, y))
                 self.logger.debug(f"A_03_{i}. Windowed sample added from {f}, start:{start}")   
         self.logger.critical(f"A_01. Completed Second pass: windowed sequences. sample length:{len(self.samples)}")
+        print(f"A_01. Completed Second pass: windowed sequences. sample  :{self.samples}")
        # self.logger.info(f"dataset initialized with {len(self.samples)} samples.")
 
     def __len__(self):
