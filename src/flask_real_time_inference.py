@@ -72,10 +72,10 @@ def get_test_loader(test_dataset, batch_size, device):
     print(f"Created DataLoader with {len(test_loader)} batches.")
     print(f"test_loader  :{test_loader}:")
     for i, batch in enumerate(test_loader):
-        print(f"Batch {i} keys: {batch.keys()}")
+        print(f"Batch Values {i} : {batch}")
 
     batch = next(iter(test_loader))
-    print(f"batch {batch}:")
+    
     print(f"Sample batch keys: {batch.keys()}")
     
     return test_loader, batch
