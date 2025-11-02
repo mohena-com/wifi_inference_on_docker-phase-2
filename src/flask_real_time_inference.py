@@ -114,9 +114,12 @@ def evaluate_model_on_input_data(test_loader):
             meta_seq = torch.nan_to_num(meta_seq, nan=0.0, posinf=1e6, neginf=-1e6)
 
             # --- Forward pass ---
-            outputs = model(meta_seq, csi_seq)
+            # --- Forward pass (fix order) ---
+            outputs = model(csi_seq, meta_seq)
             probs = F.softmax(outputs, dim=1)
             preds = torch.argmax(outputs, dim=1)
+            print(f"CSI shape: {csi_seq.shape}, META shape: {meta_seq.shape}")
+
 
             # --- Always store predictions and probabilities ---
             val_pred.extend(preds.cpu().numpy().tolist())
