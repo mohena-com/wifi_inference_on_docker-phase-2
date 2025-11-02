@@ -209,6 +209,15 @@ def predict():
         print(f"Sample: {a}")
         # You can add more processing logic here if needed
     val_true, val_pred, val_prob = evaluate_model_on_input_data(dataset)
+
+    # Delete uploaded files after processing
+    for file_path in saved_file_paths:
+        try:
+            os.remove(file_path)
+            logger.info(f"Deleted uploaded file: {file_path}")
+        except Exception as e:
+            logger.warning(f"Failed to delete file {file_path}: {e}")
+
     return create_json_message(val_true, val_pred, val_prob)
 
 
