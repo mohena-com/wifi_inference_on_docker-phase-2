@@ -76,23 +76,26 @@ def evaluate_model_on_input_data(input_data):
     from CSI_Model_Eval_helper import get_best_model_and_params
 
     model, params, total_params, device = get_best_model_and_params()  
+    print(f"Evaluating model on input data with params: {params} on device: {device}")
     model.eval()
+    print(f"Model loaded for evaluation: {model}")
     test_loader, batch = get_test_loader(input_data, params['batch_size'], device)
-
+    print(f"Test loader created with {len(test_loader)} batches.")
     running_loss, correct, total = 0.0, 0, 0
     val_true, val_pred, val_prob = [], [], []
     non_blocking_flag = True if device.type == "cuda" else False
     with torch.no_grad():
         for batch in test_loader:
+            print(f"Processing batch with keys: {batch.keys()}")
             csi_seq = batch["csi_seq"].to(device, non_blocking=non_blocking_flag)
             meta_seq = batch["metadata_seq"].to(device, non_blocking=non_blocking_flag)
             labels = batch["label"].squeeze().to(device, non_blocking=non_blocking_flag)
-
+            print(f"Batch shapes - csi_seq: {csi_seq.shape}, meta_seq: {meta_seq.shape}, labels: {labels.shape}")   
             if torch.isnan(csi_seq).any() or torch.isinf(csi_seq).any():
                 csi_seq = torch.nan_to_num(csi_seq, nan=0.0, posinf=1e6, neginf=-1e6)
             if torch.isnan(meta_seq).any() or torch.isinf(meta_seq).any():
                 meta_seq = torch.nan_to_num(meta_seq, nan=0.0, posinf=1e6, neginf=-1e6)
-
+            print(f"After NaN/Inf check - csi_seq: {csi_seq.shape}, meta_seq: {meta_seq.shape}, labels: {labels.shape}")    
             # same per-batch normalization used in training
             try:
                 mean = csi_seq.mean(dim=(0, 1), keepdim=True)
@@ -100,17 +103,18 @@ def evaluate_model_on_input_data(input_data):
                 csi_seq = (csi_seq - mean) / std
             except Exception:
                 pass
-
+            print(f"After normalization - csi_seq: {csi_seq.shape}")    
             outputs = model(csi_seq, meta_seq)
             loss = criterion(outputs, labels)
             running_loss += float(loss.item())
             preds = torch.argmax(outputs, dim=1)
             correct += (preds == labels).sum().item()
             total += labels.size(0)
-
+            print(f"Batch results - loss: {loss.item()}, correct: {(preds == labels).sum().item()}/{labels.size(0)}")   
             val_true.extend(labels.cpu().numpy().tolist())
             val_pred.extend(preds.cpu().numpy().tolist())
             val_prob.extend(torch.softmax(outputs, dim=1).cpu().numpy().tolist())
+            print(f"Accumulated results - running_loss: {running_loss}, correct: {correct}/{total}")    
     return val_true, val_pred, val_prob
 
 def setup_logging(log_file_path='/tmp/uploads/app.log'):
