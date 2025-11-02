@@ -176,6 +176,81 @@ from flask import send_from_directory
 def serve_index():
     return send_from_directory('static', 'index.html')
 
+import os
+import pandas as pd
+from flask import request, jsonify
+from werkzeug.utils import secure_filename
+
+@app.route('/gaitid/predict', methods=['POST'])
+def predict():
+    uploaded_files = request.files.getlist('file')
+    logger.info(f"Received {len(uploaded_files)} files for prediction: {uploaded_files}")
+
+    upload_dir = '/tmp/uploads'
+    os.makedirs(upload_dir, exist_ok=True)
+    saved_file_paths = []
+
+    # --- Helper: pad the uploaded CSV if too short ---
+    def pad_csv_if_needed(csv_path, min_rows=128):
+        """Pads short CSVs with last row to reach min_rows."""
+        try:
+            df = pd.read_csv(csv_path)
+            current_len = len(df)
+            if current_len < min_rows:
+                pad_rows = min_rows - current_len
+                last_row = df.iloc[-1:]
+                pad_df = pd.concat([last_row] * pad_rows, ignore_index=True)
+                df = pd.concat([df, pad_df], ignore_index=True)
+                df.to_csv(csv_path, index=False)
+                logger.info(f"Padded {os.path.basename(csv_path)} from {current_len} → {len(df)} rows.")
+            else:
+                logger.info(f"{os.path.basename(csv_path)} already has {current_len} rows — no padding needed.")
+        except Exception as e:
+            logger.error(f"Padding failed for {csv_path}: {e}")
+
+    # --- Save and pad uploaded files ---
+    for uploaded_file in uploaded_files:
+        filename = secure_filename(uploaded_file.filename)
+        save_path = os.path.join(upload_dir, filename)
+        uploaded_file.save(save_path)
+        logger.info(f"Saved uploaded file to {save_path}")
+
+        # ✅ Pad the CSV file if needed
+        pad_csv_if_needed(save_path, min_rows=128)
+
+        saved_file_paths.append(save_path)
+
+    # --- Now load into your dataset for inference ---
+    try:
+        test_dataset = WifiCSIDataset(
+            logger=logger,
+            file_list=saved_file_paths,
+            window_size=128,  # keep same as training
+            stride=64
+        )
+        test_loader = DataLoader(test_dataset, batch_size=1, shuffle=False)
+
+        model.eval()
+        predictions = []
+        with torch.no_grad():
+            for batch in test_loader:
+                meta = batch["metadata_seq"].to(device)
+                csi = batch["csi_seq"].to(device)
+                outputs = model(meta, csi)
+                pred_label = torch.argmax(outputs, dim=1).cpu().item()
+                predictions.append(pred_label)
+
+        return jsonify({
+            "message": "Prediction successful",
+            "files": [os.path.basename(f) for f in saved_file_paths],
+            "predictions": predictions
+        })
+
+    except Exception as e:
+        logger.exception("Prediction failed")
+        return jsonify({"error": str(e)}), 500
+
+
  
 import glob
 import os
@@ -186,7 +261,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, random_split
-@app.route('/gaitid/predict', methods=['POST'])
+@app.route('/gaitid/predict-1', methods=['POST'])
 def predict():
     uploaded_files = request.files.getlist('file')  # if multiple files, or just request.files.values()
     logger.info(f"Received {len(uploaded_files)} files for prediction.  {uploaded_files}  ")
@@ -200,7 +275,7 @@ def predict():
     filelist = glob.glob(os.path.join('/tmp/uploads', '**', '*.csv'), recursive=True)
     logger.info(f"Predict: Found {len(filelist)} CSV files in /tmp/uploads for dataset creation.")  
     # Now pass the saved file paths to WifiCSIDataset
-    dataset = WifiCSIDataset(logger, filelist, window_size=128, stride=1)
+    dataset = WifiCSIDataset(logger, filelist, window_size=128, stride=64)
     
     i = 0
     for a in dataset.samples:        
