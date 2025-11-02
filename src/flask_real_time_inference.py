@@ -119,7 +119,8 @@ def evaluate_model_on_input_data(test_loader):
             probs = F.softmax(outputs, dim=1)
             preds = torch.argmax(outputs, dim=1)
             print(f"CSI shape: {csi_seq.shape}, META shape: {meta_seq.shape}, outputs: {outputs.shape}")
-
+            for a in outputs:
+                print(f"==>output :{a}")
 
             # --- Always store predictions and probabilities ---
             val_pred.extend(preds.cpu().numpy().tolist())
