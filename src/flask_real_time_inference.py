@@ -212,7 +212,7 @@ def predict():
         print(f"CSI Sequence: {csi_seq}")   
         print(f"Label: {label}")
         for l in label:
-            print(f"Label {l} : {label[l]}") 
+            print(f"-->Label : {l} ") 
         i += 1
 
     # Continue with your logic using dataset...
