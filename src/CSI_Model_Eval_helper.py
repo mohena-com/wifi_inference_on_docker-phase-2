@@ -166,7 +166,7 @@ def instantiate_from_runname(params, device=None):
     batch_size = max(1, int(params.get('batch_size', 1)))
     window_size = 128
     csi_channels = 90
-    meta_features = 12
+    meta_features = 11
 
     # Torch tensors with shape (batch, window, features)
     sample_batch = {
