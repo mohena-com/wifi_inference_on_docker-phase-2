@@ -261,7 +261,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, random_split
-@app.route('/gaitid/predict-1', methods=['POST'])
+@app.route('/gaitid/predict1', methods=['POST'])
 def predict():
     uploaded_files = request.files.getlist('file')  # if multiple files, or just request.files.values()
     logger.info(f"Received {len(uploaded_files)} files for prediction.  {uploaded_files}  ")
