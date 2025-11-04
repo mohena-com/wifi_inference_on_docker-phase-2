@@ -1,24 +1,11 @@
-version: "3.8"
-
+version: '3.8'
 services:
-  csi_infer:
-    build:
-      context: .
-      dockerfile: ${DOCKERFILE:-Dockerfile.cpu}
-    environment:
-      - MODEL_PAYLOAD_PATH=/app/checkpoints/best_payload.pt
-      - LOCAL_DATA_PATH=/app/data
-      - PORT=8000
-      - WINDOW_SIZE=128
-      - STRIDE=64
-      - NUM_CLASSES=31
+  gait_id_inference:
+    build: .
+    container_name: gait_id_inference
+    command: ["/app/src/flask_real_time_inference.py", "/app", "wifi_project", "gait_id_config.properties", "False"]
     volumes:
-      - ./:/app
-      # Optionally mount your dataset and checkpoints from host:
-      # - /absolute/path/to/data:/app/data:ro
-      # - /absolute/path/to/checkpoints:/app/checkpoints:ro
+      - .:/app
     ports:
-      - "8000:8000"
+      - "5002:5002"
     restart: unless-stopped
-# When running GPU variant, run with DOCKERFILE=Dockerfile.gpu and set gpus if available:
-# gpus: all
