@@ -1,0 +1,34 @@
+# Dockerfile.cpu
+FROM python:3.11-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+WORKDIR /app
+
+# Install system deps
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential gcc git curl ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
+
+# Copy requirements & install
+COPY requirements.txt /tmp/requirements.txt
+RUN pip install --upgrade pip
+RUN pip install -r /tmp/requirements.txt
+
+# Copy project
+COPY . /app
+
+# Expose port
+EXPOSE 8000
+
+# Health env (can be overridden)
+ENV MODEL_PAYLOAD_PATH=/app/checkpoints/best_payload.pt
+ENV LOCAL_DATA_PATH=/app/data
+ENV PORT=8000
+
+# Use an entrypoint script for any pre-start tasks
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
+# Gunicorn command (one worker for deterministic GPU exclusive; increase workers for higher throughput)
+CMD ["/app/entrypoint.sh"]
