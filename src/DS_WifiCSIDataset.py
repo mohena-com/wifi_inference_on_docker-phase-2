@@ -89,7 +89,7 @@ class WifiCSIDataset(Dataset):
         return {
             "metadata_seq": torch.tensor(m_seq, dtype=torch.float32), # (W, 12)
             "csi_seq": torch.tensor(csi_seq, dtype=torch.float32),   # (W, 99)
-            "label": torch.tensor([subject_label], dtype=torch.long)   # shape: (1,)
+            "label": torch.tensor(subject_label, dtype=torch.long)   # shape: (1,)
         }
 
     def parse_complex(self, s):
