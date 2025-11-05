@@ -179,7 +179,7 @@ def instantiate_from_runname(params, device=None):
     model = create_model_instance(model_class, chosen_key, sample_batch, device)
     return model
 
-def get_best_model_and_params(best_model_fname=None):
+def get_best_model_and_params1(best_model_fname=None):
     run_name = "best_overall_model_final_MobileNetV3_1D_LSTM_lr5e-04_bs16_adam_wd1e-04_ep100_valacc0.9656.pt"
     params = parse_run_name(run_name)
     print(params)
@@ -207,6 +207,65 @@ def get_best_model_and_params(best_model_fname=None):
         print(f"Total parameters: {total_params}")
     except Exception as e:
         print(f"Failed to instantiate model: {e}")
+    return model_instance, params, total_params, device
+
+# --- drop-in replacement for get_best_model_and_params in CSI_Model_Eval_helper.py ---
+from pathlib import Path
+import torch
+
+def get_best_model_and_params(best_model_fname=None):
+    """
+    Instantiate the right model from the run name, and if a checkpoint path is provided,
+    load its state_dict. Returns (model_instance, params, total_params, device).
+    """
+    # 1) Decide run name: use checkpoint stem if provided, else fall back to your default
+    if best_model_fname is not None:
+        run_name = Path(best_model_fname).stem
+    else:
+        run_name = "best_overall_model_final_MobileNetV3_1D_LSTM_lr5e-04_bs16_adam_wd1e-04_ep100_valacc0.9656.pt"
+
+    # 2) Parse hyperparams from run name
+    params = parse_run_name(run_name)
+    print(params)
+
+    # 3) Pick device
+    try:
+        if getattr(torch.backends, 'mps', None) is not None and torch.backends.mps.is_available():
+            device = torch.device('mps')
+            try:
+                torch.set_float32_matmul_precision('high')
+            except Exception:
+                pass
+        elif torch.cuda.is_available():
+            device = torch.device('cuda')
+        else:
+            device = torch.device('cpu')
+    except Exception:
+        device = torch.device('cpu')
+
+    # 4) Instantiate the model class inferred from run name
+    model_instance = instantiate_from_runname(params, device=device)
+    print(f"device used: {device}")
+    print(f"Created model instance: {model_instance.__class__.__name__}")
+    total_params = sum(p.numel() for p in model_instance.parameters())
+    print(f"Total parameters: {total_params}")
+
+    # 5) If a checkpoint path is provided, load weights
+    if best_model_fname is not None:
+        try:
+            checkpoint = torch.load(best_model_fname, map_location=device)
+            if isinstance(checkpoint, dict) and 'state_dict' in checkpoint:
+                state_dict = checkpoint['state_dict']
+            elif isinstance(checkpoint, dict) and 'model_state_dict' in checkpoint:
+                state_dict = checkpoint['model_state_dict']
+            else:
+                state_dict = checkpoint  # assume plain state_dict
+            model_instance.load_state_dict(state_dict)
+            model_instance.eval()
+            print(f"[INFO] Loaded model weights from: {best_model_fname}")
+        except Exception as e:
+            print(f"[WARNING] Could not load model weights from {best_model_fname}: {e}")
+
     return model_instance, params, total_params, device
 
 '''
