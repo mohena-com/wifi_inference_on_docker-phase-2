@@ -44,6 +44,29 @@ model_instance, params, total_params, device = get_best_model_and_params(str(bes
 
 print(f"Loaded model: {model_instance} from {best_model_path}")
 
+# -------------------- LOAD TRAINED WEIGHTS --------------------
+import torch
+
+try:
+    checkpoint = torch.load(best_model_path, map_location=device)
+
+    if "state_dict" in checkpoint:
+        state_dict = checkpoint["state_dict"]
+    elif "model_state_dict" in checkpoint:
+        state_dict = checkpoint["model_state_dict"]
+    else:
+        state_dict = checkpoint
+
+    best_model_instance.load_state_dict(state_dict)
+    best_model_instance.eval()
+    print(f"[INFO] Loaded model weights from: {best_model_path}")
+
+except Exception as e:
+    print(f"[WARNING] Could not load model weights from {best_model_path}: {e}")
+# ---------------------------------------------------------------
+
+
+
 
 print(f"INIT DONE: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 import json
@@ -131,8 +154,11 @@ def evaluate_model_on_input_data(test_loader):
 
             # --- Fetch label (prefer subject) ---
             labels = None
+            # NEW: keep the batch dimension
             if "label" in batch and batch["label"].numel() > 0:
-                labels = batch["label"].squeeze()
+                labels = batch["label"]               # shape: (batch,)
+                if labels.dim() == 0:                 # just in case
+                    labels = labels.unsqueeze(0)
             elif "subject" in batch:  # if dataset adds subject key
                 subj_tensor = batch["subject"]
                 if subj_tensor is not None and subj_tensor.numel() > 0:

@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile
     container_name: gait_id_inference
     # Call python explicitly so we don't depend on ENTRYPOINT in the Dockerfile
-    command: ["python3", "/app/flask_real_time_inference.py", "/app", "wifi_project", "gait_id_config.properties", "False"]
+    command: ["python", "/app/flask_real_time_inference.py", "/app", "wifi_project", "gait_id_config.properties", "False"]
     environment:
       PYTHONUNBUFFERED: "1"
       # add more env vars here if your app reads them
