@@ -44,6 +44,29 @@ model_instance, params, total_params, device = get_best_model_and_params(str(bes
 
 print(f"Loaded model: {model_instance} from {best_model_path}")
 
+# -------------------- LOAD TRAINED WEIGHTS --------------------
+import torch
+
+try:
+    checkpoint = torch.load(best_model_path, map_location=device)
+
+    if "state_dict" in checkpoint:
+        state_dict = checkpoint["state_dict"]
+    elif "model_state_dict" in checkpoint:
+        state_dict = checkpoint["model_state_dict"]
+    else:
+        state_dict = checkpoint
+
+    best_model_instance.load_state_dict(state_dict)
+    best_model_instance.eval()
+    print(f"[INFO] Loaded model weights from: {best_model_path}")
+
+except Exception as e:
+    print(f"[WARNING] Could not load model weights from {best_model_path}: {e}")
+# ---------------------------------------------------------------
+
+
+
 
 print(f"INIT DONE: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 import json
@@ -83,8 +106,86 @@ def get_test_loader(test_dataset, batch_size, device):
   #  print(f"Sample batch keys: {batch.keys()}")
     
     return test_loader
+# --- drop-in replacement for evaluate_model_on_input_data in flask_real_time_inference.py ---
+def evaluate_model_on_input_data(test_loader, model, device, params=None):
+    """
+    Evaluate model on a DataLoader (works for inference and validation).
+    Returns: val_true (optional), val_pred, val_prob
+    """
+    import torch.nn.functional as F
 
-def evaluate_model_on_input_data(test_loader):
+    criterion = nn.CrossEntropyLoss()
+    print(f"Evaluating model on DataLoader with params: {params} on device: {device}")
+
+    model.eval()
+    running_loss, correct, total = 0.0, 0, 0
+    val_true, val_pred, val_prob = [], [], []
+    non_blocking_flag = (device.type == "cuda")
+
+    with torch.no_grad():
+        for batch_idx, batch in enumerate(test_loader):
+            print(f"\n🧩 Processing batch {batch_idx + 1}/{len(test_loader)}")
+
+            # --- Move inputs to device ---
+            csi_seq = batch["csi_seq"].to(device, non_blocking=non_blocking_flag)
+            meta_seq = batch["metadata_seq"].to(device, non_blocking=non_blocking_flag)
+
+            # --- Clean invalid values ---
+            csi_seq = torch.nan_to_num(csi_seq, nan=0.0, posinf=1e6, neginf=-1e6)
+            meta_seq = torch.nan_to_num(meta_seq, nan=0.0, posinf=1e6, neginf=-1e6)
+
+            # --- Forward pass ---
+            outputs = model(csi_seq, meta_seq)
+            for a in outputs:
+                print(f"0==>output :{a}")
+            probs = F.softmax(outputs, dim=1)
+            preds = torch.argmax(outputs, dim=1)
+            print(f"CSI shape: {csi_seq.shape}, META shape: {meta_seq.shape}, outputs: {outputs.shape}")
+            for a in outputs:
+                print(f"1==>output :{a}")
+
+            # --- Always store predictions and probabilities ---
+            val_pred.extend(preds.cpu().numpy().tolist())
+            val_prob.extend(probs.cpu().numpy().tolist())
+
+            # --- Fetch label (prefer subject) ---
+            labels = None
+            if "label" in batch and batch["label"].numel() > 0:
+                labels = batch["label"]     # keep batch dim
+            elif "subject" in batch:
+                subj_tensor = batch["subject"]
+                if subj_tensor is not None and subj_tensor.numel() > 0:
+                    labels = subj_tensor     # keep batch dim
+
+            print(f"Labels : {labels}")
+
+            # --- Compute loss only if valid label exists ---
+            if labels is not None and labels.numel() > 0:
+                if labels.dim() == 0:
+                    labels = labels.unsqueeze(0)  # ensure (N,)
+                labels = labels.long().to(device, non_blocking=non_blocking_flag)
+                # safety: batch should match
+                assert outputs.size(0) == labels.size(0), f"batch mismatch: {outputs.size()} vs {labels.size()}"
+                loss = criterion(outputs, labels)
+                running_loss += float(loss.item())
+                correct += (preds == labels).sum().item()
+                total += labels.size(0)
+                val_true.extend(labels.cpu().numpy().tolist())
+                print(f"Batch {batch_idx + 1}: loss={loss.item():.4f}, acc={(preds == labels).sum().item()}/{labels.size(0)}")
+            else:
+                print(f"Batch {batch_idx + 1}: No valid label/subject found → inference-only mode.")
+
+    # --- Summary ---
+    if total > 0:
+        avg_loss = running_loss / len(test_loader)
+        acc = 100.0 * correct / total
+        print(f"\n✅ Validation complete: Avg Loss={avg_loss:.4f}, Accuracy={acc:.2f}%")
+    else:
+        print(f"\n✅ Inference complete: {len(val_pred)} predictions generated.")
+
+    return val_true if len(val_true) > 0 else None, val_pred, val_prob
+
+def evaluate_model_on_input_data1(test_loader):
     """
     Evaluate model on a DataLoader (works for inference and validation).
     Returns: val_true (optional), val_pred, val_prob
@@ -131,8 +232,11 @@ def evaluate_model_on_input_data(test_loader):
 
             # --- Fetch label (prefer subject) ---
             labels = None
+            # NEW: keep the batch dimension
             if "label" in batch and batch["label"].numel() > 0:
-                labels = batch["label"].squeeze()
+                labels = batch["label"]               # shape: (batch,)
+                if labels.dim() == 0:                 # just in case
+                    labels = labels.unsqueeze(0)
             elif "subject" in batch:  # if dataset adds subject key
                 subj_tensor = batch["subject"]
                 if subj_tensor is not None and subj_tensor.numel() > 0:
@@ -263,7 +367,10 @@ def predict():
         test_loader = DataLoader(test_dataset, batch_size=1, shuffle=False)
 
         # Evaluate on the uploaded dataset
-        val_true, val_pred, val_prob = evaluate_model_on_input_data(test_loader)
+        # AFTER
+        val_true, val_pred, val_prob = evaluate_model_on_input_data(
+            test_loader, model_instance, device, params
+        )
 
         # --- Prepare structured results ---
         results = []
@@ -287,27 +394,7 @@ def predict():
         return jsonify({"error": str(e)}), 500
 
 
-'''
  
-import glob
-import os
-from werkzeug.utils import secure_filename
-import os
-from DS_WifiCSIDataset import WifiCSIDataset
-import torch
-import torch.nn as nn
-import torch.optim as optim
-from torch.utils.data import DataLoader, random_split
-@app.route('/gaitid/predict1', methods=['POST'])
-def predict():
-    uploaded_files = request.files.getlist('file')  # if multiple files, or just request.files.values()
-    logger.info(f"Received {len(uploaded_files)} files for prediction.  {uploaded_files}  ")
-    saved_file_paths = []
-    for uploaded_file in uploaded_files:
-        filename = secure_filename(uploaded_file.filename)
-        save_path = os.path.join('/tmp/uploads', filename)
-        uploaded_file.save(save_path)
-        saved_file_paths.append(save_path)
 
     filelist = glob.glob(os.path.join('/tmp/uploads', '**', '*.csv'), recursive=True)
     logger.info(f"Predict: Found {len(filelist)} CSV files in /tmp/uploads for dataset creation.")  
