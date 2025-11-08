@@ -1,27 +1,23 @@
 version: "3.8"
-
 services:
-  gait_id_inference:
+  api:
     build:
       context: .
-      dockerfile: Dockerfile
-    container_name: gait_id_inference
-    # Call python explicitly so we don't depend on ENTRYPOINT in the Dockerfile
-    command: ["python", "/app/flask_real_time_inference.py", "/app", "wifi_project", "gait_id_config.properties", "False"]
-    environment:
-      PYTHONUNBUFFERED: "1"
-      # add more env vars here if your app reads them
+      dockerfile: Dockerfile.api
+    image: wifi_inference_api:latest
+    container_name: wifi_inference_api
     ports:
       - "5002:5002"
-    # For local dev: live-mount the repo (overrides /app in the image)
-    volumes:
-      - .:/app
     restart: unless-stopped
-    # Optional: if your app needs a larger shared memory segment (e.g., for PyTorch dataloaders)
-    # shm_size: "1gb"
-    # Optional: a very basic healthcheck (uncomment if your image has curl/wget installed)
-    # healthcheck:
-    #   test: ["CMD-SHELL", "curl -fsS http://localhost:5002/gaitid/index.html || exit 1"]
-    #   interval: 20s
-    #   timeout: 5s
-    #   retries: 5
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: wifi_inference_frontend:latest
+    container_name: wifi_inference_frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - api
+    restart: unless-stopped
