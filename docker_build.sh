@@ -15,7 +15,7 @@ echo "Starting new Docker container..."
 docker run -e PYTHONUNBUFFERED=1 -d -p 5002:5002 --name gait_id_inference_container gait_id_inference:latest
 echo 
 sleep 5
-echo "Testing the deployment..."
+echo "🧩 Testing the deployment..."
 curl -X GET http://localhost:5002/gaitid/index.html
 echo 
 echo 

@@ -1,0 +1,134 @@
+# DS_WifiCSIDataset.py
+import os
+import numpy as np
+import pandas as pd
+import torch
+from torch.utils.data import Dataset
+
+class WifiCSIDataset(Dataset):
+    """
+    Builds sliding-window samples from one or more CSV files and returns:
+      - metadata_seq: (W, 11) float32
+      - csi_seq:      (W, 90)  float32
+      - label:        scalar long (class index 0..30) — for CE loss/metrics
+      - label_raw:    scalar long (raw subject id, e.g., 1..31) — for reporting
+      - file:         basename of source CSV (str)
+      - start:        start row index (int)
+      - window_size:  window length (int)
+
+    NOTE: Adjust the feature slicing to match your training layout if needed.
+          Current assumption:
+            - First 11 numeric columns = metadata features
+            - Next 90 numeric columns  = CSI features
+            - Subject label column is named 'subject' (or 'Subject')
+    """
+
+    def __init__(self, file_paths, window_size: int = 128, step: int = 128,
+                 scaler_meta=None, scaler_csi=None):
+        super().__init__()
+        self.file_paths = file_paths
+        self.window_size = window_size
+        self.step = step
+        self.samples = []  # (meta_seq, csi_seq, y_seq, file_name, start, W)
+
+        # If training scalers are provided, use them; otherwise fit from the uploads
+        self.scaler_meta = scaler_meta
+        self.scaler_csi  = scaler_csi
+
+        fit_scalers = (self.scaler_meta is None) or (self.scaler_csi is None)
+        if fit_scalers:
+            # First pass: gather all numeric rows to fit scalers
+            all_meta = []
+            all_csi  = []
+            for f in self.file_paths:
+                df = pd.read_csv(f)
+                numeric = df.select_dtypes(include=[np.number])
+
+                # slices (customize to your schema)
+                meta_arr = numeric.iloc[:, :11].values
+                csi_arr  = numeric.iloc[:, 11:11+90].values
+
+                all_meta.append(meta_arr)
+                all_csi.append(csi_arr)
+
+            all_meta = np.vstack(all_meta).astype(np.float32)
+            all_csi  = np.vstack(all_csi).astype(np.float32)
+
+            # Simple standardization statistics (mean/std) without sklearn
+            self.meta_mean = all_meta.mean(axis=0, keepdims=True)
+            self.meta_std  = all_meta.std(axis=0, keepdims=True) + 1e-8
+            self.csi_mean  = all_csi.mean(axis=0, keepdims=True)
+            self.csi_std   = all_csi.std(axis=0, keepdims=True) + 1e-8
+        else:
+            # If scalers are provided, expect they have .mean_ and .scale_ like sklearn
+            self.meta_mean = getattr(self.scaler_meta, "mean_", None)
+            self.meta_std  = getattr(self.scaler_meta, "scale_", None)
+            self.csi_mean  = getattr(self.scaler_csi, "mean_", None)
+            self.csi_std   = getattr(self.scaler_csi, "scale_", None)
+
+        # Second pass: create windowed samples and store per-window bookkeeping
+        for f in self.file_paths:
+            df = pd.read_csv(f)
+            numeric = df.select_dtypes(include=[np.number])
+
+            # --- feature slices (customize if needed) ---
+            meta_arr = numeric.iloc[:, :11].values.astype(np.float32)  # (T, 11)
+            csi_arr  = numeric.iloc[:, 11:11+90].values.astype(np.float32)  # (T, 90)
+
+            # --- standardize (using stats computed above) ---
+            if self.meta_mean is not None and self.meta_std is not None:
+                meta_arr = (meta_arr - self.meta_mean) / self.meta_std
+            if self.csi_mean is not None and self.csi_std is not None:
+                csi_arr = (csi_arr - self.csi_mean) / self.csi_std
+
+            # subject label column
+            if "subject" in df.columns:
+                subjects = df["subject"].astype(int).to_numpy()
+            elif "Subject" in df.columns:
+                subjects = df["Subject"].astype(int).to_numpy()
+            else:
+                # If no subject column, set -1 (inference-only)
+                subjects = np.full(len(df), -1, dtype=int)
+
+            T = len(df)
+            W = self.window_size
+            S = self.step
+            if T < W:
+                # Not enough rows → skip file
+                continue
+
+            for start in range(0, T - W + 1, S):
+                end = start + W
+                m_seq = meta_arr[start:end]              # (W, 11)
+                csi_seq = csi_arr[start:end]             # (W, 90)
+
+                # Per-window subject sequence for robust labeling (majority vote)
+                y_seq = {"subject": subjects[start:end].tolist()}
+
+                file_name = os.path.basename(f)
+                self.samples.append((m_seq, csi_seq, y_seq, file_name, start, W))
+
+    def __len__(self):
+        return len(self.samples)
+
+    def __getitem__(self, idx):
+        m_seq, csi_seq, y_seq, file_name, start, W = self.samples[idx]
+
+        # Majority subject id within the window (robust to occasional label noise)
+        subj_arr = np.array(y_seq["subject"], dtype=int)
+        vals, counts = np.unique(subj_arr, return_counts=True)
+        subject_label_raw = int(vals[np.argmax(counts)])  # e.g., 1..31
+
+        # Map raw subject id → class index (assumes training used 1..31 → 0..30)
+        # Adjust this mapping if your training used a different scheme.
+        subject_label_idx = subject_label_raw - 1 if subject_label_raw > 0 else -1
+
+        return {
+            "metadata_seq": torch.tensor(m_seq, dtype=torch.float32),     # (W, 11)
+            "csi_seq": torch.tensor(csi_seq, dtype=torch.float32),        # (W, 90)
+            "label": torch.tensor(subject_label_idx, dtype=torch.long),   # 0..30 (for CE loss/metrics)
+            "label_raw": torch.tensor(subject_label_raw, dtype=torch.long),  # 1..31 (for reporting)
+            "file": file_name,
+            "start": torch.tensor(start, dtype=torch.long),
+            "window_size": torch.tensor(W, dtype=torch.long),
+        }
