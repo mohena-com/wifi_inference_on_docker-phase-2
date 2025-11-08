@@ -79,6 +79,8 @@ class WifiCSIDataset(Dataset):
         print(f"A_01. Completed Second pass: windowed sequences. sample length:{len(self.samples)}")
         for i, a in enumerate(self.samples, start=1):
             print(f"✅  {i}==> samples: {a} ")
+            for v in a:
+                print(f"     Value: {v}")
         
 
     def __len__(self):
