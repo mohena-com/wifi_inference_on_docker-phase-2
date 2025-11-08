@@ -116,7 +116,7 @@ class WifiCSIDataset(Dataset):
         with open(filename, 'r', newline='') as f:
             reader = csv.DictReader(f)
             cols = reader.fieldnames
-            print(f"B_01. Columns: {cols}")
+            print(f"B_01. Columns: {len(cols)}")
             csi_cols = [c for c in cols if c.startswith('csi_')]
             meta_cols = [
                 'timestamp_low','bfee_count','Nrx','Ntx',
