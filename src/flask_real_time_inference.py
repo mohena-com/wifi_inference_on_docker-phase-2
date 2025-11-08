@@ -41,10 +41,10 @@ print(f"Loading best model from: {best_model_path}")
 from CSI_Model_Eval_helper import get_best_model_and_params
 from CSI_Model_Eval_helper import get_best_model_path
 best_model_path = get_best_model_path(config)
-model_instance, params, total_params, device, best_model_path = get_best_model_and_params(str(best_model_path))
+model_instance, params, total_params, device = get_best_model_and_params(str(best_model_path))
 
 print(f"Loaded model: {model_instance} from {best_model_path}")
-
+print(f"params: {params} device {device}")
 # -------------------- LOAD TRAINED WEIGHTS --------------------
 import torch
 
