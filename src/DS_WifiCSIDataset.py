@@ -55,16 +55,14 @@ class WifiCSIDataset(Dataset):
 
         # Second pass: windowed sequences
         print(f"A_01. Starting Second pass: windowed sequences.")
-        for f in file_list:
+        print(f"    len(X_meta), len(X_csi), len(y), window_size, stride")
+        for j, f in enumerate(file_list, start=1):
             X_meta, X_csi, y, _, _ = self.load_csv_as_numpy(f)
             X_meta = self.scaler_meta.transform(X_meta)
             X_csi = self.scaler_csi.transform(X_csi)
             T = len(X_meta)
-            print(f"A_01_{i}. X_meta: {X_meta} ")
-            print(f"A_01_{i}. X_csi: {X_csi} ")
-            print(f"A_01_{i}. y: {y} ")
-            print(f"A_01_window_size:{window_size}. stride: {stride}. T: {T}")
-            
+            print(f"{j} {len(X_meta)}, {len(X_csi)}, {len(y)}, {window_size}, {stride}")
+             
             if T < window_size:
                 window_size = int(T/2)  # Adjust window size if sequence is shorter
 
@@ -73,7 +71,7 @@ class WifiCSIDataset(Dataset):
                 csi_seq = X_csi[start:start+window_size]  # (W, 99)
                 y_seq = {k: v[start:start+window_size] for k, v in y.items()}   
                 self.samples.append((m_seq, csi_seq, y))
-                print(f"A_03_{i}. Windowed sample added from {f}, start:{start}")   
+              #  print(f"A_03_{i}. Windowed sample added from {f}, start:{start}")   
         self.logger.critical(f"A_01. Completed Second pass: windowed sequences. sample length:{len(self.samples)}")
 
         print(f"A_01. Completed Second pass: windowed sequences. sample length:{len(self.samples)}")
