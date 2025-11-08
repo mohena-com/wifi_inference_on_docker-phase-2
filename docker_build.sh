@@ -75,3 +75,6 @@ if [[ ${success} -ne 1 ]]; then
 fi
 
 echo "✅    Deployment complete. Container '${CONTAINER_NAME}' running and healthy."
+
+echo "👉    Access the application at: http://localhost:${HOST_PORT}/gaitid/index.html"
+echo "👉    View logs with: docker logs -f --tail 100 ${CONTAINER_NAME}"
