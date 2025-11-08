@@ -37,9 +37,9 @@ class WifiCSIDataset(Dataset):
         print(f"A_00. Starting first pass for scaling.")
         for f in file_list:
             X_meta, X_csi, _, _, _ = self.load_csv_as_numpy(f)
-            print(f"A_00_{i}. X_meta: {X_meta.shape} X_csi: {X_csi.shape}")
-            print(f"A_00_{i}. X_meta: {len(X_meta[0])} ")
-            print(f"A_01_{i}. X_csi: {len(X_csi[0])} ")
+            print(f"{i} A_00 X_meta: {X_meta.shape} X_csi: {X_csi.shape}")
+            print(f"    A_00 Len X_meta: {len(X_meta[0])}, {len(X_meta[1])} ")
+            print(f"    A_00 Len X_csi: {len(X_csi[0])}, {len(X_csi[1])} ")
 
             all_meta.append(X_meta)
             all_csi.append(X_csi)
