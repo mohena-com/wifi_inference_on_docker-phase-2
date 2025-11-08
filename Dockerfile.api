@@ -1,12 +1,22 @@
 
-FROM python:3.11
+# ===============================
+#  Flask API Production Dockerfile
+# ===============================
 
-# Set the working directory
-WORKDIR /app
+# Use a lightweight Python base image
+FROM python:3.11-slim
+
+# Set working directory inside container
+ENV APP_HOME=/app
+WORKDIR $APP_HOME
+
+# System dependencies (install only what's needed for pip builds)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first for caching
 COPY requirements.txt .
-
 # Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
@@ -22,9 +32,9 @@ COPY src/DL_MobileNetV3.py /app/DL_MobileNetV3.py
 COPY src/DS_WifiCSIDataset.py /app/DS_WifiCSIDataset.py
 COPY src/flask_real_time_inference.py /app/flask_real_time_inference.py
 
-COPY src/predict.modules.ts /app/predict/predict.modules.ts
-COPY src/predict/predict.component.ts /app/predict/predict.component.ts
-COPY src/predict/predict.component.html /app/predict/predict.component.html 
+#COPY src/predict.modules.ts /app/predict/predict.modules.ts
+#COPY src/predict/predict.component.ts /app/predict/predict.component.ts
+#COPY src/predict/predict.component.html /app/predict/predict.component.html 
          
 COPY config/gait_id_config.properties /app/config/
 COPY models/ /app/models/
@@ -34,14 +44,20 @@ RUN mkdir -p /app/static
 COPY src/index.html /app/static/index.html
 COPY src/script.js /app/static/script.js
 
+# Ensure Flask binds to all interfaces, not just localhost
+ENV FLASK_RUN_HOST=0.0.0.0
+ENV FLASK_RUN_PORT=5002
+ENV PYTHONUNBUFFERED=1
+
 # Expose the port your Flask app runs on
 EXPOSE 5002
 
 # Set environment variable for unbuffered output (for Docker logs)
 ENV PYTHONUNBUFFERED=1
 
-CMD ["python", "flask_real_time_inference.py"]
-
+# Use Gunicorn for production serving
+# Adjust "flask_real_time_inference:app" if your Flask app object is in a different file/module
+CMD ["gunicorn", "--bind", "0.0.0.0:5002", "flask_real_time_inference:app", "--workers", "2", "--threads", "4"]
 
 
  

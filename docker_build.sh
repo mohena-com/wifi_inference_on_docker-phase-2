@@ -4,7 +4,7 @@ IFS=$'\n\t'
 
 CONTAINER_NAME="gait_id_inference_container"
 IMAGE_NAME="gait_id_inference:latest"
-DOCKERFILE="Dockerfile"
+DOCKERFILE="Dockerfile.api"
 HOST_PORT=5002
 CONTAINER_PORT=5002
 UPLOAD_WAIT_SECONDS=5
