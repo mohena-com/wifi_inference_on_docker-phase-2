@@ -218,6 +218,295 @@ from torch.utils.data import DataLoader, random_split
 
 @app.route('/gaitid/predict', methods=['POST'])
 def predict():
+    import os
+    import json
+    import math
+    from datetime import datetime
+    from collections import defaultdict, Counter
+    import torch
+    import torch.nn as nn
+    import torch.nn.functional as F
+
+    uploaded_files = request.files.getlist('file')
+    print(f"Received {len(uploaded_files)} files for prediction: {[f.filename for f in uploaded_files]}")
+
+    upload_dir = '/tmp/uploads'
+    os.makedirs(upload_dir, exist_ok=True)
+    saved_file_paths = []
+
+    # --- Helper: pad CSVs if too short ---
+    def pad_csv_if_needed(csv_path, min_rows=128):
+        """Pads short CSVs with last row to reach min_rows."""
+        try:
+            df = pd.read_csv(csv_path)
+            current_len = len(df)
+            if current_len < min_rows and current_len > 0:
+                pad_rows = min_rows - current_len
+                last_row = df.iloc[-1:]
+                pad_df = pd.concat([last_row] * pad_rows, ignore_index=True)
+                df = pd.concat([df, pad_df], ignore_index=True)
+                df.to_csv(csv_path, index=False)
+                print(f"Padded {os.path.basename(csv_path)} from {current_len} → {len(df)} rows.")
+            elif current_len == 0:
+                print(f"Warning: {os.path.basename(csv_path)} is empty; skipping padding.")
+            else:
+                print(f"{os.path.basename(csv_path)} already has {current_len} rows — no padding needed.")
+        except Exception as e:
+            logger.error(f"Padding failed for {csv_path}: {e}")
+
+    # --- Save and pad uploaded files ---
+    for uploaded_file in uploaded_files:
+        filename = secure_filename(uploaded_file.filename)
+        save_path = os.path.join(upload_dir, filename)
+        uploaded_file.save(save_path)
+        print(f"Saved uploaded file to {save_path}")
+
+        pad_csv_if_needed(save_path, min_rows=128)
+        saved_file_paths.append(save_path)
+
+    # --- Load dataset and evaluate (we'll iterate test_loader directly to build full JSON) ---
+    try:
+        batch_size = 16
+        test_dataset = WifiCSIDataset(
+            logger=logger,
+            file_list=saved_file_paths,
+            window_size=128,
+            stride=64
+        )
+        test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
+
+        # Debug prints
+        print("DEBUG: dataset size (len):", len(test_dataset))
+        print("DEBUG: expected batches (ceil):", math.ceil(len(test_dataset) / batch_size))
+        print("DEBUG: expected batches (floor = drop_last True):", len(test_dataset) // batch_size)
+
+        all_windows = []         # list of per-window dicts (order preserved)
+        batch_summaries = []     # stores batch-level metadata (size, loss, correct, total)
+        running_loss = 0.0
+        running_correct = 0
+        running_total = 0
+
+        model_instance.eval()
+        device_local = device  # use existing device variable
+
+        with torch.no_grad():
+            for batch_idx, batch in enumerate(test_loader):
+                # Move inputs
+                csi_seq = batch["csi_seq"].to(device_local)
+                meta_seq = batch["metadata_seq"].to(device_local)
+
+                # forward pass
+                outputs = model_instance(csi_seq, meta_seq)        # (N, C)
+                probs_tensor = F.softmax(outputs, dim=1)           # (N, C)
+                preds_tensor = torch.argmax(outputs, dim=1)        # (N,)
+
+                # optional labels
+                b_labels = batch.get("label")         # index (0..)
+                b_labels_raw = batch.get("label_raw") # raw subject id (e.g., 1..)
+                b_files = batch.get("file")
+                b_starts = batch.get("start")
+                b_wins = batch.get("window_size")
+
+                # compute loss+accuracy for this batch if labels exist
+                batch_loss = None
+                batch_correct = 0
+                batch_total = 0
+                if b_labels is not None and hasattr(b_labels, "numel") and b_labels.numel() > 0:
+                    # normalize shapes
+                    if b_labels.dim() == 2 and b_labels.size(-1) == 1:
+                        b_labels = b_labels.squeeze(-1)
+                    elif b_labels.dim() == 0:
+                        b_labels = b_labels.unsqueeze(0)
+                    b_labels = b_labels.long().to(device_local)
+
+                    criterion = nn.CrossEntropyLoss()
+                    batch_loss = float(criterion(outputs, b_labels).item())
+                    running_loss += batch_loss
+
+                    batch_correct = int((preds_tensor == b_labels).sum().item())
+                    batch_total = int(b_labels.size(0))
+                    running_correct += batch_correct
+                    running_total += batch_total
+
+                # extract numpy arrays for loop
+                preds = preds_tensor.cpu().numpy().tolist()
+                probs_np = probs_tensor.cpu().numpy()  # shape (N, C)
+
+                # ensure b_files/stars/wins/lables_raw indexing works for batch_size>=1
+                for i in range(len(preds)):
+                    pred_idx = int(preds[i])
+                    # mapping index -> raw subject id: adjust if your mapping differs
+                    pred_raw = int(pred_idx + 1)
+
+                    prob_row = probs_np[i].tolist()
+                    # top-3 probabilities
+                    topk = list(map(int, np.argsort(prob_row)[::-1][:3]))
+                    top3 = [{"label_idx": int(k), "label_raw": int(k + 1), "prob": float(prob_row[k])} for k in topk]
+
+                    # true values (if exist)
+                    true_idx = None
+                    true_raw = None
+                    if b_labels is not None and hasattr(b_labels, "numel") and b_labels.numel() > 0:
+                        try:
+                            # handle tensor/list indexing
+                            if hasattr(b_labels, "cpu"):
+                                true_idx = int(b_labels.cpu().numpy().tolist()[i])
+                            else:
+                                true_idx = int(b_labels[i])
+                            if b_labels_raw is not None and hasattr(b_labels_raw, "numel") and b_labels_raw.numel() > 0:
+                                if hasattr(b_labels_raw, "cpu"):
+                                    true_raw = int(b_labels_raw.cpu().numpy().tolist()[i])
+                                else:
+                                    true_raw = int(b_labels_raw[i])
+                            else:
+                                true_raw = int(true_idx + 1) if true_idx is not None else None
+                        except Exception:
+                            true_idx = None
+                            true_raw = None
+
+                    # file / start / window_size
+                    # b_files may be list or a single repeated scalar
+                    if isinstance(b_files, (list, tuple)):
+                        file_val = str(b_files[i])
+                    else:
+                        # if it's tensor or scalar
+                        try:
+                            file_val = str(b_files[i])
+                        except Exception:
+                            file_val = str(b_files)
+                    try:
+                        if hasattr(b_starts, "cpu"):
+                            start_val = int(b_starts.cpu().numpy().tolist()[i])
+                        else:
+                            start_val = int(b_starts[i]) if isinstance(b_starts, (list, tuple)) else int(b_starts)
+                    except Exception:
+                        start_val = None
+                    try:
+                        if hasattr(b_wins, "cpu"):
+                            win_val = int(b_wins.cpu().numpy().tolist()[i])
+                        else:
+                            win_val = int(b_wins[i]) if isinstance(b_wins, (list, tuple)) else int(b_wins)
+                    except Exception:
+                        win_val = None
+
+                    all_windows.append({
+                        "file": os.path.basename(file_val) if file_val is not None else None,
+                        "start": start_val,
+                        "window_size": win_val,
+                        "true_idx": true_idx,
+                        "true_raw": true_raw,
+                        "pred_idx": pred_idx,
+                        "pred_raw": pred_raw,
+                        "probs": prob_row,
+                        "top3": top3
+                    })
+
+                batch_summaries.append({
+                    "batch_index": batch_idx + 1,
+                    "batch_size": len(preds),
+                    "loss": batch_loss,
+                    "correct": batch_correct,
+                    "total": batch_total
+                })
+
+        # final overall stats
+        total_windows = len(all_windows)
+        total_correct = sum(1 for w in all_windows if (w["true_idx"] is not None and w["true_idx"] == w["pred_idx"]))
+        total_incorrect = total_windows - total_correct
+
+        # Build batches array (slice the all_windows list according to batch_summaries)
+        batches = []
+        cursor = 0
+        for bs in batch_summaries:
+            cnt = bs["batch_size"]
+            slice_windows = all_windows[cursor: cursor + cnt]
+            cursor += cnt
+            # per-window JSON for UI (only include what UI needs)
+            windows_json = []
+            for w in slice_windows:
+                windows_json.append({
+                    "true": w["true_raw"],
+                    "pred": w["pred_raw"],
+                    "correct": (w["true_idx"] is not None and w["true_idx"] == w["pred_idx"]),
+                    "top3": w["top3"],
+                    # optionally include small probs (top3 already includes probs)
+                    # omit full w["probs"] to reduce JSON size if you want
+                })
+            batches.append({
+                "batch_index": bs["batch_index"],
+                "windows": windows_json,
+                "loss": bs["loss"],
+                "acc": f"{bs['correct']}/{bs['batch_size']}" if bs.get("total", 0) else None
+            })
+
+        # Build per-file majority-vote summary
+        by_file_preds = defaultdict(list)
+        by_file_truths = defaultdict(list)
+        for w in all_windows:
+            fname = w["file"] or "unknown"
+            if w["pred_raw"] is not None:
+                by_file_preds[fname].append(w["pred_raw"])
+            if w["true_raw"] is not None:
+                by_file_truths[fname].append(w["true_raw"])
+
+        per_file_summary = []
+        files_union = sorted(set(list(by_file_preds.keys()) + list(by_file_truths.keys())))
+        for fname in files_union:
+            preds = by_file_preds.get(fname, [])
+            truths = by_file_truths.get(fname, [])
+            maj_pred = Counter(preds).most_common(1)[0][0] if preds else None
+            maj_true = Counter(truths).most_common(1)[0][0] if truths else None
+            per_file_summary.append({
+                "file": fname,
+                "majority_predicted": int(maj_pred) if maj_pred is not None else None,
+                "majority_actual": int(maj_true) if maj_true is not None else None,
+                "n_windows": len(preds)
+            })
+
+        # Build summary object
+        summary = {
+            "total_windows": total_windows,
+            "total_correct": total_correct,
+            "total_incorrect": total_incorrect,
+            "notes": f"probs:{total_windows}, pred:{total_windows}, true:{total_windows}"
+        }
+
+        result_json = {
+            "batches": batches,
+            "summary": summary,
+            "per_file_summary": per_file_summary
+        }
+
+        # Save JSONs: timestamped + latest
+        ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+        out_ts = os.path.join(upload_dir, f"prediction_result_{ts}.json")
+        out_latest = os.path.join(upload_dir, "prediction_result_latest.json")
+        try:
+            with open(out_ts, "w") as fh:
+                json.dump(result_json, fh, indent=2)
+            with open(out_latest, "w") as fh2:
+                json.dump(result_json, fh2, indent=2)
+            print(f"[INFO] Saved prediction JSON -> {out_ts} and {out_latest}")
+        except Exception as e:
+            logger.error(f"Failed to save prediction JSON: {e}")
+
+        print(f"Prediction complete for {len(saved_file_paths)} file(s).")
+        # optional cleanup call if you have it
+        try:
+            cleanup_files()
+        except Exception:
+            pass
+
+        return jsonify(result_json), 200
+
+    except Exception as e:
+        logger.exception("Prediction failed")
+        return jsonify({"error": str(e), "trace": traceback.format_exc()}), 500
+
+
+
+@app.route('/gaitid/predict1', methods=['POST'])
+def predict1():
     uploaded_files = request.files.getlist('file')
     print(f"Received {len(uploaded_files)} files for prediction: {[f.filename for f in uploaded_files]}")
 
