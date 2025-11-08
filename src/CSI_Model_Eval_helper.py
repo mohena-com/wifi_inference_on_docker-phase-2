@@ -206,12 +206,10 @@ def list_model_files(models_dir="models", extensions=(".pt", ".pth", ".onnx")):
     
     return model_files
 
+from pathlib import Path
 
 def get_best_model_and_params(best_model_fname=None):
-    """
-    Instantiate the right model from the run name, and if a checkpoint path is provided,
-    load its state_dict. Returns (model_instance, params, total_params, device).
-    """
+ 
     # 1) Decide run name: use checkpoint stem if provided, else fall back to your default
     if best_model_fname is not None:
         run_name = Path(best_model_fname).stem
