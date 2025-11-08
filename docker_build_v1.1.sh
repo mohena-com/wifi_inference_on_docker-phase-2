@@ -9,7 +9,7 @@ HOST_PORT=5002
 CONTAINER_PORT=5002
 UPLOAD_WAIT_SECONDS=5
 HEALTH_URL="http://localhost:${HOST_PORT}/gaitid/index.html"
-MAX_HEALTH_RETRIES=12   # total ~60s if sleep 5s between tries
+MAX_HEALTH_RETRIES=3   # total ~60s if sleep 5s between tries
 SLEEP_BETWEEN_RETRIES=5
 
 echo "🧩    Updating repository..."
