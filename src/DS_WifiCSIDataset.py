@@ -45,7 +45,7 @@ class WifiCSIDataset(Dataset):
             all_csi.append(X_csi)
             i = i+1
         self.logger.critical(f"A_00. Completed first pass for scaling.")   
-        print(f"A_01. all_meta: {(len(all_meta[0]))} all_csi: {len(all_csi)}")
+        print(f"A_01. all_meta: {(len(all_meta[0]))} all_csi: {len(all_csi[0])}")
 
         all_meta = np.vstack(all_meta)
         all_csi = np.vstack(all_csi)
