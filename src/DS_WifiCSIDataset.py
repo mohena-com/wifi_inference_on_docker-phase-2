@@ -75,8 +75,11 @@ class WifiCSIDataset(Dataset):
                 self.samples.append((m_seq, csi_seq, y))
                 self.logger.debug(f"A_03_{i}. Windowed sample added from {f}, start:{start}")   
         self.logger.critical(f"A_01. Completed Second pass: windowed sequences. sample length:{len(self.samples)}")
-        print(f"A_01. Completed Second pass: windowed sequences. sample  :{self.samples}")
-       # self.logger.info(f"dataset initialized with {len(self.samples)} samples.")
+
+        print(f"A_01. Completed Second pass: windowed sequences. sample length:{len(self.samples)}")
+        for i, a in enumerate(self.samples, start=1):
+            print(f"✅  {i}==> samples: {a} ")
+        
 
     def __len__(self):
         return len(self.samples)
