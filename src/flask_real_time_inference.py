@@ -141,8 +141,8 @@ def evaluate_model_on_input_data(test_loader, model, device, params=None):
             probs = F.softmax(outputs, dim=1)
             preds = torch.argmax(outputs, dim=1)
             print(f"CSI shape: {csi_seq.shape}, META shape: {meta_seq.shape}, outputs: {outputs.shape}")
-            for a in outputs:
-                print(f"1==>output :{a}")
+            for a, b in zip(probs, preds):
+                print(f"1==>probs :{a}, pred: {b}")
 
             # --- Always store predictions and probabilities ---
             val_pred.extend(preds.cpu().numpy().tolist())
@@ -157,7 +157,8 @@ def evaluate_model_on_input_data(test_loader, model, device, params=None):
                 if subj_tensor is not None and subj_tensor.numel() > 0:
                     labels = subj_tensor     # keep batch dim
 
-            print(f"Labels : {labels}")
+            print(f"Actual label value: {labels.squeeze().item() if labels.numel() == 1 else labels.squeeze().tolist()}")
+
 
             # --- Compute loss only if valid label exists ---
             if labels is not None and labels.numel() > 0:
@@ -174,7 +175,10 @@ def evaluate_model_on_input_data(test_loader, model, device, params=None):
                 print(f"Batch {batch_idx + 1}: loss={loss.item():.4f}, acc={(preds == labels).sum().item()}/{labels.size(0)}")
             else:
                 print(f"Batch {batch_idx + 1}: No valid label/subject found → inference-only mode.")
-
+    
+    print(f"probs:{len(val_prob)},  pred:{len(val_pred)},   true:{len(val_true)}")
+    for a, b, c in zip(val_prob, val_pred, val_true):
+        print(f"probs:{a}, pred:{b},  true:{c}")
     # --- Summary ---
     if total > 0:
         avg_loss = running_loss / len(test_loader)
@@ -414,10 +418,10 @@ def predict():
             print(f"-->Label : {l} ") 
         i += 1
 
-    # Continue with your logic using dataset...
+    
     print(f"Dataset created with {len(dataset)} samples from uploaded files.")
     
-    # You can add more processing logic here if needed
+     
     val_true, val_pred, val_prob = evaluate_model_on_input_data(dataset)
     
     # Delete uploaded files after processing
