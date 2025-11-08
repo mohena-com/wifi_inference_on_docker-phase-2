@@ -21,6 +21,10 @@ COPY src/DL_EfficientNet1DLSTM.py /app/DL_EfficientNet1DLSTM.py
 COPY src/DL_MobileNetV3.py /app/DL_MobileNetV3.py
 COPY src/DS_WifiCSIDataset.py /app/DS_WifiCSIDataset.py
 COPY src/flask_real_time_inference.py /app/flask_real_time_inference.py
+
+COPY src/predict.modules.ts /app/predict/predict.modules.ts
+COPY src/predict/predict.component.ts /app/predict/predict.component.ts
+COPY src/predict/predict.component.html /app/predict/predict.component.html 
          
 COPY config/gait_id_config.properties /app/config/
 COPY models/ /app/models/

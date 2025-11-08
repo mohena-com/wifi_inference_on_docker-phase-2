@@ -504,8 +504,8 @@ def predict():
         return jsonify({"error": str(e), "trace": traceback.format_exc()}), 500
 
 
-# Helper route to serve latest JSON (so Angular can GET /prediction_result_latest.json)
-@app.route('/prediction_result_latest.json', methods=['GET'])
+# Helper route to serve latest JSON (so Angular can GET /gaitid/prediction_result_latest.json)
+@app.route('/gaitid/prediction_result_latest.json', methods=['GET'])
 def serve_prediction_latest():
     upload_dir = '/tmp/uploads'
     try:

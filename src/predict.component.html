@@ -1,0 +1,61 @@
+<div class="predict-root">
+  <div class="header">
+    <h2>Prediction Dashboard</h2>
+    <button (click)="load()" class="btn">🔄 Refresh</button>
+  </div>
+
+  <div *ngIf="loading">⏳ Loading...</div>
+  <div *ngIf="error" class="error">❌ {{ error }}</div>
+
+  <div *ngIf="data">
+    <div class="summary card">
+      <strong>Total windows:</strong> {{ data.summary.total_windows }} &nbsp;
+      <strong>Correct:</strong> {{ data.summary.total_correct }} &nbsp;
+      <strong>Incorrect:</strong> {{ data.summary.total_incorrect }}
+      <div class="notes">{{ data.summary.notes }}</div>
+    </div>
+
+    <div class="chart card" *ngIf="data.per_file_summary && data.per_file_summary.length">
+      <h3>Per-file majority (predicted vs actual)</h3>
+      <canvas baseChart
+              [data]="barChartData"
+              [options]="barChartOptions"
+              chartType="bar">
+      </canvas>
+    </div>
+
+    <div class="batches">
+      <div *ngFor="let b of data.batches" class="batch card">
+        <div class="batch-header" (click)="toggleBatch(b.batch_index)">
+          <strong>🧩 Batch {{ b.batch_index }}</strong>
+          <span class="meta">Loss: {{ b.loss ?? '-' }} &middot; Acc: {{ b.acc }}</span>
+          <span class="toggle">{{ isExpanded(b.batch_index) ? '▲' : '▼' }}</span>
+        </div>
+
+        <div class="batch-windows" *ngIf="isExpanded(b.batch_index)">
+          <div *ngFor="let w of b.windows; let idx = index" class="window-row">
+            <div class="win-index">{{ idx + 1 }}.</div>
+            <div class="win-main">
+              <span class="icon" [style.color]="colorFor(w.correct)">{{ iconFor(w.correct) }}</span>
+              <span class="mono"> true: {{ w.true }} &nbsp; pred: {{ w.pred }} </span>
+              <span class="result"> = {{ w.correct ? 'True' : 'False' }} Prediction</span>
+
+              <!-- top-3 probs -->
+              <div class="top3">
+                <div *ngFor="let t of w.top3" class="top3-row">
+                  <div class="label">s{{ t.label_raw }}</div>
+                  <div class="bar">
+                    <div class="bar-inner" [style.width]="(t.prob * 100) + '%'" [style.background]="colorFor(w.correct)"></div>
+                  </div>
+                  <div class="pct">{{ fmtProb(t.prob) }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="batch-footer">Batch {{ b.batch_index }} summary</div>
+      </div>
+    </div>
+  </div>
+</div>
