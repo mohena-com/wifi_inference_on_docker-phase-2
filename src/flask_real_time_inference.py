@@ -327,14 +327,13 @@ def cleanup_files():
     filelist = glob.glob(os.path.join('/tmp/uploads', '**', '*.csv'), recursive=True)
     print(f"Predict: Found {len(filelist)} CSV files in /tmp/uploads for dataset creation.")  
     # Delete uploaded files after processing
-    for file_path in saved_file_paths:
+    for file in filelist:
         try:
-            os.remove(file_path)
-            print(f"Deleted uploaded file: {file_path}")
+            os.remove(file)
+            print(f"Deleted uploaded file: {file}")
         except Exception as e:
-            logger.warning(f"Failed to delete file {file_path}: {e}")
-    
-    
+            logger.warning(f"Failed to delete file {file}: {e}")
+
 
  
 
