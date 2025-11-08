@@ -178,9 +178,11 @@ def instantiate_from_runname(params, device=None):
     # create model instance
     model = create_model_instance(model_class, chosen_key, sample_batch, device)
     return model
+    
+from pathlib import Path
 
-def get_best_modle_path(config):
-    best_model_pattern = config.get('best_model_pattern')   
+def get_best_model_path(config):
+    best_model_pattern = config.get('best_model_pattern')
     print(f"Model path: {config.get('model_save_path')}")
     model_save_dir = Path(config.get('model_save_path'))
     print(f"Model save directory: {model_save_dir.resolve()}")

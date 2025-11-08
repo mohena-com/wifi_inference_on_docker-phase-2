@@ -1,7 +1,6 @@
 from flask import Flask, request, jsonify
 import numpy as np
 import tensorflow as tf
-from pathlib import Path
 import logging
 from datetime import datetime
 import sys
@@ -40,8 +39,8 @@ best_model_path = model_files[0]
 print(f"Loading best model from: {best_model_path}")
 '''
 from CSI_Model_Eval_helper import get_best_model_and_params
-from CSI_Model_Eval_helper import get_best_modle_path
-best_model_path = get_best_modle_path(config)
+from CSI_Model_Eval_helper import get_best_model_path
+best_model_path = get_best_model_path(config)
 model_instance, params, total_params, device, best_model_path = get_best_model_and_params(str(best_model_path))
 
 print(f"Loaded model: {model_instance} from {best_model_path}")
