@@ -170,7 +170,7 @@ def evaluate_model_on_input_data(test_loader, model, device, params=None):
                 loss = criterion(outputs, labels)
                 running_loss += float(loss.item())
                 correct += (preds == labels).sum().item()
-                print(f"✅  VERIFICATION labels:{labels} preds:{preds} ")
+                print(f"✅  VERIFICATION labels:{labels.squeeze().tolist()} preds:{preds.squeeze().tolist()} ")
                 total += labels.size(0)
                 val_true.extend(labels.cpu().numpy().tolist())
                 print(f"Batch {batch_idx + 1}: loss={loss.item():.4f}, acc={(preds == labels).sum().item()}/{labels.size(0)}")
