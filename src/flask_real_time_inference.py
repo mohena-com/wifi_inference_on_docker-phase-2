@@ -326,29 +326,6 @@ def predict():
 def cleanup_files():
     filelist = glob.glob(os.path.join('/tmp/uploads', '**', '*.csv'), recursive=True)
     print(f"Predict: Found {len(filelist)} CSV files in /tmp/uploads for dataset creation.")  
-     '''
-    # Now pass the saved file paths to WifiCSIDataset
-    dataset = WifiCSIDataset(logger, filelist, window_size=128, stride=64)
-   
-    i = 0
-    for a in dataset.samples:        
-        m_seq = a[0]
-        csi_seq = a[1]
-        label = a[2]
-        print(f"-----------------------------dataset.samples[{i}]--------------------------------------------------------:")       
-        print(f"Metadata Sequence: {m_seq}")
-        print(f"CSI Sequence: {csi_seq}")   
-        print(f"Label: {label}")
-        for l in label:
-            print(f"-->Label : {l} ") 
-        i += 1
-
-   
-    print(f"Dataset created with {len(dataset)} samples from uploaded files.")
-    
-     
-    val_true, val_pred, val_prob = evaluate_model_on_input_data(dataset)
-     '''
     # Delete uploaded files after processing
     for file_path in saved_file_paths:
         try:
@@ -356,6 +333,7 @@ def cleanup_files():
             print(f"Deleted uploaded file: {file_path}")
         except Exception as e:
             logger.warning(f"Failed to delete file {file_path}: {e}")
+    
     
 
  
