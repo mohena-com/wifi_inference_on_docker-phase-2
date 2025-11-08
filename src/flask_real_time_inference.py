@@ -261,6 +261,10 @@ def predict():
         )
         test_loader = DataLoader(test_dataset, batch_size=16, shuffle=False)
 
+        # expected batches:
+        print("DEBUG: expected batches (ceil):", math.ceil(len(test_dataset) / batch_size))
+        print("DEBUG: expected batches (floor = drop_last True):", len(test_dataset) // batch_size)
+
         # Evaluate on the uploaded dataset
         # AFTER
         val_true, val_pred, val_prob = evaluate_model_on_input_data(
