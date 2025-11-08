@@ -142,7 +142,7 @@ def evaluate_model_on_input_data(test_loader, model, device, params=None):
                 correct += (preds == labels).sum().item()
                 print(f"✅  VERIFICATION of Prediction for Batch {batch_idx + 1}")
                 for y, p in zip(labels.squeeze().tolist(), preds.squeeze().tolist()):
-                    print(f"     true:{y}  pred:{p}")
+                    print(f"     true:{y}  pred:{p} = {y == p} Prediction")
                 total += labels.size(0)
                 val_true.extend(labels.cpu().numpy().tolist())
                 print(f"Batch {batch_idx + 1}: loss={loss.item():.4f}, acc={(preds == labels).sum().item()}/{labels.size(0)}")
