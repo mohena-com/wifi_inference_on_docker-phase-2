@@ -54,7 +54,7 @@ class WifiCSIDataset(Dataset):
         print(f"A_02. all_meta: {all_meta.shape} all_csi: {all_csi.shape}")
 
         # Second pass: windowed sequences
-        print(f"A_01. Starting Second pass: windowed sequences.")
+        print(f"A_01. Starting Second pass: windowed sequences.{file_list}")
         print(f"    len(X_meta), len(X_csi), len(y), window_size, stride")
         for j, f in enumerate(file_list, start=1):
             X_meta, X_csi, y, _, _ = self.load_csv_as_numpy(f)
