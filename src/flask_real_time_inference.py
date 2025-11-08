@@ -260,10 +260,11 @@ def predict():
             stride=64
         )
         test_loader = DataLoader(test_dataset, batch_size=16, shuffle=False)
-
+        
+        import math
         # expected batches:
-        print("DEBUG: expected batches (ceil):", math.ceil(len(test_dataset) / batch_size))
-        print("DEBUG: expected batches (floor = drop_last True):", len(test_dataset) // batch_size)
+        print("DEBUG: expected batches (ceil):", math.ceil(len(test_dataset) / 16))
+        print("DEBUG: expected batches (floor = drop_last True):", len(test_dataset) // 16)
 
         # Evaluate on the uploaded dataset
         # AFTER
