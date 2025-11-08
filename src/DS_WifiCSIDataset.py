@@ -161,6 +161,5 @@ class WifiCSIDataset(Dataset):
             y = {"subject": subj, "activity": act}
             print(f"B_03. y subject: {len(y['subject'])} activity: {len(y['activity'])}"  )
             
-
-        	return X_meta, X_csi, y, meta_cols, csi_cols
+            return X_meta, X_csi, y, meta_cols, csi_cols
 
