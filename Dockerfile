@@ -15,8 +15,7 @@ RUN mkdir -p /tmp/uploads
 COPY src/ /app/
 COPY config/ /app/config/
 COPY models/ /app/models/
-COPY sample_test_data/ /app/sample_test_data/
-
+ 
 # Ensure static directory exists and copy static files
 RUN mkdir -p /app/static
 COPY src/index.html /app/static/index.html
