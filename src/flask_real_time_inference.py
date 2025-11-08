@@ -80,32 +80,6 @@ def create_json_message(val_true, val_pred, val_prob):
     json_message = json.dumps(message)
     return json_message
 
-
-def get_test_loader(test_dataset, batch_size, device):   
-    import os
-    from torch.utils.data import DataLoader
-
-    num_workers = 0 if device.type in ["mps", "cpu"] else min(4, max(1, (os.cpu_count() or 4) // 2))
-    pin_mem = True if device.type != "cpu" else False
-    print(f"Creating DataLoader with num_workers={num_workers}, pin_memory={pin_mem}, batch_size={batch_size} ")
-    test_loader = DataLoader(
-        test_dataset, batch_size=batch_size, shuffle=False,
-        num_workers=num_workers, pin_memory=pin_mem, persistent_workers=(num_workers > 0)
-    )
-    print(f"Created DataLoader with {len(test_loader)} batches.")
-    print(f"test_loader  :{test_loader}:")
-    for i, b in enumerate(test_loader):
-        print(f"Batch Values {i} : {b['label'].tolist()}")
-        lst = b['label'].tolist()
-        for val in lst:
-            print(f"  Label value: {val}")
-
-
-  #  batch = next(iter(test_loader))
-    
-  #  print(f"Sample batch keys: {batch.keys()}")
-    
-    return test_loader
 # --- drop-in replacement for evaluate_model_on_input_data in flask_real_time_inference.py ---
 def evaluate_model_on_input_data(test_loader, model, device, params=None):
     """
@@ -136,13 +110,11 @@ def evaluate_model_on_input_data(test_loader, model, device, params=None):
 
             # --- Forward pass ---
             outputs = model(csi_seq, meta_seq)
-            for a in outputs:
-                print(f"0==>output :{a}")
             probs = F.softmax(outputs, dim=1)
             preds = torch.argmax(outputs, dim=1)
             print(f"CSI shape: {csi_seq.shape}, META shape: {meta_seq.shape}, outputs: {outputs.shape}")
-            for a, b in zip(probs, preds):
-                print(f"1==>probs :{a}, pred: {b}")
+            for i, (o, a, b) in enumerate(zip(outputs, probs, preds), start=1):
+                print(f"{i}==>outputs: {o}, probs: {a}, pred: {b}")
 
             # --- Always store predictions and probabilities ---
             val_pred.extend(preds.cpu().numpy().tolist())
@@ -156,10 +128,7 @@ def evaluate_model_on_input_data(test_loader, model, device, params=None):
                 subj_tensor = batch["subject"]
                 if subj_tensor is not None and subj_tensor.numel() > 0:
                     labels = subj_tensor     # keep batch dim
-
-            print(f"Actual label value: {labels.squeeze().item() if labels.numel() == 1 else labels.squeeze().tolist()}")
-
-
+                    
             # --- Compute loss only if valid label exists ---
             if labels is not None and labels.numel() > 0:
                 if labels.dim() == 0:
