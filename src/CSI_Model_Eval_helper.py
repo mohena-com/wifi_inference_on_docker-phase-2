@@ -179,39 +179,33 @@ def instantiate_from_runname(params, device=None):
     model = create_model_instance(model_class, chosen_key, sample_batch, device)
     return model
 
-def get_best_model_and_params1(best_model_fname=None):
-    run_name = "best_overall_model_final_MobileNetV3_1D_LSTM_lr5e-04_bs16_adam_wd1e-04_ep100_valacc0.9656.pt"
-    params = parse_run_name(run_name)
-    print(params)
-    model_instance = None
-    total_params = 0
-    try:
-        try:
-            if getattr(torch.backends, 'mps', None) is not None and torch.backends.mps.is_available():
-                device = torch.device('mps')
-                # optional: improve matmul precision on MPS
-                try:
-                    torch.set_float32_matmul_precision('high')
-                except Exception:
-                    pass
-            elif torch.cuda.is_available():
-                device = torch.device('cuda')
-            else:
-                device = torch.device('cpu')
-        except Exception:
-            device = torch.device('cpu')
-        model_instance = instantiate_from_runname(params, device=device)
-        print(f"device used: {device}")
-        print(f"Created model instance: {model_instance.__class__.__name__}")
-        total_params = sum(p.numel() for p in model_instance.parameters())
-        print(f"Total parameters: {total_params}")
-    except Exception as e:
-        print(f"Failed to instantiate model: {e}")
-    return model_instance, params, total_params, device
+def get_model_file_name(models_dir="models", extensions=(".pt", ".pth", ".onnx")):
+    model_files = list_model_files("checkpoints", extensions=(".pt", ".pth"))
+    file_name = None
+    if model_files:
+        first_model = model_files[0]
+        print(f"✅ First model file: {first_model}")
+        file_name = os.path.basename(first_model)
+    else:
+        print("❌ No model files found.")
+    return file_name
 
-# --- drop-in replacement for get_best_model_and_params in CSI_Model_Eval_helper.py ---
-from pathlib import Path
-import torch
+def list_model_files(models_dir="models", extensions=(".pt", ".pth", ".onnx")): 
+    model_files = []
+    for root, dirs, files in os.walk(models_dir):
+        for file in files:
+            if file.lower().endswith(extensions):
+                full_path = os.path.join(root, file)
+                model_files.append(full_path)
+    
+    # Sort for consistent order
+    model_files.sort()
+    print(f"\n📦 Found {len(model_files)} model file(s) in '{models_dir}':")
+    for path in model_files:
+        print(" -", os.path.basename(path))
+    
+    return model_files
+
 
 def get_best_model_and_params(best_model_fname=None):
     """

@@ -194,11 +194,12 @@ def evaluate_model_on_input_data1(test_loader):
     Evaluate model on a DataLoader (works for inference and validation).
     Returns: val_true (optional), val_pred, val_prob
     """
+    from CSI_Model_Eval_helper import get_model_file_name
     from CSI_Model_Eval_helper import get_best_model_and_params
     import torch.nn.functional as F
-
+    model_file_name = get_model_file_name()
     criterion = nn.CrossEntropyLoss()
-    model, params, total_params, device = get_best_model_and_params()
+    model, params, total_params, device = get_best_model_and_params(model_file_name)
     print(f"Evaluating model on DataLoader with params: {params} on device: {device}")
 
     model.eval()
