@@ -247,7 +247,7 @@ from torch.utils.data import DataLoader, random_split
 @app.route('/gaitid/predict', methods=['POST'])
 def predict():
     uploaded_files = request.files.getlist('file')
-    logger.info(f"Received {len(uploaded_files)} files for prediction: {[f.filename for f in uploaded_files]}")
+    print(f"Received {len(uploaded_files)} files for prediction: {[f.filename for f in uploaded_files]}")
 
     upload_dir = '/tmp/uploads'
     os.makedirs(upload_dir, exist_ok=True)
@@ -265,9 +265,9 @@ def predict():
                 pad_df = pd.concat([last_row] * pad_rows, ignore_index=True)
                 df = pd.concat([df, pad_df], ignore_index=True)
                 df.to_csv(csv_path, index=False)
-                logger.info(f"Padded {os.path.basename(csv_path)} from {current_len} → {len(df)} rows.")
+                print(f"Padded {os.path.basename(csv_path)} from {current_len} → {len(df)} rows.")
             else:
-                logger.info(f"{os.path.basename(csv_path)} already has {current_len} rows — no padding needed.")
+                print(f"{os.path.basename(csv_path)} already has {current_len} rows — no padding needed.")
         except Exception as e:
             logger.error(f"Padding failed for {csv_path}: {e}")
 
@@ -276,7 +276,7 @@ def predict():
         filename = secure_filename(uploaded_file.filename)
         save_path = os.path.join(upload_dir, filename)
         uploaded_file.save(save_path)
-        logger.info(f"Saved uploaded file to {save_path}")
+        print(f"Saved uploaded file to {save_path}")
 
         pad_csv_if_needed(save_path, min_rows=128)
         saved_file_paths.append(save_path)
@@ -289,7 +289,7 @@ def predict():
             window_size=128,
             stride=64
         )
-        test_loader = DataLoader(test_dataset, batch_size=1, shuffle=False)
+        test_loader = DataLoader(test_dataset, batch_size=16, shuffle=False)
 
         # Evaluate on the uploaded dataset
         # AFTER
@@ -307,7 +307,7 @@ def predict():
             }
             results.append(result_entry)
 
-        logger.info(f"Prediction complete for {len(saved_file_paths)} file(s).")
+        print(f"Prediction complete for {len(saved_file_paths)} file(s).")
         return jsonify({
             "message": "Prediction successful",
             "total_files": len(saved_file_paths),
@@ -322,7 +322,7 @@ def predict():
  
 
     filelist = glob.glob(os.path.join('/tmp/uploads', '**', '*.csv'), recursive=True)
-    logger.info(f"Predict: Found {len(filelist)} CSV files in /tmp/uploads for dataset creation.")  
+    print(f"Predict: Found {len(filelist)} CSV files in /tmp/uploads for dataset creation.")  
     # Now pass the saved file paths to WifiCSIDataset
     dataset = WifiCSIDataset(logger, filelist, window_size=128, stride=64)
     
@@ -349,7 +349,7 @@ def predict():
     for file_path in saved_file_paths:
         try:
             os.remove(file_path)
-            logger.info(f"Deleted uploaded file: {file_path}")
+            print(f"Deleted uploaded file: {file_path}")
         except Exception as e:
             logger.warning(f"Failed to delete file {file_path}: {e}")
     val_json = create_json_message(val_true, val_pred, val_prob)
