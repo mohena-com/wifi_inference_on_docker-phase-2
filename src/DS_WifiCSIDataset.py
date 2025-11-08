@@ -55,13 +55,14 @@ class WifiCSIDataset(Dataset):
 
         # Second pass: windowed sequences
         print(f"A_01. Starting Second pass: windowed sequences.{file_list}")
-        print(f"    len(X_meta), len(X_csi), len(y), window_size, stride")
+        
         for j, f in enumerate(file_list, start=1):
             X_meta, X_csi, y, _, _ = self.load_csv_as_numpy(f)
             X_meta = self.scaler_meta.transform(X_meta)
             X_csi = self.scaler_csi.transform(X_csi)
             T = len(X_meta)
-            print(f"{j} {len(X_meta)}, {len(X_csi)}, {len(y)}, {window_size}, {stride}")
+            print(f"{j} len(X_meta), len(X_csi), len(y), window_size, stride")
+            print(f"✅  {len(X_meta)}, {len(X_csi)}, {len(y)}, {window_size}, {stride}")
              
             if T < window_size:
                 window_size = int(T/2)  # Adjust window size if sequence is shorter
