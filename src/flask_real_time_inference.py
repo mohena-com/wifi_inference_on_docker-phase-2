@@ -114,8 +114,8 @@ def evaluate_model_on_input_data(test_loader, model, device, params=None):
             probs = F.softmax(outputs, dim=1)
             preds = torch.argmax(outputs, dim=1)
             print(f"CSI shape: {csi_seq.shape}, META shape: {meta_seq.shape}, outputs: {outputs.shape}")
-            for i, (o, a, b) in enumerate(zip(outputs, probs, preds), start=1):
-                print(f"{i}==>outputs: {o}, probs: {a}, pred: {b}")
+            #for i, (o, a, b) in enumerate(zip(outputs, probs, preds), start=1):
+             #   print(f"{i}==>outputs: {o}, probs: {a}, pred: {b}")
 
             # --- Always store predictions and probabilities ---
             val_pred.extend(preds.cpu().numpy().tolist())
@@ -148,8 +148,8 @@ def evaluate_model_on_input_data(test_loader, model, device, params=None):
                 print(f"Batch {batch_idx + 1}: No valid label/subject found → inference-only mode.")
     
     print(f"probs:{len(val_prob)},  pred:{len(val_pred)},   true:{len(val_true)}")
-    for a, b, c in zip(val_prob, val_pred, val_true):
-        print(f"probs:{a}, pred:{b},  true:{c}")
+   # for a, b, c in zip(val_prob, val_pred, val_true):
+    #    print(f"probs:{a}, pred:{b},  true:{c}")
     # --- Summary ---
     if total > 0:
         avg_loss = running_loss / len(test_loader)
@@ -260,7 +260,7 @@ def predict():
             stride=64
         )
         test_loader = DataLoader(test_dataset, batch_size=16, shuffle=False)
-        
+
         import math
         # expected batches:
         print("DEBUG: expected batches (ceil):", math.ceil(len(test_dataset) / 16))
