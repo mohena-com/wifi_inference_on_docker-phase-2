@@ -12,7 +12,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 RUN mkdir -p /tmp/uploads
 # Copy source code and other necessary folders
-COPY src/confg_reader.py /app/confg_reader.py
+COPY src/config_reader.py /app/config_reader.py
 COPY src/CSI_ID_MLOPS_advanced_v1.3.py /app/CSI_ID_MLOPS_advanced_v1.3.py
 COPY src/CSI_Model_Eval_helper.py /app/CSI_Model_Eval_helper.py
 COPY src/DL_CSILSTMNet.py /app/DL_CSILSTMNet.py
