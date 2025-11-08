@@ -68,9 +68,11 @@ class WifiCSIDataset(Dataset):
                 window_size = int(T/2)  # Adjust window size if sequence is shorter
 
             for start in range(0, T - window_size + 1, stride):
+                print(f"✅  {start}, {start+window_size}")
                 m_seq = X_meta[start:start+window_size]   # (W, 12)
                 csi_seq = X_csi[start:start+window_size]  # (W, 99)
                 y_seq = {k: v[start:start+window_size] for k, v in y.items()}   
+                print(f"✅  y_seq:  {y_seq['subject']},  {y_seq['activity']}")
                 self.samples.append((m_seq, csi_seq, y))
               #  print(f"A_03_{i}. Windowed sample added from {f}, start:{start}")   
         self.logger.critical(f"A_01. Completed Second pass: windowed sequences. sample length:{len(self.samples)}")
