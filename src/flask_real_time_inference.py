@@ -170,6 +170,7 @@ def evaluate_model_on_input_data(test_loader, model, device, params=None):
                 loss = criterion(outputs, labels)
                 running_loss += float(loss.item())
                 correct += (preds == labels).sum().item()
+                print(f"✅  VERIFICATION labels:{labels} preds:{preds} ")
                 total += labels.size(0)
                 val_true.extend(labels.cpu().numpy().tolist())
                 print(f"Batch {batch_idx + 1}: loss={loss.item():.4f}, acc={(preds == labels).sum().item()}/{labels.size(0)}")
@@ -189,87 +190,6 @@ def evaluate_model_on_input_data(test_loader, model, device, params=None):
 
     return val_true if len(val_true) > 0 else None, val_pred, val_prob
 
-def evaluate_model_on_input_data1(test_loader):
-    """
-    Evaluate model on a DataLoader (works for inference and validation).
-    Returns: val_true (optional), val_pred, val_prob
-    """
-    from CSI_Model_Eval_helper import get_model_file_name
-    from CSI_Model_Eval_helper import get_best_model_and_params
-    import torch.nn.functional as F
-    model_file_name = get_model_file_name()
-    criterion = nn.CrossEntropyLoss()
-    model, params, total_params, device = get_best_model_and_params(model_file_name)
-    print(f"Evaluating model on DataLoader with params: {params} on device: {device}")
-
-    model.eval()
-    running_loss, correct, total = 0.0, 0, 0
-    val_true, val_pred, val_prob = [], [], []
-    non_blocking_flag = (device.type == "cuda")
-
-    with torch.no_grad():
-        for batch_idx, batch in enumerate(test_loader):
-            print(f"\n🧩 Processing batch {batch_idx + 1}/{len(test_loader)}")
-
-            # --- Move inputs to device ---
-            csi_seq = batch["csi_seq"].to(device, non_blocking=non_blocking_flag)
-            meta_seq = batch["metadata_seq"].to(device, non_blocking=non_blocking_flag)
-
-            # --- Clean invalid values ---
-            csi_seq = torch.nan_to_num(csi_seq, nan=0.0, posinf=1e6, neginf=-1e6)
-            meta_seq = torch.nan_to_num(meta_seq, nan=0.0, posinf=1e6, neginf=-1e6)
-
-            # --- Forward pass ---
-            # --- Forward pass (fix order) ---
-            outputs = model(csi_seq, meta_seq)
-            for a in outputs:
-                print(f"0==>output :{a}")
-            probs = F.softmax(outputs, dim=1)
-            preds = torch.argmax(outputs, dim=1)
-            print(f"CSI shape: {csi_seq.shape}, META shape: {meta_seq.shape}, outputs: {outputs.shape}")
-            for a in outputs:
-                print(f"1==>output :{a}")
-
-
-            # --- Always store predictions and probabilities ---
-            val_pred.extend(preds.cpu().numpy().tolist())
-            val_prob.extend(probs.cpu().numpy().tolist())
-
-            # --- Fetch label (prefer subject) ---
-            labels = None
-            # NEW: keep the batch dimension
-            if "label" in batch and batch["label"].numel() > 0:
-                labels = batch["label"]               # shape: (batch,)
-                if labels.dim() == 0:                 # just in case
-                    labels = labels.unsqueeze(0)
-            elif "subject" in batch:  # if dataset adds subject key
-                subj_tensor = batch["subject"]
-                if subj_tensor is not None and subj_tensor.numel() > 0:
-                    labels = subj_tensor.squeeze()
-
-            print(f"Labels : {labels}")
-            # --- Compute loss only if valid label exists ---
-            if labels is not None and labels.numel() > 0:
-                labels = labels.to(device, non_blocking=non_blocking_flag)
-                loss = criterion(outputs, labels)
-                running_loss += float(loss.item())
-                correct += (preds == labels).sum().item()
-                total += labels.size(0)
-                val_true.extend(labels.cpu().numpy().tolist())
-                print(f"Batch {batch_idx + 1}: loss={loss.item():.4f}, acc={(preds == labels).sum().item()}/{labels.size(0)}")
-            else:
-                print(f"Batch {batch_idx + 1}: No valid label/subject found → inference-only mode.")
-
-
-    # --- Summary ---
-    if total > 0:
-        avg_loss = running_loss / len(test_loader)
-        acc = 100.0 * correct / total
-        print(f"\n✅ Validation complete: Avg Loss={avg_loss:.4f}, Accuracy={acc:.2f}%")
-    else:
-        print(f"\n✅ Inference complete: {len(val_pred)} predictions generated.")
-
-    return val_true if len(val_true) > 0 else None, val_pred, val_prob
 
 
 def setup_logging(log_file_path='/tmp/uploads/app.log'):
