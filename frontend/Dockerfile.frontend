@@ -1,14 +1,54 @@
-# frontend/Dockerfile
+# ---------- Stage 1: build Angular app ----------
 FROM node:18-alpine AS builder
+
+# set working dir
 WORKDIR /app
+
+# copy package manifests first (for caching)
 COPY package.json package-lock.json ./
+
+# install deps
 RUN npm ci --silent
+
+# copy the rest of the frontend sources
 COPY . .
+
+# build production. ensures output at /app/dist (may be /app/dist/<app-name> depending on angular.json)
 RUN npm run build -- --configuration production --output-path=dist
 
-FROM nginx:stable-alpine
-# Optional: copy a custom nginx.conf to enable SPA fallback and proxy
-COPY --from=builder /app/dist/ /usr/share/nginx/html/
-# If you want nginx to proxy /gaitid to api:5002, add custom nginx.conf and COPY it here
+# ---------- Stage 2: nginx to serve static files ----------
+FROM nginx:stable-alpine AS runtime
+
+# optional: copy custom nginx config for SPA fallback + API proxy
+# uncomment this line if you created frontend/nginx.conf
+# COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# create html dir and copy build artifacts
+RUN rm -rf /usr/share/nginx/html/*
+
+# copy the entire dist directory (works whether dist contains files or a subfolder)
+COPY --from=builder /app/dist /usr/share/nginx/html/dist_tmp
+
+# flatten if Angular created dist/<project-name>/, otherwise move files across
+# this command will:
+#  - if index exists in dist_tmp root -> move files to /usr/share/nginx/html
+#  - otherwise find the first subdir under dist_tmp and move its contents
+RUN set -eux; \
+    if [ -f /usr/share/nginx/html/dist_tmp/index.html ]; then \
+        mv /usr/share/nginx/html/dist_tmp/* /usr/share/nginx/html/; \
+    else \
+        subdir=$(find /usr/share/nginx/html/dist_tmp -mindepth 1 -maxdepth 1 -type d | head -n 1) || true; \
+        if [ -n "$subdir" ] && [ -f "$subdir/index.html" ]; then \
+            mv "$subdir"/* /usr/share/nginx/html/; \
+        else \
+            # fallback: copy everything (still safe)
+            mv /usr/share/nginx/html/dist_tmp/* /usr/share/nginx/html/ || true; \
+        fi; \
+    fi; \
+    rm -rf /usr/share/nginx/html/dist_tmp
+
+# expose port 80 for nginx
 EXPOSE 80
+
+# run nginx in foreground
 CMD ["nginx", "-g", "daemon off;"]
