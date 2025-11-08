@@ -179,38 +179,24 @@ def instantiate_from_runname(params, device=None):
     model = create_model_instance(model_class, chosen_key, sample_batch, device)
     return model
 
-def get_model_file_name(models_dir="models", extensions=(".pt", ".pth", ".onnx")):
-    model_files = list_model_files("checkpoints", extensions=(".pt", ".pth"))
-    file_name = None
-    if model_files:
-        first_model = model_files[0]
-        print(f"✅ First model file: {first_model}")
-        file_name = os.path.basename(first_model)
-    else:
-        print("❌ No model files found.")
-    return file_name
+def get_best_modle_path(config):
+    best_model_pattern = config.get('best_model_pattern')   
+    print(f"Model path: {config.get('model_save_path')}")
+    model_save_dir = Path(config.get('model_save_path'))
+    print(f"Model save directory: {model_save_dir.resolve()}")
 
-def list_model_files(models_dir="models", extensions=(".pt", ".pth", ".onnx")): 
-    model_files = []
-    for root, dirs, files in os.walk(models_dir):
-        for file in files:
-            if file.lower().endswith(extensions):
-                full_path = os.path.join(root, file)
-                model_files.append(full_path)
-    
-    # Sort for consistent order
-    model_files.sort()
-    print(f"\n📦 Found {len(model_files)} model file(s) in '{models_dir}':")
-    for path in model_files:
-        print(" -", os.path.basename(path))
-    
-    return model_files
+    model_files = list(model_save_dir.glob(best_model_pattern))
+    print(f"Found model files: {model_files}")
+    if not model_files:
+        raise FileNotFoundError("No model files found")
 
-from pathlib import Path
+    # Assume exactly one file matches the pattern; pick the first entry
+    best_model_path = model_files[0]
+    print(f"Loading best model from: {best_model_path}")
+    return best_model_path     
+
 
 def get_best_model_and_params(best_model_fname=None):
- 
-    # 1) Decide run name: use checkpoint stem if provided, else fall back to your default
     if best_model_fname is not None:
         run_name = Path(best_model_fname).stem
     else:

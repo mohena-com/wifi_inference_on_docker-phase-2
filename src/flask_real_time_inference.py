@@ -24,7 +24,7 @@ CORS(app)  # <-- Add here
 CONFIG_FILE = os.environ.get('CONFIG_FILE', 'config/gait_id_config.properties')
 config = ConfigReader(CONFIG_FILE)
 print(f"0. Using config file: CONFIG_FILE:{CONFIG_FILE} config:{config}")
- 
+''' 
 best_model_pattern = config.get('best_model_pattern')   
 print(f"Model path: {config.get('model_save_path')}")
 model_save_dir = Path(config.get('model_save_path'))
@@ -38,9 +38,9 @@ if not model_files:
 # Assume exactly one file matches the pattern; pick the first entry
 best_model_path = model_files[0]
 print(f"Loading best model from: {best_model_path}")
-
+'''
 from CSI_Model_Eval_helper import get_best_model_and_params   
-model_instance, params, total_params, device = get_best_model_and_params(str(best_model_path))
+model_instance, params, total_params, device, best_model_path = get_best_model_and_params(config, str(best_model_path))
 
 print(f"Loaded model: {model_instance} from {best_model_path}")
 
@@ -128,7 +128,7 @@ def evaluate_model_on_input_data(test_loader, model, device, params=None):
                 subj_tensor = batch["subject"]
                 if subj_tensor is not None and subj_tensor.numel() > 0:
                     labels = subj_tensor     # keep batch dim
-                    
+
             # --- Compute loss only if valid label exists ---
             if labels is not None and labels.numel() > 0:
                 if labels.dim() == 0:
