@@ -176,7 +176,7 @@ def setup_logging(log_file_path='/tmp/uploads/app.log'):
         ],
     )
     logger = logging.getLogger()
-    logger.debug("Logger initialized")
+    print("Logger initialized")
     return logger
 
 import logging

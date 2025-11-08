@@ -37,7 +37,7 @@ class WifiCSIDataset(Dataset):
         print(f"A_00. Starting first pass for scaling.")
         for f in file_list:
             X_meta, X_csi, _, _, _ = self.load_csv_as_numpy(f)
-            self.logger.debug(f"A_00_{i}. X_meta: {X_meta.shape} X_csi: {X_csi.shape}")
+            print(f"A_00_{i}. X_meta: {X_meta.shape} X_csi: {X_csi.shape}")
             print(f"A_00_{i}. X_meta: {len(X_meta[0])} ")
             print(f"A_01_{i}. X_csi: {len(X_csi[0])} ")
 
@@ -45,13 +45,13 @@ class WifiCSIDataset(Dataset):
             all_csi.append(X_csi)
             i = i+1
         self.logger.critical(f"A_00. Completed first pass for scaling.")   
-        self.logger.debug(f"A_01. all_meta: {(len(all_meta[0]))} all_csi: {len(all_csi)}")
+        print(f"A_01. all_meta: {(len(all_meta[0]))} all_csi: {len(all_csi)}")
 
         all_meta = np.vstack(all_meta)
         all_csi = np.vstack(all_csi)
         self.scaler_meta.fit(all_meta)
         self.scaler_csi.fit(all_csi)
-        self.logger.debug(f"A_02. all_meta: {all_meta.shape} all_csi: {all_csi.shape}")
+        print(f"A_02. all_meta: {all_meta.shape} all_csi: {all_csi.shape}")
 
         # Second pass: windowed sequences
         print(f"A_01. Starting Second pass: windowed sequences.")
@@ -73,7 +73,7 @@ class WifiCSIDataset(Dataset):
                 csi_seq = X_csi[start:start+window_size]  # (W, 99)
                 y_seq = {k: v[start:start+window_size] for k, v in y.items()}   
                 self.samples.append((m_seq, csi_seq, y))
-                self.logger.debug(f"A_03_{i}. Windowed sample added from {f}, start:{start}")   
+                print(f"A_03_{i}. Windowed sample added from {f}, start:{start}")   
         self.logger.critical(f"A_01. Completed Second pass: windowed sequences. sample length:{len(self.samples)}")
 
         print(f"A_01. Completed Second pass: windowed sequences. sample length:{len(self.samples)}")
@@ -161,9 +161,9 @@ class WifiCSIDataset(Dataset):
 
             X_meta = np.array(X_meta, dtype=np.float32)  # (T, 12)
             X_csi = np.array(X_csi, dtype=np.float32)    # (T, 99)
-            self.logger.debug(f"B_01. X_meta: {X_meta.shape} X_csi: {X_csi.shape}")
+            print(f"B_01. X_meta: {X_meta.shape} X_csi: {X_csi.shape}")
             
-            self.logger.debug(f"B_02. Subject: {len(subj)}, Activity: {len(act)}")
+            print(f"B_02. Subject: {len(subj)}, Activity: {len(act)}")
             y = {"subject": subj, "activity": act}
             print(f"B_03. y subject: {y['subject']} activity: {y['activity']}"  )
             
