@@ -4,7 +4,7 @@ IFS=$'\n\t'
 
 HOST_PORT=8080
 CONTAINER_PORT=80
-HEALTH_URL="http://localhost:${HOST_PORT}/gaitid/index.html"
+HEALTH_URL="http://localhost:${HOST_PORT}/index.html"
 MAX_HEALTH_RETRIES=3        # number of retries for health check
 SLEEP_BETWEEN_RETRIES=5     # seconds between retries
 CONTAINER_NAME="wifi_inference_frontend"
