@@ -3,7 +3,7 @@ set -euo pipefail
 IFS=$'\n\t'
 
 HOST_PORT=8080
-CONTAINER_PORT=8080
+CONTAINER_PORT=80
 HEALTH_URL="http://localhost:${HOST_PORT}/gaitid/index.html"
 MAX_HEALTH_RETRIES=3        # number of retries for health check
 SLEEP_BETWEEN_RETRIES=5     # seconds between retries
@@ -43,14 +43,24 @@ fi
 echo
 echo "🚀 Starting new container from image: ${IMAGE_NAME}"
 # Bind to all interfaces explicitly (0.0.0.0) so LAN access works
-docker run -e PYTHONUNBUFFERED=1 \
-  -d --restart unless-stopped \
-  -p "0.0.0.0:${HOST_PORT}:${CONTAINER_PORT}" \
+# docker run -e PYTHONUNBUFFERED=1 \
+#  -d --restart unless-stopped \
+#  -p "0.0.0.0:${HOST_PORT}:${CONTAINER_PORT}" \
+#  --name "${CONTAINER_NAME}" \
+#  "${IMAGE_NAME}"
+
+docker run -d --restart unless-stopped \
+  -p 0.0.0.0:${HOST_PORT}:${CONTAINER_PORT} \
   --name "${CONTAINER_NAME}" \
   "${IMAGE_NAME}"
 
+
+
 echo "⏳ Waiting a moment for the container to initialize..."
 sleep 2
+
+echo "Info:  docker logs -f  wifi_inference_frontend"
+echo 
 
 # Health check with retries
 echo "🔎 Checking health URL: ${HEALTH_URL}"
@@ -78,3 +88,4 @@ done
 err "❌ Health check failed after ${MAX_HEALTH_RETRIES} attempts. Check container logs:"
 err "  docker logs -f ${CONTAINER_NAME}"
 exit 2
+
