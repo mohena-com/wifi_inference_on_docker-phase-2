@@ -1,38 +1,28 @@
-# ---------- Stage 1: build Angular app ----------
-FROM node:18-alpine AS builder
-
-# set working dir
+# frontend/Dockerfile (multi-stage; Debian-slim builder for robust native builds)
+FROM node:18-bullseye-slim AS builder
 WORKDIR /app
 
-# copy package manifests first (for caching)
+# install build deps required by some npm packages (node-gyp, etc.)
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends python3 g++ make build-essential && \
+    rm -rf /var/lib/apt/lists/*
+
+# copy package manifests and install dependencies (cache friendly)
 COPY package.json package-lock.json ./
 
-# install deps
-RUN npm ci --silent
+# use npm ci (no --silent so errors are visible)
+RUN npm ci
 
-# copy the rest of the frontend sources
+# copy rest of source and build
 COPY . .
-
-# build production. ensures output at /app/dist (may be /app/dist/<app-name> depending on angular.json)
 RUN npm run build -- --configuration production --output-path=dist
 
-# ---------- Stage 2: nginx to serve static files ----------
+# ---------- runtime stage ----------
 FROM nginx:stable-alpine AS runtime
-
-# optional: copy custom nginx config for SPA fallback + API proxy
-# uncomment this line if you created frontend/nginx.conf
-# COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-# create html dir and copy build artifacts
 RUN rm -rf /usr/share/nginx/html/*
 
-# copy the entire dist directory (works whether dist contains files or a subfolder)
+# copy built artifacts (handles dist/ or dist/<project>/ in builder)
 COPY --from=builder /app/dist /usr/share/nginx/html/dist_tmp
-
-# flatten if Angular created dist/<project-name>/, otherwise move files across
-# this command will:
-#  - if index exists in dist_tmp root -> move files to /usr/share/nginx/html
-#  - otherwise find the first subdir under dist_tmp and move its contents
 RUN set -eux; \
     if [ -f /usr/share/nginx/html/dist_tmp/index.html ]; then \
         mv /usr/share/nginx/html/dist_tmp/* /usr/share/nginx/html/; \
@@ -41,14 +31,13 @@ RUN set -eux; \
         if [ -n "$subdir" ] && [ -f "$subdir/index.html" ]; then \
             mv "$subdir"/* /usr/share/nginx/html/; \
         else \
-            # fallback: copy everything (still safe)
             mv /usr/share/nginx/html/dist_tmp/* /usr/share/nginx/html/ || true; \
         fi; \
     fi; \
     rm -rf /usr/share/nginx/html/dist_tmp
 
-# expose port 80 for nginx
-EXPOSE 80
+# Optional: copy nginx.conf if you need SPA fallback + /gaitid proxy
+# COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# run nginx in foreground
+EXPOSE 8080
 CMD ["nginx", "-g", "daemon off;"]
