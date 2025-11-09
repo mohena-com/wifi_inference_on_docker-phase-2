@@ -18,9 +18,6 @@ echo
 git pull --ff-only
 
 
-
-
-
 echo "🔨    Building Docker image (${IMAGE_NAME}) from ${DOCKERFILE}..."
 echo
 docker build --pull -t "${IMAGE_NAME}" -f "${DOCKERFILE}" .
@@ -29,7 +26,6 @@ echo "🚀    Starting new container from image: ${IMAGE_NAME}"
 echo
 
 docker run -e PYTHONUNBUFFERED=1 \
-  #--env "CONFIG_FILE=config/gait_id_config.properties" \
   -d --restart unless-stopped \
   -p "${HOST_PORT}:${CONTAINER_PORT}" \
   --name "${CONTAINER_NAME}" \
