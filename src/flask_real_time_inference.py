@@ -313,19 +313,19 @@ def predict():
                 # Move inputs
                 csi_seq = batch["csi_seq"].to(device_local)
                 meta_seq = batch["metadata_seq"].to(device_local)
-
+                print(f"\n🧩 Processing batch {batch_idx + 1}/{len(test_loader)}")
                 # Forward
                 outputs = model_instance(csi_seq, meta_seq)   # (N, C)
                 probs_tensor = F.softmax(outputs, dim=1)      # (N, C)
                 preds_tensor = torch.argmax(outputs, dim=1)   # (N,)
-
+                print(f"CSI shape: {csi_seq.shape}, META shape: {meta_seq.shape}, outputs: {outputs.shape}")
                 # optional labels / metadata
                 b_labels = batch.get("label")        # may be tensor or None
                 b_labels_raw = batch.get("label")    # we do not have a separate raw mapping in dataset; use label
                 b_files = batch.get("file")
                 b_starts = batch.get("start")
                 b_wins = batch.get("window_size")
-
+                print(f"Batch {batch_idx + 1}: Processing {len(preds_tensor)} windows")
                 # compute batch-level loss if labels exist
                 batch_loss = None
                 batch_correct = 0
@@ -341,22 +341,23 @@ def predict():
                         batch_loss = None
                     batch_correct = int((preds_tensor == b_labels).sum().item())
                     batch_total = int(b_labels.size(0))
+                    print(f"✅  VERIFICATION of Prediction for Batch {batch_idx + 1}")
 
                 # convert to cpu numpy
                 preds = preds_tensor.cpu().numpy().tolist()
                 probs_np = probs_tensor.cpu().numpy()  # shape (N, C)
-
+                print(f"Batch {batch_idx + 1}: Processing {len(preds)} windows")
                 # iterate windows in this batch
                 for i in range(len(preds)):
                     pred_idx = int(preds[i])
                     # mapping index -> subject id (adjust if needed)
                     pred_raw = int(pred_idx + 1)
-
+                    print(f"Window {i + 1}/{len(preds)}: pred_idx={pred_idx}, pred_raw={pred_raw}"  )
                     prob_row = probs_np[i].tolist()
                     # top-3 probabilities
                     topk_idx = list(np.argsort(prob_row)[::-1][:3])
                     top3 = [{"label_idx": int(k), "label_raw": int(k + 1), "prob": float(prob_row[k])} for k in topk_idx]
-
+                    print(f"     Top-3 predictions: {top3}")
                     # true label extraction
                     true_idx = None
                     true_raw = None
@@ -367,7 +368,7 @@ def predict():
                     except Exception:
                         true_idx = None
                         true_raw = None
-
+                    print(f"     True label: true_idx={true_idx}, true_raw={true_raw}") 
                     # file / start / window_size resolution (best-effort)
                     try:
                         if isinstance(b_files, (list, tuple)):
@@ -376,6 +377,7 @@ def predict():
                             file_val = os.path.basename(str(b_files))
                     except Exception:
                         file_val = None
+                    print(f"     File: {file_val}")
                     try:
                         if hasattr(b_starts, "cpu"):
                             start_val = int(b_starts.cpu().numpy().tolist()[i])
@@ -383,6 +385,7 @@ def predict():
                             start_val = int(b_starts[i]) if isinstance(b_starts, (list, tuple)) else int(b_starts)
                     except Exception:
                         start_val = None
+                    print(f"     File: {file_val}, Start: {start_val}") 
                     try:
                         if hasattr(b_wins, "cpu"):
                             win_val = int(b_wins.cpu().numpy().tolist()[i])
@@ -390,7 +393,7 @@ def predict():
                             win_val = int(b_wins[i]) if isinstance(b_wins, (list, tuple)) else int(b_wins)
                     except Exception:
                         win_val = None
-
+                    print(f"     File: {file_val}, Start: {start_val}, Window Size: {win_val}") 
                     all_windows.append({
                         "file": file_val,
                         "start": start_val,
@@ -402,7 +405,7 @@ def predict():
                         "top3": top3
                         # note: full probs omitted to reduce JSON size; add "probs": prob_row if needed
                     })
-
+                    print(f"Added window: file={file_val}, start={start_val}, win_size={win_val}, true_idx={true_idx}, pred_idx={pred_idx}")
                 batch_summaries.append({
                     "batch_index": batch_idx + 1,
                     "batch_size": len(preds),
@@ -410,7 +413,7 @@ def predict():
                     "correct": batch_correct,
                     "total": batch_total
                 })
-
+                print(f"Batch {batch_idx + 1} summary: size={len(preds)}, loss={batch_loss}, correct={batch_correct}/{batch_total}")
         # build batches array by slicing all_windows according to batch_summaries
         batches = []
         cursor = 0
@@ -441,7 +444,7 @@ def predict():
         total_windows = len(all_windows)
         total_correct = sum(1 for w in all_windows if (w["true_idx"] is not None and w["true_idx"] == w["pred_idx"]))
         total_incorrect = total_windows - total_correct
-
+        print(f"Total windows: {total_windows}, correct: {total_correct}, incorrect: {total_incorrect}")
         by_file_preds = defaultdict(list)
         by_file_truths = defaultdict(list)
         for w in all_windows:
@@ -450,7 +453,8 @@ def predict():
                 by_file_preds[fname].append(w["pred_raw"])
             if w["true_raw"] is not None:
                 by_file_truths[fname].append(w["true_raw"])
-
+        print(f"by_file_preds: {by_file_preds}")    
+        print(f"by_file_truths: {by_file_truths}")  
         per_file_summary = []
         all_files = sorted(set(list(by_file_preds.keys()) + list(by_file_truths.keys())))
         for fname in all_files:
@@ -464,7 +468,7 @@ def predict():
                 "majority_actual": int(maj_true) if maj_true is not None else None,
                 "n_windows": len(preds)
             })
-
+        print(f"per_file_summary: {per_file_summary}")
         summary = {
             "total_windows": total_windows,
             "total_correct": total_correct,
@@ -477,7 +481,7 @@ def predict():
             "summary": summary,
             "per_file_summary": per_file_summary
         }
-
+        logger.info(f"Prediction complete: {summary}")  
         # save timestamped + latest json for static fetch
         ts = datetime.now().strftime("%Y%m%d_%H%M%S")
         out_ts = os.path.join(upload_dir, f"prediction_result_{ts}.json")
@@ -519,87 +523,7 @@ def serve_prediction_latest():
 
 
 
-@app.route('/gaitid/predict1', methods=['POST'])
-def predict1():
-    uploaded_files = request.files.getlist('file')
-    print(f"Received {len(uploaded_files)} files for prediction: {[f.filename for f in uploaded_files]}")
 
-    upload_dir = '/tmp/uploads'
-    os.makedirs(upload_dir, exist_ok=True)
-    saved_file_paths = []
-
-    # --- Helper: pad CSVs if too short ---
-    def pad_csv_if_needed(csv_path, min_rows=128):
-        """Pads short CSVs with last row to reach min_rows."""
-        try:
-            df = pd.read_csv(csv_path)
-            current_len = len(df)
-            if current_len < min_rows:
-                pad_rows = min_rows - current_len
-                last_row = df.iloc[-1:]
-                pad_df = pd.concat([last_row] * pad_rows, ignore_index=True)
-                df = pd.concat([df, pad_df], ignore_index=True)
-                df.to_csv(csv_path, index=False)
-                print(f"Padded {os.path.basename(csv_path)} from {current_len} → {len(df)} rows.")
-            else:
-                print(f"{os.path.basename(csv_path)} already has {current_len} rows — no padding needed.")
-        except Exception as e:
-            logger.error(f"Padding failed for {csv_path}: {e}")
-
-    # --- Save and pad uploaded files ---
-    for uploaded_file in uploaded_files:
-        filename = secure_filename(uploaded_file.filename)
-        save_path = os.path.join(upload_dir, filename)
-        uploaded_file.save(save_path)
-        print(f"Saved uploaded file to {save_path}")
-
-        pad_csv_if_needed(save_path, min_rows=128)
-        saved_file_paths.append(save_path)
-
-    # --- Load dataset and evaluate ---
-    try:
-        test_dataset = WifiCSIDataset(
-            logger=logger,
-            file_list=saved_file_paths,
-            window_size=128,
-            stride=64
-        )
-        test_loader = DataLoader(test_dataset, batch_size=16, shuffle=False)
-
-        import math
-        # expected batches:
-        print("DEBUG: expected batches (ceil):", math.ceil(len(test_dataset) / 16))
-        print("DEBUG: expected batches (floor = drop_last True):", len(test_dataset) // 16)
-
-        # Evaluate on the uploaded dataset
-        # AFTER
-        val_true, val_pred, val_prob = evaluate_model_on_input_data(
-            test_loader, model_instance, device, params
-        )
-
-        # --- Prepare structured results ---
-        results = []
-        for i, fpath in enumerate(saved_file_paths):
-            result_entry = {
-                "file": os.path.basename(fpath),
-                "predicted_label": int(val_pred[i]) if i < len(val_pred) else None,
-                "probabilities": val_prob[i] if i < len(val_prob) else None
-            }
-            results.append(result_entry)
-
-        print(f"Prediction complete for {len(saved_file_paths)} file(s).")
-
-        cleanup_files()
-
-        return jsonify({
-            "message": "Prediction successful",
-            "total_files": len(saved_file_paths),
-            "results": results
-        })
-
-    except Exception as e:
-        logger.exception("Prediction failed")
-        return jsonify({"error": str(e)}), 500
 
 
  
