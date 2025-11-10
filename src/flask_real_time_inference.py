@@ -321,6 +321,7 @@ def predict():
                 print(f"CSI shape: {csi_seq.shape}, META shape: {meta_seq.shape}, outputs: {outputs.shape}")
                 # optional labels / metadata
                 b_labels = batch.get("label")        # may be tensor or None
+                print(f"b_labels:{b_labels}")
                 b_labels_raw = batch.get("label")    # we do not have a separate raw mapping in dataset; use label
                 b_files = batch.get("file")
                 b_starts = batch.get("start")
