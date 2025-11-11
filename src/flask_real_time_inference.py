@@ -228,7 +228,9 @@ def predict():
                     csi_seq = torch.nan_to_num(csi_seq, nan=0.0, posinf=1e6, neginf=-1e6)
                 if torch.isnan(meta_seq).any() or torch.isinf(meta_seq).any():
                     meta_seq = torch.nan_to_num(meta_seq, nan=0.0, posinf=1e6, neginf=-1e6)
- 
+                if torch.isnan(b_labels).any() or torch.isinf(b_labels).any():
+                    b_labels = torch.nan_to_num(b_labels, nan=0).long()
+
                 # same per-batch normalization used in training
                 try:
                     mean = csi_seq.mean(dim=(0, 1), keepdim=True)
@@ -237,13 +239,13 @@ def predict():
                 except Exception:
                     pass
 
+                
                 # Forward
-                outputs = model_instance(csi_seq, meta_seq)   # (N, C)
-                probs_tensor = torch.softmax(outputs, dim=1)      # (N, C)
-                #print(f"🧩 Probabilities for Batch {batch_idx + 1}: {probs_tensor.cpu().numpy().tolist()}")
-                preds_tensor = torch.argmax(outputs, dim=1)       # (N,)
-                print(f"🧩 Predictions for Batch {batch_idx + 1}: {preds_tensor.cpu().numpy().tolist()}")
-                #print(f"CSI shape: {csi_seq.shape}, META shape: {meta_seq.shape}, outputs: {outputs.shape}")
+                with torch.no_grad():  # disable gradient tracking for speed & memory efficiency
+                    outputs = model_instance(csi_seq, meta_seq)   # (N, C)
+                    probs_tensor = torch.softmax(outputs, dim=1)  # (N, C)
+                    preds_tensor = torch.argmax(outputs, dim=1)   # (N,)               
+                
  
                 b_files = batch.get("file")
                 b_starts = batch.get("start")
@@ -264,7 +266,7 @@ def predict():
                         batch_loss = None
                     batch_correct = int((preds_tensor == b_labels).sum().item())
                     batch_total = int(b_labels.size(0))
-                    print(f"✅  VERIFICATION of Prediction for Batch {batch_idx + 1}")
+                    print(f"✅  VERIFICATION of Prediction for Batch {batch_idx + 1} {batch_correct}/{batch_total} correct, loss: {batch_loss}")
 
                 # convert to cpu numpy
                 preds = preds_tensor.cpu().numpy().tolist()
