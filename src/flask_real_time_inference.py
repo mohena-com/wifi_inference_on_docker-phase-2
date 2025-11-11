@@ -90,15 +90,34 @@ def evaluate_model_on_input_data(test_loader, model, device, params=None):
             # --- Move inputs to device ---
             csi_seq = batch["csi_seq"].to(device, non_blocking=non_blocking_flag)
             meta_seq = batch["metadata_seq"].to(device, non_blocking=non_blocking_flag)
-
-            # --- Clean invalid values ---
-            csi_seq = torch.nan_to_num(csi_seq, nan=0.0, posinf=1e6, neginf=-1e6)
-            meta_seq = torch.nan_to_num(meta_seq, nan=0.0, posinf=1e6, neginf=-1e6)
-
+            labels = batch["label"].squeeze().to(device, non_blocking=non_blocking_flag).long()     
+            print(f"Batch {batch_idx + 1} labels : {labels.cpu().numpy().tolist()}")
+            # guard against NaN/Inf values in inputs/labels
+            if torch.isnan(csi_seq).any() or torch.isinf(csi_seq).any():
+                csi_seq = torch.nan_to_num(csi_seq, nan=0.0, posinf=1e6, neginf=-1e6)
+            if torch.isnan(meta_seq).any() or torch.isinf(meta_seq).any():
+                meta_seq = torch.nan_to_num(meta_seq, nan=0.0, posinf=1e6, neginf=-1e6)
+ 
+             # same per-batch normalization used in training
+            try:
+                mean = csi_seq.mean(dim=(0, 1), keepdim=True)
+                std = csi_seq.std(dim=(0, 1), keepdim=True) + 1e-8
+                csi_seq = (csi_seq - mean) / std
+            except Exception:
+                pass
+            
+            
             # --- Forward pass ---
             outputs = model(csi_seq, meta_seq)
-            probs = F.softmax(outputs, dim=1)
+            loss = criterion(outputs, labels)
+            running_loss += float(loss.item())
             preds = torch.argmax(outputs, dim=1)
+            print(f"Predictions for Batch {batch_idx + 1}: {preds.cpu().numpy().tolist()}")
+            #   correct += (preds == labels).sum().item()
+            #   total += labels.size(0)
+            probs = torch.softmax(outputs, dim=1)
+            print(f"Probabilities for Batch {batch_idx + 1}: {probs.cpu().numpy().tolist()}")
+            
             print(f"CSI shape: {csi_seq.shape}, META shape: {meta_seq.shape}, outputs: {outputs.shape}")
             #for i, (o, a, b) in enumerate(zip(outputs, probs, preds), start=1):
              #   print(f"{i}==>outputs: {o}, probs: {a}, pred: {b}")
@@ -106,6 +125,7 @@ def evaluate_model_on_input_data(test_loader, model, device, params=None):
             # --- Always store predictions and probabilities ---
             val_pred.extend(preds.cpu().numpy().tolist())
             val_prob.extend(probs.cpu().numpy().tolist())
+            val_true.extend(labels.cpu().numpy().tolist())
 
             # --- Fetch label (prefer subject) ---
             labels = None
