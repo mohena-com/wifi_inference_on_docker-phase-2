@@ -320,7 +320,7 @@ def predict():
             file_list = cleanup_files()
         except Exception:
             logger.exception("cleanup_files failed")
-        inference_response.set(file_list=file_list)
+        inference_response.file_list=file_list
         from flask import jsonify
        # response_data = inference_result()
         return jsonify(inference_response), 200
