@@ -271,13 +271,13 @@ def predict():
                 # convert to cpu numpy
                 preds = preds_tensor.cpu().numpy().tolist()
                 probs_np = probs_tensor.cpu().numpy()  # shape (N, C)
-                print(f"Batch {batch_idx + 1}: Processing {len(preds)} windows")
+                print(f"🔄 Batch {batch_idx + 1}: Processing {len(preds)} windows")
                 # iterate windows in this batch
                 for i in range(len(preds)):
                     pred_idx = int(preds[i])
                     # mapping index -> subject id (adjust if needed)
                     pred_raw = int(pred_idx + 1)
-                    print(f"Window {i + 1}/{len(preds)}: pred_idx={pred_idx}, pred_raw={pred_raw}"  )
+                    print(f"💻 Window {i + 1}/{len(preds)}: pred_idx={pred_idx}, pred_raw={pred_raw}"  )
                      
                    
                     true_idx = None
@@ -289,8 +289,7 @@ def predict():
                     except Exception:
                         true_idx = None
                         true_raw = None
-                   # print(f"     True label: true_idx={true_idx}, true_raw={true_raw}")
-                    # file / start / window_size resolution (best-effort)
+               
                     try:
                         if isinstance(b_files, (list, tuple)):
                             file_val = os.path.basename(str(b_files[i]))
@@ -298,8 +297,7 @@ def predict():
                             file_val = os.path.basename(str(b_files))
                     except Exception:
                         file_val = None
-                  #  print(f"     File: {file_val}")
-                    try:
+                     try:
                         if hasattr(b_starts, "cpu"):
                             start_val = int(b_starts.cpu().numpy().tolist()[i])
                         else:
@@ -326,8 +324,7 @@ def predict():
                         #"top3": top3
                         # note: full probs omitted to reduce JSON size; add "probs": prob_row if needed
                     })
-                  #  print(f"Added window: file={file_val}, start={start_val}, win_size={win_val}, true_idx={true_idx}, pred_idx={pred_idx}")
-                batch_summaries.append({
+                 batch_summaries.append({
                     "batch_index": batch_idx + 1,
                     "batch_size": len(preds),
                     "loss": batch_loss,
