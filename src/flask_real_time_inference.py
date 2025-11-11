@@ -233,7 +233,7 @@ def predict():
         all_windows = []         # list of window dicts in order
         batch_summaries = []
         non_blocking_flag = (device.type == "cuda")
-        inference_response = InferenceResponse(file_name=[], batches=[])
+        inference_response = InferenceResponse(file_list=[], batches=[])
 
         with torch.no_grad():
             for batch_idx, batch in enumerate(test_loader):
