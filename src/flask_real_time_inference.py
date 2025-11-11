@@ -52,6 +52,25 @@ except Exception as e:
     print(f"[WARNING] Could not load model weights from {best_model_path}: {e}")
 # ---------------------------------------------------------------
 
+from dataclasses import dataclass, asdict
+from typing import List
+
+@dataclass
+class BatchResult:
+    batch: int
+    true_value: List[int]
+    predicted_value: List[int]
+    correct: int
+    total: int
+    accuracy: str
+    loss: float
+
+
+@dataclass
+class InferenceResponse:
+    file_name: str
+    batches: List[BatchResult]
+
 
 
 
@@ -214,8 +233,13 @@ def predict():
         all_windows = []         # list of window dicts in order
         batch_summaries = []
         non_blocking_flag = (device.type == "cuda")
+        inference_response = InferenceResponse(file_name="", batches=[])
+
         with torch.no_grad():
             for batch_idx, batch in enumerate(test_loader):
+
+                
+
                 print(f"\n🧩 Processing batch {batch_idx + 1}/{len(test_loader)}")
                 # Move inputs
                 csi_seq = batch["csi_seq"].to(device, non_blocking=non_blocking_flag)
@@ -279,8 +303,18 @@ def predict():
                     lab = int(b_labels[i])
                     # mapping index -> subject id (adjust if needed)                    
                     print(f"💻 Window {i + 1}/{len(preds)}: pred_={pred}, pred_raw={lab}, {pred==lab}"  )
-                    
 
+                inference_response.batches.append(BatchResult(
+                 batch=batch_idx + 1,
+                 true_value=b_labels.cpu().numpy().tolist(),
+                 predicted_value=preds,
+                 correct=batch_correct,
+                 total=batch_total,
+                 accuracy=f"{batch_correct}/{batch_total}",
+                 loss=batch_loss
+                ))
+        # Finished all batches    
+        
         # optional cleanup of uploaded csvs (your existing cleanup_files)
         try:
             cleanup_files()
@@ -288,8 +322,8 @@ def predict():
             logger.exception("cleanup_files failed")
         
         from flask import jsonify
-        response_data = inference_result()
-        return jsonify(response_data), 200
+       # response_data = inference_result()
+        return jsonify(inference_response), 200
 
     except Exception as e:
         logger.exception("Prediction failed")
@@ -302,9 +336,10 @@ def inference_result():
             {
                 "batch": 1,
                 "true_value": [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2],
-                "predicted_value": [29, 29, 19, 22, 22, 22, 5, 10, 10, 10, 8, 8, 10, 8, 20, 10],
+                "predicted_value": [29, 29, 19, 22, 22, 22, 5, 10, 10, 10, 8, 8, 10, 8, 20, 10],                
                 "correct": 0,
                 "total": 16,
+                "accuracy": "0/16",
                 "loss": 4.568926811218262
             },
             {
@@ -313,6 +348,7 @@ def inference_result():
                 "predicted_value": [8, 10],
                 "correct": 0,
                 "total": 2,
+                "accuracy": "0/2",
                 "loss": 5.630928039550781
             }
         ]
