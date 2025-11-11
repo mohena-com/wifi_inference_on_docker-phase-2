@@ -320,7 +320,7 @@ def predict():
             cleanup_files()
         except Exception:
             logger.exception("cleanup_files failed")
-        
+        inference_response.set(file_name=", ".join([os.path.basename(p) for p in saved_file_paths]))
         from flask import jsonify
        # response_data = inference_result()
         return jsonify(inference_response), 200
@@ -329,33 +329,7 @@ def predict():
         logger.exception("Prediction failed")
         return jsonify({"error": str(e), "trace": traceback.format_exc()}), 500
 
-def inference_result():
-    response_data = {
-        "file_name": "/tmp/uploads/E1_S02_C03_A07_T14.csv",
-        "batches": [
-            {
-                "batch": 1,
-                "true_value": [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2],
-                "predicted_value": [29, 29, 19, 22, 22, 22, 5, 10, 10, 10, 8, 8, 10, 8, 20, 10],                
-                "correct": 0,
-                "total": 16,
-                "accuracy": "0/16",
-                "loss": 4.568926811218262
-            },
-            {
-                "batch": 2,
-                "true_value": [2, 2],
-                "predicted_value": [8, 10],
-                "correct": 0,
-                "total": 2,
-                "accuracy": "0/2",
-                "loss": 5.630928039550781
-            }
-        ]
-    }
-
-    return response_data
-
+ 
 # Helper route to serve latest JSON (so Angular can GET /gaitid/prediction_result_latest.json)
 @app.route('/gaitid/prediction_result_latest.json', methods=['GET'])
 def serve_prediction_latest():
@@ -385,6 +359,7 @@ def cleanup_files():
             print(f"Deleted uploaded file: {file}")
         except Exception as e:
             logger.warning(f"Failed to delete file {file}: {e}")
+    return filelist
 
 
  
