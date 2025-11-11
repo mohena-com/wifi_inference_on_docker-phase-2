@@ -287,12 +287,36 @@ def predict():
         except Exception:
             logger.exception("cleanup_files failed")
 
-        return jsonify("{}"), 200
+    return jsonify(inference_result()), 200
 
     except Exception as e:
         logger.exception("Prediction failed")
         return jsonify({"error": str(e), "trace": traceback.format_exc()}), 500
 
+def inference_result():
+    response_data = {
+        "file_name": "/tmp/uploads/E1_S02_C03_A07_T14.csv",
+        "batches": [
+            {
+                "batch": 1,
+                "true_value": [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2],
+                "predicted_value": [29, 29, 19, 22, 22, 22, 5, 10, 10, 10, 8, 8, 10, 8, 20, 10],
+                "correct": 0,
+                "total": 16,
+                "loss": 4.568926811218262
+            },
+            {
+                "batch": 2,
+                "true_value": [2, 2],
+                "predicted_value": [8, 10],
+                "correct": 0,
+                "total": 2,
+                "loss": 5.630928039550781
+            }
+        ]
+    }
+
+    return JSONResponse(content=response_data)
 
 # Helper route to serve latest JSON (so Angular can GET /gaitid/prediction_result_latest.json)
 @app.route('/gaitid/prediction_result_latest.json', methods=['GET'])
