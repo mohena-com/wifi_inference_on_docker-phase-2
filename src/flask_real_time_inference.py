@@ -220,8 +220,8 @@ def predict():
                 # Move inputs
                 csi_seq = batch["csi_seq"].to(device, non_blocking=non_blocking_flag)
                 meta_seq = batch["metadata_seq"].to(device, non_blocking=non_blocking_flag)
-                labels = batch["label"].squeeze().to(device, non_blocking=non_blocking_flag)
-                print(f"🧩 Batch {batch_idx + 1} labels : {labels.cpu().numpy().tolist()}")
+                b_labels = batch["label"].squeeze().to(device, non_blocking=non_blocking_flag)
+                print(f"🧩 Batch {batch_idx + 1} labels:          {b_labels.cpu().numpy().tolist()}")
 
                 # guard against NaN/Inf values in inputs/labels
                 if torch.isnan(csi_seq).any() or torch.isinf(csi_seq).any():
@@ -240,14 +240,14 @@ def predict():
                 # Forward
                 outputs = model_instance(csi_seq, meta_seq)   # (N, C)
                 probs_tensor = torch.softmax(outputs, dim=1)      # (N, C)
-                print(f"🧩 Probabilities for Batch {batch_idx + 1}: {probs_tensor.cpu().numpy().tolist()}")
+                #print(f"🧩 Probabilities for Batch {batch_idx + 1}: {probs_tensor.cpu().numpy().tolist()}")
                 preds_tensor = torch.argmax(outputs, dim=1)       # (N,)
                 print(f"🧩 Predictions for Batch {batch_idx + 1}: {preds_tensor.cpu().numpy().tolist()}")
                 print(f"CSI shape: {csi_seq.shape}, META shape: {meta_seq.shape}, outputs: {outputs.shape}")
                 # optional labels / metadata
-                b_labels = batch.get("label")        # may be tensor or None
-                print(f"b_labels:{b_labels}")
-                b_labels_raw = batch.get("label")    # we do not have a separate raw mapping in dataset; use label
+                #b_labels = batch.get("label")        # may be tensor or None
+                #print(f"b_labels:{b_labels}")
+                #b_labels_raw = batch.get("label")    # we do not have a separate raw mapping in dataset; use label
                 b_files = batch.get("file")
                 b_starts = batch.get("start")
                 b_wins = batch.get("window_size")
