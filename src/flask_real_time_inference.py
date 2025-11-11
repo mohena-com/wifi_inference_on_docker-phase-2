@@ -315,14 +315,33 @@ def predict():
 
         with torch.no_grad():
             for batch_idx, batch in enumerate(test_loader):
+                print(f"\n🧩 Processing batch {batch_idx + 1}/{len(test_loader)}")
                 # Move inputs
                 csi_seq = batch["csi_seq"].to(device_local)
                 meta_seq = batch["metadata_seq"].to(device_local)
-                print(f"\n🧩 Processing batch {batch_idx + 1}/{len(test_loader)}")
+                labels = batch["label"].squeeze().to(device, non_blocking=non_blocking_flag).long()
+                print(f"🧩 Batch {batch_idx + 1} labels : {labels.cpu().numpy().tolist()}")
+
+                # guard against NaN/Inf values in inputs/labels
+                if torch.isnan(csi_seq).any() or torch.isinf(csi_seq).any():
+                    csi_seq = torch.nan_to_num(csi_seq, nan=0.0, posinf=1e6, neginf=-1e6)
+                if torch.isnan(meta_seq).any() or torch.isinf(meta_seq).any():
+                    meta_seq = torch.nan_to_num(meta_seq, nan=0.0, posinf=1e6, neginf=-1e6)
+ 
+                # same per-batch normalization used in training
+                try:
+                    mean = csi_seq.mean(dim=(0, 1), keepdim=True)
+                    std = csi_seq.std(dim=(0, 1), keepdim=True) + 1e-8
+                    csi_seq = (csi_seq - mean) / std
+                except Exception:
+                    pass
+
                 # Forward
                 outputs = model_instance(csi_seq, meta_seq)   # (N, C)
-                probs_tensor = F.softmax(outputs, dim=1)      # (N, C)
+                probs_tensor = torch.softmax(outputs, dim=1)      # (N, C)
+                print(f"🧩 Probabilities for Batch {batch_idx + 1}: {probs_tensor.cpu().numpy().tolist()}")
                 preds_tensor = torch.argmax(outputs, dim=1)   # (N,)
+                print(f"🧩 Predictions for Batch {batch_idx + 1}: {preds_tensor.cpu().numpy().tolist()}")
                 print(f"CSI shape: {csi_seq.shape}, META shape: {meta_seq.shape}, outputs: {outputs.shape}")
                 # optional labels / metadata
                 b_labels = batch.get("label")        # may be tensor or None
