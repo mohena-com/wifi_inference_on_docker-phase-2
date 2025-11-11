@@ -243,11 +243,8 @@ def predict():
                 #print(f"🧩 Probabilities for Batch {batch_idx + 1}: {probs_tensor.cpu().numpy().tolist()}")
                 preds_tensor = torch.argmax(outputs, dim=1)       # (N,)
                 print(f"🧩 Predictions for Batch {batch_idx + 1}: {preds_tensor.cpu().numpy().tolist()}")
-                print(f"CSI shape: {csi_seq.shape}, META shape: {meta_seq.shape}, outputs: {outputs.shape}")
-                # optional labels / metadata
-                #b_labels = batch.get("label")        # may be tensor or None
-                #print(f"b_labels:{b_labels}")
-                #b_labels_raw = batch.get("label")    # we do not have a separate raw mapping in dataset; use label
+                #print(f"CSI shape: {csi_seq.shape}, META shape: {meta_seq.shape}, outputs: {outputs.shape}")
+ 
                 b_files = batch.get("file")
                 b_starts = batch.get("start")
                 b_wins = batch.get("window_size")
