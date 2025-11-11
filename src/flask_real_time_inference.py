@@ -266,7 +266,8 @@ def predict():
                         batch_loss = None
                     batch_correct = int((preds_tensor == b_labels).sum().item())
                     batch_total = int(b_labels.size(0))
-                    print(f"✅  VERIFICATION of Prediction for Batch {batch_idx + 1} : {batch_correct}/{batch_total} correct, loss: {batch_loss}")
+                    print(f"✅  VERIFICATION of Prediction for Batch {batch_idx + 1} "
+                    print(f"    ✅ {batch_correct}/{batch_total} correct, ❌ loss: {batch_loss}")
 
                 # convert to cpu numpy
                 preds = preds_tensor.cpu().numpy().tolist()
