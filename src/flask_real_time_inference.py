@@ -287,7 +287,7 @@ def predict():
         except Exception:
             logger.exception("cleanup_files failed")
 
-    return jsonify(inference_result()), 200
+        return jsonify(inference_result()), 200
 
     except Exception as e:
         logger.exception("Prediction failed")
