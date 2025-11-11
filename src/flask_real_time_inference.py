@@ -277,9 +277,8 @@ def predict():
                 for i in range(len(preds)):
                     pred = int(preds[i])
                     lab = int(b_labels[i])
-                    # mapping index -> subject id (adjust if needed)
-                    
-                    print(f"💻 Window {i + 1}/{len(preds)}: pred_={pred_idx}, pred_raw={pred_raw}"  )
+                    # mapping index -> subject id (adjust if needed)                    
+                    print(f"💻 Window {i + 1}/{len(preds)}: pred_={pred}, pred_raw={lab}, {pred==lab}"  )
                     
 
         # optional cleanup of uploaded csvs (your existing cleanup_files)
