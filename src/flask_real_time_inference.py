@@ -286,8 +286,10 @@ def predict():
             cleanup_files()
         except Exception:
             logger.exception("cleanup_files failed")
-
-        return jsonify(inference_result()), 200
+        
+        from flask import jsonify
+        response_data = inference_result()
+        return jsonify(response_data), 200
 
     except Exception as e:
         logger.exception("Prediction failed")
