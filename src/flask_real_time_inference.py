@@ -245,7 +245,7 @@ def predict():
                     outputs = model_instance(csi_seq, meta_seq)   # (N, C)
                     probs_tensor = torch.softmax(outputs, dim=1)  # (N, C)
                     preds_tensor = torch.argmax(outputs, dim=1)   # (N,)               
-                
+                print(f"🧩 Predictions for Batch {batch_idx + 1}: {preds_tensor.cpu().numpy().tolist()} ")
  
                 b_files = batch.get("file")
                 b_starts = batch.get("start")
