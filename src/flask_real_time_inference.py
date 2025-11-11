@@ -276,7 +276,7 @@ def predict():
                     # mapping index -> subject id (adjust if needed)
                     pred_raw = int(pred_idx + 1)
                     print(f"Window {i + 1}/{len(preds)}: pred_idx={pred_idx}, pred_raw={pred_raw}"  )
-                    prob_row = probs_np[i].tolist()
+                    prob_row = int(b_labels[i])
                     # top-3 probabilities
                     topk_idx = list(np.argsort(prob_row)[::-1][:3])
                     top3 = [{"label_idx": int(k), "label_raw": int(k + 1), "prob": float(prob_row[k])} for k in topk_idx]
