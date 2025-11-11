@@ -109,8 +109,7 @@ def evaluate_model_on_input_data(test_loader, model, device, params=None):
             
             # --- Forward pass ---
             outputs = model(csi_seq, meta_seq)
-            loss = criterion(outputs, labels)
-            running_loss += float(loss.item())
+            loss = criterion(outputs, labels)             
             preds = torch.argmax(outputs, dim=1)
             print(f"Predictions for Batch {batch_idx + 1}: {preds.cpu().numpy().tolist()}")
             #   correct += (preds == labels).sum().item()
