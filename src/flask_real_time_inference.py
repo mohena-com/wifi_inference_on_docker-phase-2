@@ -275,144 +275,12 @@ def predict():
                 print(f"🔄 Batch {batch_idx + 1}: Processing {len(preds)} windows")
                 # iterate windows in this batch
                 for i in range(len(preds)):
-                    pred_idx = int(preds[i])
+                    pred = int(preds[i])
+                    lab = int(b_labels[i])
                     # mapping index -> subject id (adjust if needed)
                     pred_raw = int(pred_idx + 1)
-                    print(f"💻 Window {i + 1}/{len(preds)}: pred_idx={pred_idx}, pred_raw={pred_raw}"  )
-                     
-                   
-                    true_idx = None
-                    true_raw = None
-                    try:
-                        if b_labels is not None and hasattr(b_labels, "cpu") and b_labels.numel() > 0:
-                            true_idx = int(b_labels.cpu().numpy().tolist()[i])
-                            true_raw = int(true_idx + 1)
-                    except Exception:
-                        true_idx = None
-                        true_raw = None
-               
-                    try:
-                        if isinstance(b_files, (list, tuple)):
-                            file_val = os.path.basename(str(b_files[i]))
-                        else:
-                            file_val = os.path.basename(str(b_files))
-                    except Exception:
-                        file_val = None
-                     try:
-                        if hasattr(b_starts, "cpu"):
-                            start_val = int(b_starts.cpu().numpy().tolist()[i])
-                        else:
-                            start_val = int(b_starts[i]) if isinstance(b_starts, (list, tuple)) else int(b_starts)
-                    except Exception:
-                        start_val = None
-                   # print(f"     File: {file_val}, Start: {start_val}")
-                    try:
-                        if hasattr(b_wins, "cpu"):
-                            win_val = int(b_wins.cpu().numpy().tolist()[i])
-                        else:
-                            win_val = int(b_wins[i]) if isinstance(b_wins, (list, tuple)) else int(b_wins)
-                    except Exception:
-                        win_val = None
-                    # print(f"     File: {file_val}, Start: {start_val}, Window Size: {win_val}") 
-                    all_windows.append({
-                        "file": file_val,
-                        "start": start_val,
-                        "window_size": win_val,
-                        "true_idx": true_idx,
-                        "true_raw": true_raw,
-                        "pred_idx": pred_idx,
-                        "pred_raw": pred_raw#,
-                        #"top3": top3
-                        # note: full probs omitted to reduce JSON size; add "probs": prob_row if needed
-                    })
-                 batch_summaries.append({
-                    "batch_index": batch_idx + 1,
-                    "batch_size": len(preds),
-                    "loss": batch_loss,
-                    "correct": batch_correct,
-                    "total": batch_total
-                })
-                print(f"Batch {batch_idx + 1} summary: size={len(preds)}, loss={batch_loss}, correct={batch_correct}/{batch_total}")
-        # build batches array by slicing all_windows according to batch_summaries
-        batches = []
-        cursor = 0
-        for bs in batch_summaries:
-            cnt = bs["batch_size"]
-            slice_windows = all_windows[cursor: cursor + cnt]
-            cursor += cnt
-
-            windows_json = [{
-                "true": w["true_raw"],
-                "pred": w["pred_raw"],
-                "correct": (w["true_idx"] is not None and w["true_idx"] == w["pred_idx"])#,
-                #"top3": w["top3"]
-            } for w in slice_windows]
-
-            # compute per-batch correct (if labels present)
-            correct_count = sum(1 for w in slice_windows if (w.get("true_idx") is not None and w.get("true_idx") == w.get("pred_idx")))
-            acc_str = f"{correct_count}/{bs['batch_size']}" if bs.get("batch_size") else None
-
-            batches.append({
-                "batch_index": bs["batch_index"],
-                "windows": windows_json,
-                "loss": bs["loss"],
-                "acc": acc_str
-            })
-
-        # overall summary and per-file majority
-        total_windows = len(all_windows)
-        total_correct = sum(1 for w in all_windows if (w["true_idx"] is not None and w["true_idx"] == w["pred_idx"]))
-        total_incorrect = total_windows - total_correct
-        print(f"Total windows: {total_windows}, correct: {total_correct}, incorrect: {total_incorrect}")
-        by_file_preds = defaultdict(list)
-        by_file_truths = defaultdict(list)
-        for w in all_windows:
-            fname = w["file"] or "unknown"
-            if w["pred_raw"] is not None:
-                by_file_preds[fname].append(w["pred_raw"])
-            if w["true_raw"] is not None:
-                by_file_truths[fname].append(w["true_raw"])
-        print(f"by_file_preds: {by_file_preds}")    
-        print(f"by_file_truths: {by_file_truths}")  
-        per_file_summary = []
-        all_files = sorted(set(list(by_file_preds.keys()) + list(by_file_truths.keys())))
-        for fname in all_files:
-            preds = by_file_preds.get(fname, [])
-            truths = by_file_truths.get(fname, [])
-            maj_pred = Counter(preds).most_common(1)[0][0] if preds else None
-            maj_true = Counter(truths).most_common(1)[0][0] if truths else None
-            per_file_summary.append({
-                "file": fname,
-                "majority_predicted": int(maj_pred) if maj_pred is not None else None,
-                "majority_actual": int(maj_true) if maj_true is not None else None,
-                "n_windows": len(preds)
-            })
-        print(f"per_file_summary: {per_file_summary}")
-        summary = {
-            "total_windows": total_windows,
-            "total_correct": total_correct,
-            "total_incorrect": total_incorrect,
-            "notes": f"probs:{total_windows}, pred:{total_windows}, true:{total_windows}"
-        }
-
-        result_json = {
-            "batches": batches,
-            "summary": summary,
-            "per_file_summary": per_file_summary
-        }
-        logger.info(f"Prediction complete: {summary}")  
-        # save timestamped + latest json for static fetch
-        ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-        out_ts = os.path.join(upload_dir, f"prediction_result_{ts}.json")
-        out_latest = os.path.join(upload_dir, "prediction_result_latest.json")
-        try:
-            with open(out_ts, "w") as fh:
-                json.dump(result_json, fh, indent=2)
-            with open(out_latest, "w") as fh:
-                json.dump(result_json, fh, indent=2)
-            logger.info(f"Saved prediction JSON -> {out_ts} and {out_latest}")
-        except Exception:
-            logger.exception("Failed to save prediction JSON")
+                    print(f"💻 Window {i + 1}/{len(preds)}: pred_={pred_idx}, pred_raw={pred_raw}"  )
+                    
 
         # optional cleanup of uploaded csvs (your existing cleanup_files)
         try:
@@ -420,7 +288,7 @@ def predict():
         except Exception:
             logger.exception("cleanup_files failed")
 
-        return jsonify(result_json), 200
+        return jsonify("{}"), 200
 
     except Exception as e:
         logger.exception("Prediction failed")
