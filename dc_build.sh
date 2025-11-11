@@ -7,7 +7,8 @@ docker-compose down
 echo
 
 echo 🧩 Rebuilding images...
-docker-compose build --no-cache
+#docker-compose build --no-cache
+docker-compose build 
 echo
 
 echo 🚀 Starting containers...

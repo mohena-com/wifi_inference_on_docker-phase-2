@@ -278,7 +278,7 @@ def predict():
                     pred = int(preds[i])
                     lab = int(b_labels[i])
                     # mapping index -> subject id (adjust if needed)
-                    pred_raw = int(pred_idx + 1)
+                    
                     print(f"💻 Window {i + 1}/{len(preds)}: pred_={pred_idx}, pred_raw={pred_raw}"  )
                     
 
