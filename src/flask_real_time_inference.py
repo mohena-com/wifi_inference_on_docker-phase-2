@@ -90,8 +90,8 @@ def evaluate_model_on_input_data(test_loader, model, device, params=None):
             # --- Move inputs to device ---
             csi_seq = batch["csi_seq"].to(device, non_blocking=non_blocking_flag)
             meta_seq = batch["metadata_seq"].to(device, non_blocking=non_blocking_flag)
-            labels = batch["label"].squeeze().to(device, non_blocking=non_blocking_flag).long()     
-            print(f"Batch {batch_idx + 1} labels : {labels.cpu().numpy().tolist()}")
+            labels = batch["label"].squeeze().to(device, non_blocking=non_blocking_flag).long()
+            print(f"🧩 Batch {batch_idx + 1} labels : {labels.cpu().numpy().tolist()}")
             # guard against NaN/Inf values in inputs/labels
             if torch.isnan(csi_seq).any() or torch.isinf(csi_seq).any():
                 csi_seq = torch.nan_to_num(csi_seq, nan=0.0, posinf=1e6, neginf=-1e6)
@@ -111,13 +111,13 @@ def evaluate_model_on_input_data(test_loader, model, device, params=None):
             outputs = model(csi_seq, meta_seq)
             loss = criterion(outputs, labels)             
             preds = torch.argmax(outputs, dim=1)
-            print(f"Predictions for Batch {batch_idx + 1}: {preds.cpu().numpy().tolist()}")
+            print(f"🧩 Predictions for Batch {batch_idx + 1}: {preds.cpu().numpy().tolist()}")
             #   correct += (preds == labels).sum().item()
             #   total += labels.size(0)
             probs = torch.softmax(outputs, dim=1)
-            print(f"Probabilities for Batch {batch_idx + 1}: {probs.cpu().numpy().tolist()}")
+            print(f"🧩 Probabilities for Batch {batch_idx + 1}: {probs.cpu().numpy().tolist()}")
             
-            print(f"CSI shape: {csi_seq.shape}, META shape: {meta_seq.shape}, outputs: {outputs.shape}")
+            print(f"🧩 CSI shape: {csi_seq.shape}, META shape: {meta_seq.shape}, outputs: {outputs.shape}")
             #for i, (o, a, b) in enumerate(zip(outputs, probs, preds), start=1):
              #   print(f"{i}==>outputs: {o}, probs: {a}, pred: {b}")
 
