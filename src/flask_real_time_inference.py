@@ -312,7 +312,7 @@ def predict():
         device_local = device
         all_windows = []         # list of window dicts in order
         batch_summaries = []
-
+        non_blocking_flag = (device.type == "cuda")
         with torch.no_grad():
             for batch_idx, batch in enumerate(test_loader):
                 print(f"\n🧩 Processing batch {batch_idx + 1}/{len(test_loader)}")
