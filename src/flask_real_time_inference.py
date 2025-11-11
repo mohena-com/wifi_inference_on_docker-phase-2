@@ -23,21 +23,7 @@ CORS(app)  # <-- Add here
 CONFIG_FILE = os.environ.get('CONFIG_FILE', 'config/gait_id_config.properties')
 config = ConfigReader(CONFIG_FILE)
 print(f"0. Using config file: CONFIG_FILE:{CONFIG_FILE} config:{config}")
-''' 
-best_model_pattern = config.get('best_model_pattern')   
-print(f"Model path: {config.get('model_save_path')}")
-model_save_dir = Path(config.get('model_save_path'))
-print(f"Model save directory: {model_save_dir.resolve()}")
 
-model_files = list(model_save_dir.glob(best_model_pattern))
-print(f"Found model files: {model_files}")
-if not model_files:
-    raise FileNotFoundError("No model files found")
-
-# Assume exactly one file matches the pattern; pick the first entry
-best_model_path = model_files[0]
-print(f"Loading best model from: {best_model_path}")
-'''
 from CSI_Model_Eval_helper import get_best_model_and_params
 from CSI_Model_Eval_helper import get_best_model_path
 best_model_path = get_best_model_path(config)
