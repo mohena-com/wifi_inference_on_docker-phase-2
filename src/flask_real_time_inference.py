@@ -68,105 +68,6 @@ def create_json_message(val_true, val_pred, val_prob):
     return json_message
 
 # --- drop-in replacement for evaluate_model_on_input_data in flask_real_time_inference.py ---
-def evaluate_model_on_input_data(test_loader, model, device, params=None):
-    """
-    Evaluate model on a DataLoader (works for inference and validation).
-    Returns: val_true (optional), val_pred, val_prob
-    """
-    import torch.nn.functional as F
-
-    criterion = nn.CrossEntropyLoss()
-    print(f"Evaluating model on DataLoader with params: {params} on device: {device}")
-
-    model.eval()
-    running_loss, correct, total = 0.0, 0, 0
-    val_true, val_pred, val_prob = [], [], []
-    non_blocking_flag = (device.type == "cuda")
-
-    with torch.no_grad():
-        for batch_idx, batch in enumerate(test_loader):
-            print(f"\n🧩 Processing batch {batch_idx + 1}/{len(test_loader)}")
-
-            # --- Move inputs to device ---
-            csi_seq = batch["csi_seq"].to(device, non_blocking=non_blocking_flag)
-            meta_seq = batch["metadata_seq"].to(device, non_blocking=non_blocking_flag)
-            labels = batch["label"].squeeze().to(device, non_blocking=non_blocking_flag).long()
-            print(f"🧩 Batch {batch_idx + 1} labels : {labels.cpu().numpy().tolist()}")
-            # guard against NaN/Inf values in inputs/labels
-            if torch.isnan(csi_seq).any() or torch.isinf(csi_seq).any():
-                csi_seq = torch.nan_to_num(csi_seq, nan=0.0, posinf=1e6, neginf=-1e6)
-            if torch.isnan(meta_seq).any() or torch.isinf(meta_seq).any():
-                meta_seq = torch.nan_to_num(meta_seq, nan=0.0, posinf=1e6, neginf=-1e6)
- 
-             # same per-batch normalization used in training
-            try:
-                mean = csi_seq.mean(dim=(0, 1), keepdim=True)
-                std = csi_seq.std(dim=(0, 1), keepdim=True) + 1e-8
-                csi_seq = (csi_seq - mean) / std
-            except Exception:
-                pass
-            
-            
-            # --- Forward pass ---
-            outputs = model(csi_seq, meta_seq)
-            loss = criterion(outputs, labels)             
-            preds = torch.argmax(outputs, dim=1)
-            print(f"🧩 Predictions for Batch {batch_idx + 1}: {preds.cpu().numpy().tolist()}")
-            #   correct += (preds == labels).sum().item()
-            #   total += labels.size(0)
-            probs = torch.softmax(outputs, dim=1)
-            print(f"🧩 Probabilities for Batch {batch_idx + 1}: {probs.cpu().numpy().tolist()}")
-            
-            print(f"🧩 CSI shape: {csi_seq.shape}, META shape: {meta_seq.shape}, outputs: {outputs.shape}")
-            #for i, (o, a, b) in enumerate(zip(outputs, probs, preds), start=1):
-             #   print(f"{i}==>outputs: {o}, probs: {a}, pred: {b}")
-
-            # --- Always store predictions and probabilities ---
-            val_pred.extend(preds.cpu().numpy().tolist())
-            val_prob.extend(probs.cpu().numpy().tolist())
-            val_true.extend(labels.cpu().numpy().tolist())
-
-            # --- Fetch label (prefer subject) ---
-            labels = None
-            if "label" in batch and batch["label"].numel() > 0:
-                labels = batch["label"]     # keep batch dim
-            elif "subject" in batch:
-                subj_tensor = batch["subject"]
-                if subj_tensor is not None and subj_tensor.numel() > 0:
-                    labels = subj_tensor     # keep batch dim
-
-            # --- Compute loss only if valid label exists ---
-            if labels is not None and labels.numel() > 0:
-                if labels.dim() == 0:
-                    labels = labels.unsqueeze(0)  # ensure (N,)
-                labels = labels.long().to(device, non_blocking=non_blocking_flag)
-                # safety: batch should match
-                assert outputs.size(0) == labels.size(0), f"batch mismatch: {outputs.size()} vs {labels.size()}"
-                loss = criterion(outputs, labels)
-                running_loss += float(loss.item())
-                correct += (preds == labels).sum().item()
-                print(f"✅  VERIFICATION of Prediction for Batch {batch_idx + 1}")
-                for y, p in zip(labels.squeeze().tolist(), preds.squeeze().tolist()):
-                    print(f"     true:{y}  pred:{p} = {y == p} Prediction")
-                total += labels.size(0)
-                val_true.extend(labels.cpu().numpy().tolist())
-                print(f"Batch {batch_idx + 1}: loss={loss.item():.4f}, acc={(preds == labels).sum().item()}/{labels.size(0)}")
-            else:
-                print(f"Batch {batch_idx + 1}: No valid label/subject found → inference-only mode.")
-    
-    print(f"probs:{len(val_prob)},  pred:{len(val_pred)},   true:{len(val_true)}")
-   # for a, b, c in zip(val_prob, val_pred, val_true):
-    #    print(f"probs:{a}, pred:{b},  true:{c}")
-    # --- Summary ---
-    if total > 0:
-        avg_loss = running_loss / len(test_loader)
-        acc = 100.0 * correct / total
-        print(f"\n✅ Validation complete: Avg Loss={avg_loss:.4f}, Accuracy={acc:.2f}%")
-    else:
-        print(f"\n✅ Inference complete: {len(val_pred)} predictions generated.")
-
-    return val_true if len(val_true) > 0 else None, val_pred, val_prob
-
 
 
 def setup_logging(log_file_path='/tmp/uploads/app.log'):
@@ -317,9 +218,9 @@ def predict():
             for batch_idx, batch in enumerate(test_loader):
                 print(f"\n🧩 Processing batch {batch_idx + 1}/{len(test_loader)}")
                 # Move inputs
-                csi_seq = batch["csi_seq"].to(device_local)
-                meta_seq = batch["metadata_seq"].to(device_local)
-                labels = batch["label"].squeeze().to(device, non_blocking=non_blocking_flag).long()
+                csi_seq = batch["csi_seq"].to(device, non_blocking=non_blocking_flag)
+                meta_seq = batch["metadata_seq"].to(device, non_blocking=non_blocking_flag)
+                labels = batch["label"].squeeze().to(device, non_blocking=non_blocking_flag)
                 print(f"🧩 Batch {batch_idx + 1} labels : {labels.cpu().numpy().tolist()}")
 
                 # guard against NaN/Inf values in inputs/labels
@@ -340,7 +241,7 @@ def predict():
                 outputs = model_instance(csi_seq, meta_seq)   # (N, C)
                 probs_tensor = torch.softmax(outputs, dim=1)      # (N, C)
                 print(f"🧩 Probabilities for Batch {batch_idx + 1}: {probs_tensor.cpu().numpy().tolist()}")
-                preds_tensor = torch.argmax(outputs, dim=1)   # (N,)
+                preds_tensor = torch.argmax(outputs, dim=1)       # (N,)
                 print(f"🧩 Predictions for Batch {batch_idx + 1}: {preds_tensor.cpu().numpy().tolist()}")
                 print(f"CSI shape: {csi_seq.shape}, META shape: {meta_seq.shape}, outputs: {outputs.shape}")
                 # optional labels / metadata
