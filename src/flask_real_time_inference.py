@@ -283,7 +283,7 @@ def predict():
                     # top-3 probabilities
                     topk_idx = list(np.argsort(prob_row)[::-1][:3])
                     top3 = [{"label_idx": int(k), "label_raw": int(k + 1), "prob": float(prob_row[k])} for k in topk_idx]
-                    print(f"     Top-3 predictions: {top3}")
+                   # print(f"     Top-3 predictions: {top3}")
                     # true label extraction
                     true_idx = None
                     true_raw = None
@@ -303,7 +303,7 @@ def predict():
                             file_val = os.path.basename(str(b_files))
                     except Exception:
                         file_val = None
-                    print(f"     File: {file_val}")
+                  #  print(f"     File: {file_val}")
                     try:
                         if hasattr(b_starts, "cpu"):
                             start_val = int(b_starts.cpu().numpy().tolist()[i])
@@ -311,7 +311,7 @@ def predict():
                             start_val = int(b_starts[i]) if isinstance(b_starts, (list, tuple)) else int(b_starts)
                     except Exception:
                         start_val = None
-                    print(f"     File: {file_val}, Start: {start_val}") 
+                   # print(f"     File: {file_val}, Start: {start_val}")
                     try:
                         if hasattr(b_wins, "cpu"):
                             win_val = int(b_wins.cpu().numpy().tolist()[i])
@@ -331,7 +331,7 @@ def predict():
                         "top3": top3
                         # note: full probs omitted to reduce JSON size; add "probs": prob_row if needed
                     })
-                    print(f"Added window: file={file_val}, start={start_val}, win_size={win_val}, true_idx={true_idx}, pred_idx={pred_idx}")
+                  #  print(f"Added window: file={file_val}, start={start_val}, win_size={win_val}, true_idx={true_idx}, pred_idx={pred_idx}")
                 batch_summaries.append({
                     "batch_index": batch_idx + 1,
                     "batch_size": len(preds),
