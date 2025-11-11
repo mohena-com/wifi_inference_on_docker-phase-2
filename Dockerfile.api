@@ -18,7 +18,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Copy requirements first for caching
 COPY requirements.txt .
 # Install dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+#RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install   -r requirements.txt
 
 RUN mkdir -p /tmp/uploads
 # Copy source code and other necessary folders
