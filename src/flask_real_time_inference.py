@@ -318,7 +318,7 @@ def inference_result():
         ]
     }
 
-    return JSONResponse(content=response_data)
+    return response_data
 
 # Helper route to serve latest JSON (so Angular can GET /gaitid/prediction_result_latest.json)
 @app.route('/gaitid/prediction_result_latest.json', methods=['GET'])
