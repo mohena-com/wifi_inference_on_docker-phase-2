@@ -320,8 +320,8 @@ def predict():
                         "true_idx": true_idx,
                         "true_raw": true_raw,
                         "pred_idx": pred_idx,
-                        "pred_raw": pred_raw,
-                        "top3": top3
+                        "pred_raw": pred_raw#,
+                        #"top3": top3
                         # note: full probs omitted to reduce JSON size; add "probs": prob_row if needed
                     })
                   #  print(f"Added window: file={file_val}, start={start_val}, win_size={win_val}, true_idx={true_idx}, pred_idx={pred_idx}")
@@ -344,8 +344,8 @@ def predict():
             windows_json = [{
                 "true": w["true_raw"],
                 "pred": w["pred_raw"],
-                "correct": (w["true_idx"] is not None and w["true_idx"] == w["pred_idx"]),
-                "top3": w["top3"]
+                "correct": (w["true_idx"] is not None and w["true_idx"] == w["pred_idx"])#,
+                #"top3": w["top3"]
             } for w in slice_windows]
 
             # compute per-batch correct (if labels present)
