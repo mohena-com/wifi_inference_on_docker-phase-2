@@ -250,7 +250,7 @@ def predict():
                 b_files = batch.get("file")
                 b_starts = batch.get("start")
                 b_wins = batch.get("window_size")
-                print(f"Batch {batch_idx + 1}: Processing {len(preds_tensor)} windows")
+                print(f"💻 Batch {batch_idx + 1}: Processing {len(preds_tensor)} windows")
                 # compute batch-level loss if labels exist
                 batch_loss = None
                 batch_correct = 0
