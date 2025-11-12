@@ -72,6 +72,7 @@ def init_model():
 
     return model_instance, device, params, total_params, best_model_path
 
+import threading
 
 _model_lock = threading.Lock()
 model_instance = device = params = total_params = best_model_path = None
