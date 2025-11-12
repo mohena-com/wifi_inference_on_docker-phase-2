@@ -129,9 +129,6 @@ def create_model_instance(model_class, model_name, batch, device):
         raise ValueError("Unknown model")
     return model.to(device)
 
-
-
-
 # Instantiate model depending on parsed model name
 def instantiate_from_runname(params, device=None):
     """Given params from parse_run_name, pick the model class and create an instance using create_model_instance.
@@ -247,14 +244,8 @@ def get_best_model_and_params(best_model_fname=None):
 
     total_params = sum(p.numel() for p in model_instance.parameters())
     print(f"Total parameters: {total_params}")
-    
+
     return model_instance, params, total_params, device
 
-'''
-run_name = "best_overall_model_final_MobileNetV3_1D_LSTM_lr5e-04_bs16_adam_wd1e-04_ep100_valacc0.9656.pt"
-get_best_model_and_params(run_name)
 
-
-dataset = WifiCSIDataset(logger, filelist, window_size=128, stride=64)
-'''
 

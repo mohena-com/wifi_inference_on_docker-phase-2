@@ -32,6 +32,7 @@ def init_model():
     print(f"ℹ️ params: {params} device {device}")
     return model_instance, device
 
+print(f" INIT START: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 model_instance, device = init_model()
 
 
