@@ -18,7 +18,7 @@ warnings.filterwarnings('ignore', category=FutureWarning)
 # Flask app
 app = Flask(__name__)
 CORS(app)  # <-- Add here 
-
+import torch
 def init_model():
     """
     Initialize model once at startup. Returns (model_instance, device, params, total_params, best_model_path).
