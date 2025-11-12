@@ -10,30 +10,31 @@ import pandas as pd
 from config_reader import ConfigReader
 from flask_cors import CORS
 
+# Suppress TensorFlow warnings
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+warnings.filterwarnings('ignore', category=DeprecationWarning)
+warnings.filterwarnings('ignore', category=FutureWarning)
+
+# Flask app
+app = Flask(__name__)
+CORS(app)  # <-- Add here 
+
+# --- Lazy initialization of heavy resources ---
+def init_model():
+    CONFIG_FILE = os.environ.get('CONFIG_FILE', 'config/gait_id_config.properties')
+    log(f"Using config file: {CONFIG_FILE}", "config")
+
+    config = ConfigReader(CONFIG_FILE)
+    best_model_path = get_best_model_path(config)
+    model_instance, params, total_params, device = get_best_model_and_params(str(best_model_path))
+
+    print(f"📦 Loaded model: {model_instance} from {best_model_path}")
+    print(f"ℹ️ params: {params} device {device}")
+    return model_instance, device
+
+model_instance, device = init_model()
 
 
-'''
-# -------------------- LOAD TRAINED WEIGHTS --------------------
-import torch
-
-try:
-    checkpoint = torch.load(best_model_path, map_location=device)
-
-    if "state_dict" in checkpoint:
-        state_dict = checkpoint["state_dict"]
-    elif "model_state_dict" in checkpoint:
-        state_dict = checkpoint["model_state_dict"]
-    else:
-        state_dict = checkpoint
-
-    model_instance.load_state_dict(state_dict)
-    # model_instance.eval()
-    print(f"📦 Loaded model weights from: {best_model_path}")
-
-except Exception as e:
-    print(f"⚠️[WARNING] Could not load model weights from {best_model_path}: {e}")
-# ---------------------------------------------------------------
-'''
 
 from dataclasses import dataclass, asdict
 from typing import List
@@ -344,29 +345,6 @@ def cleanup_files():
 
 
  
-  
+
 if __name__ == '__main__':
-
-    # Suppress TensorFlow warnings
-    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-    warnings.filterwarnings('ignore', category=DeprecationWarning)
-    warnings.filterwarnings('ignore', category=FutureWarning)
-
-    # Flask app
-    app = Flask(__name__)
-    CORS(app)  # <-- Add here
-
-    # Load config and model at startup
-    CONFIG_FILE = os.environ.get('CONFIG_FILE', 'config/gait_id_config.properties')
-    config = ConfigReader(CONFIG_FILE)
-    print(f"🧩 Using config file: CONFIG_FILE:{CONFIG_FILE} config:{config}")
-
-    from CSI_Model_Eval_helper import get_best_model_and_params
-    from CSI_Model_Eval_helper import get_best_model_path
-    best_model_path = get_best_model_path(config)
-    model_instance, params, total_params, device = get_best_model_and_params(str(best_model_path))
-
-    print(f"📦 Loaded model: {model_instance} from {best_model_path}")
-    print(f"ℹ️ params: {params} device {device}")
-
-    app.run(debug=True, host='0.0.0.0', port=5002)
+    app.run(debug=True, host='0.0.0.0', port=5002, use_reloader=False)
