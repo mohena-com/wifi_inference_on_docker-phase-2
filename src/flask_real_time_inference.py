@@ -295,7 +295,8 @@ def predict():
                     mean = csi_seq.mean(dim=(0, 1), keepdim=True)
                     std = csi_seq.std(dim=(0, 1), keepdim=True) + 1e-8
                     csi_seq = (csi_seq - mean) / std
-                except Exception:
+                except Exception as e :
+                    print(f"⚠️ Warning: Normalization failed for this batch; using raw inputs. Error: {e}")
                     pass
 
                 # Forward
@@ -354,7 +355,7 @@ def predict():
         
         # optional cleanup of uploaded csvs (your existing cleanup_files)
         try:
-            file_list = cleanup_files()
+            file_list = cleanup()
         except Exception:
             logger.exception("cleanup_files failed")
         inference_response.file_list=file_list
@@ -380,13 +381,7 @@ def serve_prediction_latest():
         logger.exception("serve_prediction_latest failed")
         return jsonify({"error": str(e)}), 500
 
-
-
-
-
-
- 
-def cleanup_files():
+def cleanup():
     filelist = glob.glob(os.path.join('/tmp/uploads', '**', '*.csv'), recursive=True)
     print(f"Predict: Found {len(filelist)} CSV files in /tmp/uploads for dataset creation.")  
     # Delete uploaded files after processing
