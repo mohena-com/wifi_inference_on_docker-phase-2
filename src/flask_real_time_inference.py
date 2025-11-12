@@ -22,7 +22,7 @@ CORS(app)  # <-- Add here
 # Load config and model at startup
 CONFIG_FILE = os.environ.get('CONFIG_FILE', 'config/gait_id_config.properties')
 config = ConfigReader(CONFIG_FILE)
-print(f"0. Using config file: CONFIG_FILE:{CONFIG_FILE} config:{config}")
+print(f"🧩 Using config file: CONFIG_FILE:{CONFIG_FILE} config:{config}")
 
 from CSI_Model_Eval_helper import get_best_model_and_params
 from CSI_Model_Eval_helper import get_best_model_path
@@ -31,6 +31,8 @@ model_instance, params, total_params, device = get_best_model_and_params(str(bes
 
 print(f"📦 Loaded model: {model_instance} from {best_model_path}")
 print(f"ℹ️ params: {params} device {device}")
+
+'''
 # -------------------- LOAD TRAINED WEIGHTS --------------------
 import torch
 
@@ -51,6 +53,7 @@ try:
 except Exception as e:
     print(f"⚠️[WARNING] Could not load model weights from {best_model_path}: {e}")
 # ---------------------------------------------------------------
+'''
 
 from dataclasses import dataclass, asdict
 from typing import List
@@ -171,7 +174,7 @@ def predict():
     os.makedirs(upload_dir, exist_ok=True)
 
     uploaded_files = request.files.getlist('file')
-    logger.info(f"Received {len(uploaded_files)} files for prediction: {[f.filename for f in uploaded_files]}")
+    logger.info(f"📂 Received {len(uploaded_files)} files for prediction: {[f.filename for f in uploaded_files]}")
 
     saved_file_paths = []
 
