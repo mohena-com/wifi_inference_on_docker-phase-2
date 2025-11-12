@@ -49,17 +49,17 @@ def init_model():
         for key in ("state_dict", "model_state_dict", "model"):
             if key in checkpoint:
                 state_dict = checkpoint[key]
-                print(f"📦 Found '{key}' in checkpoint; using it as state_dict", "debug")
+                print(f"📦 Found '{key}' in checkpoint; using it as state_dict" )
                 break
         if state_dict is None:
             # sometimes checkpoint is the state_dict already, or contains nested keys
             # if it looks like a state_dict (mapping of tensors), use it directly
             state_dict = checkpoint
-            print("📦 Using checkpoint dict as state_dict (fallback)", "debug")
+            print("📦 Using checkpoint dict as state_dict (fallback)" )
     else:
         # checkpoint is not a dict — assume it's the state dict object itself
         state_dict = checkpoint
-        print("📦 Checkpoint is not a dict; using as state_dict", "debug")
+        print(f"📦 Checkpoint is not a dict; using as state_dict")
 
     # load weights into model and set eval mode
     try:
@@ -76,15 +76,16 @@ import threading
 
 _model_lock = threading.Lock()
 model_instance = device = params = total_params = best_model_path = None
-
+is_model_loaded = False
 def ensure_model_loaded():
     global model_instance, device, params, total_params, best_model_path
     if model_instance is None:
         with _model_lock:
-            if model_instance is None:
-                print(f" INIT START: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+            if model_instance is None and not is_model_loaded:
+                print(f"📦 INIT model START: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
                 model_instance, device, params, total_params, best_model_path = init_model()
-                print(f"INIT DONE: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+                print(f"📦 INIT model DONE: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+                is_model_loaded = True
  
 
 def setup_logging(log_file_path='/tmp/uploads/app.log'):
