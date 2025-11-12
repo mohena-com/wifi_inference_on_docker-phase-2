@@ -73,13 +73,17 @@ def init_model():
     return model_instance, device, params, total_params, best_model_path
 
 
-@app.before_first_request
-def initialize_once():
+_model_lock = threading.Lock()
+model_instance = device = params = total_params = best_model_path = None
+
+def ensure_model_loaded():
     global model_instance, device, params, total_params, best_model_path
     if model_instance is None:
-        print(f" INIT START: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-        model_instance, device, params, total_params, best_model_path = init_model()
-        print(f"INIT DONE: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        with _model_lock:
+            if model_instance is None:
+                print(f" INIT START: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+                model_instance, device, params, total_params, best_model_path = init_model()
+                print(f"INIT DONE: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
  
 
 def setup_logging(log_file_path='/tmp/uploads/app.log'):
@@ -196,7 +200,7 @@ def predict():
     import traceback
     import torch
     import math
-
+    ensure_model_loaded()
     upload_dir = '/tmp/uploads'
     os.makedirs(upload_dir, exist_ok=True)
 
