@@ -318,7 +318,7 @@ def predict():
                 # convert to cpu numpy
                 preds = preds_tensor.cpu().numpy().tolist()
                 probs_np = probs_tensor.cpu().numpy()  # shape (N, C)
-                print(f"    🔄 Processing {len(preds)} windows")
+                print(f"    🔄 Processing")
                 # iterate windows in this batch
                 if b_labels.dim() == 0:
                     b_labels = b_labels.unsqueeze(0)
@@ -326,7 +326,7 @@ def predict():
                     pred = int(preds[i])
                     lab = int(b_labels[i])
                     # mapping index -> subject id (adjust if needed)
-                    print(f"        💻 Window {i + 1}/{len(preds)}: pred_={pred}, pred_raw={lab}, {pred==lab}")
+                    print(f"        💻 Window {i + 1}/{len(preds)}: pred={pred}, label={lab}, {pred==lab}")
 
                 if b_labels.dim() == 0:
                     b_labels = b_labels.unsqueeze(0)
