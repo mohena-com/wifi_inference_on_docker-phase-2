@@ -64,7 +64,7 @@ def init_model():
     # load weights into model and set eval mode
     try:
         model_instance.load_state_dict(state_dict)
-        model_instance.eval()
+        #model_instance.eval()
         log(f"✅ Loaded model weights from: {best_model_path}", "success")
     except Exception as e:
         log(f"❌ Error when loading state_dict into model: {e}", "error")
@@ -79,8 +79,7 @@ model_instance, device, params, total_params, best_model_path = init_model()
 
 
 
-except Exception as e:
-    print(f"⚠️[WARNING] Could not load model weights from {best_model_path}: {e}")
+ 
 
 def setup_logging(log_file_path='/tmp/uploads/app.log'):
 
