@@ -300,7 +300,7 @@ def predict():
                 b_files = batch.get("file")
                 b_starts = batch.get("start")
                 b_wins = batch.get("window_size")
-                print(f"💻 Batch {batch_idx }: Processing {len(preds_tensor)} windows")
+                #print(f"💻 Batch {batch_idx }: Processing {len(preds_tensor)} windows")
                 # compute batch-level loss if labels exist
                 batch_loss = None
                 batch_correct = 0
@@ -309,15 +309,14 @@ def predict():
                 # convert to cpu numpy
                 preds = preds_tensor.cpu().numpy().tolist()
                 probs_np = probs_tensor.cpu().numpy()  # shape (N, C)
-                print(f"🔄 Batch {batch_idx}: Processing {len(preds)} windows")
+                print(f"    🔄 Processing {len(preds)} windows")
                 # iterate windows in this batch
                 for i in range(len(preds)):
                     pred = int(preds[i])
                     lab = int(b_labels[i])
-                    # mapping index -> subject id (adjust if needed)                    
-                    print(f"💻 Window {i + 1}/{len(preds)}: pred_={pred}, pred_raw={lab}, {pred==lab}"  )
-                    
-                
+                    # mapping index -> subject id (adjust if needed)
+                    print(f"        💻 Window {i + 1}/{len(preds)}: pred_={pred}, pred_raw={lab}, {pred==lab}")
+
                 if b_labels.dim() == 0:
                     b_labels = b_labels.unsqueeze(0)
                 b_labels = b_labels.long().to(device_local)
