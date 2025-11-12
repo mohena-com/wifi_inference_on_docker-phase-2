@@ -214,7 +214,7 @@ def predict():
 
     # Build dataset, loader and run inference
     try:
-        batch_size = 16
+        batch_size = 8
         test_dataset = WifiCSIDataset(logger=logger, file_list=saved_file_paths, window_size=128, stride=64)
         test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
 
