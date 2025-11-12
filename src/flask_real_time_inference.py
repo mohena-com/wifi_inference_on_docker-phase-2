@@ -22,7 +22,7 @@ CORS(app)  # <-- Add here
 # --- Lazy initialization of heavy resources ---
 def init_model():
     CONFIG_FILE = os.environ.get('CONFIG_FILE', 'config/gait_id_config.properties')
-    log(f"Using config file: {CONFIG_FILE}", "config")
+    print(f"Using config file: {CONFIG_FILE}", "config")
 
     config = ConfigReader(CONFIG_FILE)
     best_model_path = get_best_model_path(config)
@@ -342,6 +342,6 @@ def cleanup_files():
         except Exception as e:
             logger.warning(f"Failed to delete file {file}: {e}")
     return filelist
-    
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5002, use_reloader=False)
