@@ -73,12 +73,13 @@ def init_model():
     return model_instance, device, params, total_params, best_model_path
 
 
-# run once at startup (guarded in main with use_reloader=False)
-print(f" INIT START: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-model_instance, device, params, total_params, best_model_path = init_model()
-
-
-
+@app.before_first_request
+def initialize_once():
+    global model_instance, device, params, total_params, best_model_path
+    if model_instance is None:
+        print(f" INIT START: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        model_instance, device, params, total_params, best_model_path = init_model()
+        print(f"INIT DONE: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
  
 
 def setup_logging(log_file_path='/tmp/uploads/app.log'):
