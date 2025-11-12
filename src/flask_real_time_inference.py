@@ -394,6 +394,10 @@ def cleanup_files():
             print(f"Deleted uploaded file: {file}")
         except Exception as e:
             logger.warning(f"Failed to delete file {file}: {e}")
+    
+    model_instance = device = params = total_params = best_model_path = None
+
+
     return filelist
 
 if __name__ == '__main__':
