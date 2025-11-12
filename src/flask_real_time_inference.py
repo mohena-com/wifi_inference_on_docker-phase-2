@@ -44,8 +44,8 @@ try:
     else:
         state_dict = checkpoint
 
-    best_model_instance.load_state_dict(state_dict)
-    best_model_instance.eval()
+    model_instance.load_state_dict(state_dict)
+    # model_instance.eval()
     print(f"📦 Loaded model weights from: {best_model_path}")
 
 except Exception as e:
