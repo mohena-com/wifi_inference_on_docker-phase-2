@@ -35,7 +35,26 @@ def init_model():
 print(f" INIT START: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 model_instance, device = init_model()
 
+def setup_logging(log_file_path='/tmp/uploads/app.log'):
 
+    for handler in logging.root.handlers[:]:
+        logging.root.removeHandler(handler)
+
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        handlers=[
+            logging.StreamHandler(),
+            logging.FileHandler(log_file_path, mode="w"),
+        ],
+    )
+    logger = logging.getLogger()
+    print("Logger initialized")
+    return logger
+
+import logging
+log_file_path='/tmp/uploads/app.log'
+logger = setup_logging(log_file_path)
 
 from dataclasses import dataclass, asdict
 from typing import List
@@ -57,8 +76,6 @@ class InferenceResponse:
     batches: List[BatchResult]
 
 
-
-
 print(f"INIT DONE: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 import json
 def create_json_message(val_true, val_pred, val_prob):
@@ -74,26 +91,7 @@ def create_json_message(val_true, val_pred, val_prob):
 # --- drop-in replacement for evaluate_model_on_input_data in flask_real_time_inference.py ---
 
 
-def setup_logging(log_file_path='/tmp/uploads/app.log'):
 
-    for handler in logging.root.handlers[:]:
-        logging.root.removeHandler(handler)
-
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-        handlers=[
-            logging.StreamHandler(),
-            logging.FileHandler(log_file_path, mode="w"),
-        ],
-    )
-    logger = logging.getLogger()
-    print("Logger initialized")
-    return logger
-
-import logging
-log_file_path='/tmp/uploads/app.log'
-logger = setup_logging(log_file_path)
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
