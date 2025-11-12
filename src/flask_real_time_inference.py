@@ -29,8 +29,8 @@ from CSI_Model_Eval_helper import get_best_model_path
 best_model_path = get_best_model_path(config)
 model_instance, params, total_params, device = get_best_model_and_params(str(best_model_path))
 
-print(f"Loaded model: {model_instance} from {best_model_path}")
-print(f"params: {params} device {device}")
+print(f"📦 Loaded model: {model_instance} from {best_model_path}")
+print(f"ℹ️ params: {params} device {device}")
 # -------------------- LOAD TRAINED WEIGHTS --------------------
 import torch
 
@@ -46,10 +46,10 @@ try:
 
     best_model_instance.load_state_dict(state_dict)
     best_model_instance.eval()
-    print(f"[INFO] Loaded model weights from: {best_model_path}")
+    print(f"📦 Loaded model weights from: {best_model_path}")
 
 except Exception as e:
-    print(f"[WARNING] Could not load model weights from {best_model_path}: {e}")
+    print(f"⚠️[WARNING] Could not load model weights from {best_model_path}: {e}")
 # ---------------------------------------------------------------
 
 from dataclasses import dataclass, asdict
@@ -236,16 +236,14 @@ def predict():
         inference_response = InferenceResponse(file_list=[], batches=[])
 
         with torch.no_grad():
-            for batch_idx, batch in enumerate(test_loader):
+            for batch_idx, batch in enumerate(test_loader, start=1):               
 
-                
-
-                print(f"\n🧩 Processing batch {batch_idx + 1}/{len(test_loader)}")
+                print(f"\n🧩 Processing batch {batch_idx}/{len(test_loader)}")
                 # Move inputs
                 csi_seq = batch["csi_seq"].to(device, non_blocking=non_blocking_flag)
                 meta_seq = batch["metadata_seq"].to(device, non_blocking=non_blocking_flag)
                 b_labels = batch["label"].squeeze().to(device, non_blocking=non_blocking_flag)
-                print(f"🧩 Batch {batch_idx + 1} labels:          {b_labels.cpu().numpy().tolist()}")
+                print(f"🧩 Batch {batch_idx} labels:          {b_labels.cpu().numpy().tolist()}")
 
                 # guard against NaN/Inf values in inputs/labels
                 if torch.isnan(csi_seq).any() or torch.isinf(csi_seq).any():
@@ -269,12 +267,12 @@ def predict():
                     outputs = model_instance(csi_seq, meta_seq)   # (N, C)
                     probs_tensor = torch.softmax(outputs, dim=1)  # (N, C)
                     preds_tensor = torch.argmax(outputs, dim=1)   # (N,)               
-                print(f"🧩 Predictions for Batch {batch_idx + 1}: {preds_tensor.cpu().numpy().tolist()} ")
+                print(f"🧩 Predictions for Batch {batch_idx}: {preds_tensor.cpu().numpy().tolist()} ")
  
                 b_files = batch.get("file")
                 b_starts = batch.get("start")
                 b_wins = batch.get("window_size")
-                print(f"💻 Batch {batch_idx + 1}: Processing {len(preds_tensor)} windows")
+                print(f"💻 Batch {batch_idx }: Processing {len(preds_tensor)} windows")
                 # compute batch-level loss if labels exist
                 batch_loss = None
                 batch_correct = 0
@@ -290,13 +288,13 @@ def predict():
                         batch_loss = None
                     batch_correct = int((preds_tensor == b_labels).sum().item())
                     batch_total = int(b_labels.size(0))
-                    print(f"✅  VERIFICATION of Prediction for Batch {batch_idx + 1} ")
+                    print(f"✅  VERIFICATION of Prediction for Batch {batch_idx} ")
                     print(f"    ✅ {batch_correct}/{batch_total} correct, ❌ loss: {batch_loss}")
 
                 # convert to cpu numpy
                 preds = preds_tensor.cpu().numpy().tolist()
                 probs_np = probs_tensor.cpu().numpy()  # shape (N, C)
-                print(f"🔄 Batch {batch_idx + 1}: Processing {len(preds)} windows")
+                print(f"🔄 Batch {batch_idx}: Processing {len(preds)} windows")
                 # iterate windows in this batch
                 for i in range(len(preds)):
                     pred = int(preds[i])
@@ -305,7 +303,7 @@ def predict():
                     print(f"💻 Window {i + 1}/{len(preds)}: pred_={pred}, pred_raw={lab}, {pred==lab}"  )
 
                 inference_response.batches.append(BatchResult(
-                 batch=batch_idx + 1,
+                 batch=batch_idx,
                  true_value=b_labels.cpu().numpy().tolist(),
                  predicted_value=preds,
                  correct=batch_correct,

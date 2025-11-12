@@ -197,6 +197,30 @@ def get_best_model_path(config):
     print(f"Loading best model from: {best_model_path}")
     return best_model_path     
 
+def get_device():
+    """
+    Return a torch.device choosing MPS (Apple), then CUDA, then CPU.
+    Also set a few backend flags appropriate for the chosen device.
+    """
+    # prefer MPS on Apple silicon
+    try:
+        if getattr(torch.backends, "mps", None) is not None and torch.backends.mps.is_available():
+            device = torch.device("mps")
+            # improve matmul precision on MPS (PyTorch 1.12+)
+            try:
+                torch.set_float32_matmul_precision("high")
+            except Exception:
+                pass
+            print("Using MPS backend")
+            return device
+    except Exception:
+        pass
+
+    if torch.cuda.is_available():
+        # CUDA path
+        torch.backends.cudnn.benchmark = True
+        return torch.device("cuda")
+    return torch.device("cpu")
 
 def get_best_model_and_params(best_model_fname=None):
     if best_model_fname is not None:
@@ -208,21 +232,10 @@ def get_best_model_and_params(best_model_fname=None):
     params = parse_run_name(run_name)
     print(params)
 
-    # 3) Pick device
-    try:
-        if getattr(torch.backends, 'mps', None) is not None and torch.backends.mps.is_available():
-            device = torch.device('mps')
-            try:
-                torch.set_float32_matmul_precision('high')
-            except Exception:
-                pass
-        elif torch.cuda.is_available():
-            device = torch.device('cuda')
-        else:
-            device = torch.device('cpu')
-    except Exception:
-        device = torch.device('cpu')
-
+    # 3) Get device
+    device = get_device()
+    print(f"Using device: {device}")
+    
     # 4) Instantiate the model class inferred from run name
     model_instance = instantiate_from_runname(params, device=device)
     print(f"device used: {device}")
