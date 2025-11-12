@@ -81,7 +81,7 @@ def ensure_model_loaded():
     global model_instance, device, params, total_params, best_model_path
     if model_instance is None:
         with _model_lock:
-            if model_instance is None and not is_model_loaded:
+            if model_instance is None :
                 print(f"📦 INIT model START: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
                 model_instance, device, params, total_params, best_model_path = init_model()
                 print(f"📦 INIT model DONE: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
