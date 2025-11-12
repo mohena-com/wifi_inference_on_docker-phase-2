@@ -319,6 +319,8 @@ def predict():
                 probs_np = probs_tensor.cpu().numpy()  # shape (N, C)
                 print(f"    🔄 Processing {len(preds)} windows")
                 # iterate windows in this batch
+                if b_labels.dim() == 0:
+                    b_labels = b_labels.unsqueeze(0)
                 for i in range(len(b_labels)):
                     pred = int(preds[i])
                     lab = int(b_labels[i])
