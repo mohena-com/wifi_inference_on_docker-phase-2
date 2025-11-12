@@ -242,12 +242,13 @@ def get_best_model_and_params(best_model_fname=None):
     print(f"Using device: {device}")
     
     # 4) Instantiate the model class inferred from run name
-    model_instance = instantiate_from_runname(params, device=device)
-    print(f"device used: {device}")
+    model_instance = instantiate_from_runname(params, device=device)     
     print(f"Created model instance: {model_instance.__class__.__name__}")
+    
     total_params = sum(p.numel() for p in model_instance.parameters())
     print(f"Total parameters: {total_params}")
 
+    '''
     # 5) If a checkpoint path is provided, load weights
     if best_model_fname is not None:
         try:
@@ -259,11 +260,13 @@ def get_best_model_and_params(best_model_fname=None):
             else:
                 state_dict = checkpoint  # assume plain state_dict
             model_instance.load_state_dict(state_dict)
-            model_instance.eval()
+            print(f"📦 Loaded model: {model_instance} from {best_model_path}")
+
+            # model_instance.eval()
             print(f"[INFO] Loaded model weights from: {best_model_fname}")
         except Exception as e:
             print(f"[WARNING] Could not load model weights from {best_model_fname}: {e}")
-
+    '''
     return model_instance, params, total_params, device
 
 '''
