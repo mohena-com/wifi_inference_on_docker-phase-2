@@ -209,17 +209,22 @@ def get_device():
             # improve matmul precision on MPS (PyTorch 1.12+)
             try:
                 torch.set_float32_matmul_precision("high")
-            except Exception:
+            except Exception as e:
+                print(f"⚠️ Could not set float32 matmul precision to high on MPS : {e}")
                 pass
-            print("Using MPS backend")
+            print("🍎 Using Apple MPS backend")
             return device
-    except Exception:
+    except Exception as e:
+        print(f"⚠️ Could not use MPS backend : {e}")
         pass
 
     if torch.cuda.is_available():
         # CUDA path
         torch.backends.cudnn.benchmark = True
+        print("⚡ Using CUDA GPU")
         return torch.device("cuda")
+
+    print(f"🧠 Using CPU — (No GPU acceleration)")
     return torch.device("cpu")
 
 def get_best_model_and_params(best_model_fname=None):
