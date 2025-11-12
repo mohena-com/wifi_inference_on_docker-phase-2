@@ -319,7 +319,7 @@ def predict():
                 probs_np = probs_tensor.cpu().numpy()  # shape (N, C)
                 print(f"    🔄 Processing {len(preds)} windows")
                 # iterate windows in this batch
-                for i in range(len(preds)):
+                for i in range(len(b_labels)):
                     pred = int(preds[i])
                     lab = int(b_labels[i])
                     # mapping index -> subject id (adjust if needed)
