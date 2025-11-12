@@ -24,7 +24,7 @@ def init_model():
     Initialize model once at startup. Returns (model_instance, device, params, total_params, best_model_path).
     """
     CONFIG_FILE = os.environ.get('CONFIG_FILE', 'config/gait_id_config.properties')
-    log(f"🧩 Using config file: {CONFIG_FILE}", "config")
+    print(f"🧩 Using config file: {CONFIG_FILE}", "config")
 
     # read config and determine best model path
     config = ConfigReader(CONFIG_FILE)
@@ -32,14 +32,14 @@ def init_model():
 
     # get model skeleton and metadata (do not load weights yet)
     model_instance, params, total_params, device = get_best_model_and_params(str(best_model_path))
-    log(f"📦 Model class: {model_instance.__class__.__name__}  path: {best_model_path}", "load_model")
-    log(f"ℹ️ params: {params} total_params: {total_params} device: {device}", "info")
+    print(f"📦 Model class: {model_instance.__class__.__name__}  path: {best_model_path}", "load_model")
+    print(f"ℹ️ params: {params} total_params: {total_params} device: {device}", "info")
 
     # load checkpoint safely
     try:
         checkpoint = torch.load(best_model_path, map_location=device)
     except Exception as e:
-        log(f"❌ Failed to load checkpoint from {best_model_path}: {e}", "error")
+        print(f"❌ Failed to load checkpoint from {best_model_path}: {e}", "error")
         raise
 
     # determine the correct state dict
@@ -49,25 +49,25 @@ def init_model():
         for key in ("state_dict", "model_state_dict", "model"):
             if key in checkpoint:
                 state_dict = checkpoint[key]
-                log(f"📦 Found '{key}' in checkpoint; using it as state_dict", "debug")
+                print(f"📦 Found '{key}' in checkpoint; using it as state_dict", "debug")
                 break
         if state_dict is None:
             # sometimes checkpoint is the state_dict already, or contains nested keys
             # if it looks like a state_dict (mapping of tensors), use it directly
             state_dict = checkpoint
-            log("📦 Using checkpoint dict as state_dict (fallback)", "debug")
+            print("📦 Using checkpoint dict as state_dict (fallback)", "debug")
     else:
         # checkpoint is not a dict — assume it's the state dict object itself
         state_dict = checkpoint
-        log("📦 Checkpoint is not a dict; using as state_dict", "debug")
+        print("📦 Checkpoint is not a dict; using as state_dict", "debug")
 
     # load weights into model and set eval mode
     try:
         model_instance.load_state_dict(state_dict)
         #model_instance.eval()
-        log(f"✅ Loaded model weights from: {best_model_path}", "success")
+        print(f"✅ Loaded model weights from: {best_model_path}", "success")
     except Exception as e:
-        log(f"❌ Error when loading state_dict into model: {e}", "error")
+        print(f"❌ Error when loading state_dict into model: {e}", "error")
         raise
 
     return model_instance, device, params, total_params, best_model_path
