@@ -266,13 +266,13 @@ def predict():
 
         with torch.no_grad():
             for batch_idx, batch in enumerate(test_loader, start=1):               
-
-                print(f"\n🧩 Processing batch {batch_idx}/{len(test_loader)}")
+                print(f"")
+                print(f"🧩 Processing batch {batch_idx}/{len(test_loader)}")
                 # Move inputs
                 csi_seq = batch["csi_seq"].to(device, non_blocking=non_blocking_flag)
                 meta_seq = batch["metadata_seq"].to(device, non_blocking=non_blocking_flag)
                 b_labels = batch["label"].squeeze().to(device, non_blocking=non_blocking_flag)
-                print(f"🧩 Batch {batch_idx} labels:          {b_labels.cpu().numpy().tolist()}")
+                print(f"    🧩 Labels:       {b_labels.cpu().numpy().tolist()}")
 
                 # guard against NaN/Inf values in inputs/labels
                 if torch.isnan(csi_seq).any() or torch.isinf(csi_seq).any():
@@ -290,13 +290,12 @@ def predict():
                 except Exception:
                     pass
 
-                
                 # Forward
                 with torch.no_grad():  # disable gradient tracking for speed & memory efficiency
                     outputs = model_instance(csi_seq, meta_seq)   # (N, C)
                     probs_tensor = torch.softmax(outputs, dim=1)  # (N, C)
                     preds_tensor = torch.argmax(outputs, dim=1)   # (N,)               
-                print(f"🧩 Predictions for Batch {batch_idx}: {preds_tensor.cpu().numpy().tolist()} ")
+                print(f"    🧩 Predictions : {preds_tensor.cpu().numpy().tolist()} ")
  
                 b_files = batch.get("file")
                 b_starts = batch.get("start")
@@ -306,19 +305,6 @@ def predict():
                 batch_loss = None
                 batch_correct = 0
                 batch_total = 0
-                if b_labels is not None and hasattr(b_labels, "numel") and b_labels.numel() > 0:
-                    if b_labels.dim() == 0:
-                        b_labels = b_labels.unsqueeze(0)
-                    b_labels = b_labels.long().to(device_local)
-                    criterion = torch.nn.CrossEntropyLoss()
-                    try:
-                        batch_loss = float(criterion(outputs, b_labels).item())
-                    except Exception:
-                        batch_loss = None
-                    batch_correct = int((preds_tensor == b_labels).sum().item())
-                    batch_total = int(b_labels.size(0))
-                    print(f"✅  VERIFICATION of Prediction for Batch {batch_idx} ")
-                    print(f"    ✅ {batch_correct}/{batch_total} correct, ❌ loss: {batch_loss}")
 
                 # convert to cpu numpy
                 preds = preds_tensor.cpu().numpy().tolist()
@@ -330,6 +316,21 @@ def predict():
                     lab = int(b_labels[i])
                     # mapping index -> subject id (adjust if needed)                    
                     print(f"💻 Window {i + 1}/{len(preds)}: pred_={pred}, pred_raw={lab}, {pred==lab}"  )
+                    
+                
+                if b_labels.dim() == 0:
+                    b_labels = b_labels.unsqueeze(0)
+                b_labels = b_labels.long().to(device_local)
+                criterion = torch.nn.CrossEntropyLoss()
+                try:
+                    batch_loss = float(criterion(outputs, b_labels).item())
+                except Exception:
+                    batch_loss = None
+                batch_correct = int((preds_tensor == b_labels).sum().item())
+                batch_total = int(b_labels.size(0))
+                print(f"    ✅ VERIFICATION of Prediction  ✅ {batch_correct}/{batch_total} correct, ❌ loss: {batch_loss}")
+
+                
 
                 inference_response.batches.append(BatchResult(
                  batch=batch_idx,
