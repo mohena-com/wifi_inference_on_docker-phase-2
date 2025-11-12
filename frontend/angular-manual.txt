@@ -1,0 +1,8 @@
+# 1️⃣ Recreate node_modules (install dependencies)
+npm install
+
+# 2️⃣ Rebuild Angular dist output (creates frontend/dist/)
+npm run build -- --configuration production
+
+# 3️⃣ Create the .angular folder if it doesn’t exist (Angular CLI will usually create it automatically)
+mkdir .angular -Force
