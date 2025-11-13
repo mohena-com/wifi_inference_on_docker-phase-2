@@ -1,3 +1,4 @@
+// src/app/predict/predict.component.ts
 import { Component } from '@angular/core';
 import { PredictService } from './predict.service';
 
@@ -8,6 +9,7 @@ import { PredictService } from './predict.service';
 })
 export class PredictComponent {
   selectedFile?: File;
+  selectedFiles?: FileList;
   uploading = false;
   progress = 0;
   result: any = null;
@@ -45,7 +47,6 @@ export class PredictComponent {
       },
       error: (err) => {
         console.error('Upload failed', err);
-        // fallback to simulation for offline demo
         this.svc.simulate(this.selectedFile!.name).subscribe(res => {
           this.result = res;
           this.uploading = false;
@@ -64,5 +65,11 @@ export class PredictComponent {
 
   unique(arr: number[] = []) {
     return Array.from(new Set(arr));
+  }
+
+  // NEW: compute total samples across batches
+  totalSamples(): number {
+    if (!this.result || !this.result.batches) return 0;
+    return this.result.batches.reduce((acc: number, b: any) => acc + (b.total || 0), 0);
   }
 }

@@ -19,7 +19,8 @@
       <h3>Summary</h3>
       <p><strong>Files:</strong> <span *ngFor="let f of result.file_list">{{ f }} </span></p>
       <p><strong>Batches:</strong> {{ result.batches?.length || 0 }}</p>
-      <p><strong>Total samples:</strong> {{ result.batches?.reduce((s:any,b:any)=>s+(b.total||0),0) || 0 }}</p>
+      <p><strong>Total samples:</strong> {{ totalSamples() }}</p>
+
     </div>
 
     <div class="batches">
