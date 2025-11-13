@@ -1,24 +1,12 @@
-// src/app/predict/predict.module.ts
+// predict/predict.module.ts
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, Routes } from '@angular/router';
-import { HttpClientModule } from '@angular/common/http';
 import { PredictComponent } from './predict.component';
-import { NgChartsModule } from 'ng2-charts';
-
-const routes: Routes = [
-  { path: '', component: PredictComponent }
-];
+import { FormsModule } from '@angular/forms';
 
 @NgModule({
-  declarations: [
-    PredictComponent
-  ],
-  imports: [
-    CommonModule,
-    HttpClientModule,
-    NgChartsModule,
-    RouterModule.forChild(routes)
-  ]
+  declarations: [PredictComponent],
+  imports: [CommonModule, FormsModule],
+  exports: [PredictComponent]   // <-- export if used by AppModule routes or other modules
 })
-export class PredictModule { }
+export class PredictModule {}
