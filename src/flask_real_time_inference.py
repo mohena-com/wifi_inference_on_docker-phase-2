@@ -279,7 +279,8 @@ def predict():
                 # Move inputs
                 csi_seq = batch["csi_seq"].to(device, non_blocking=non_blocking_flag)
                 meta_seq = batch["metadata_seq"].to(device, non_blocking=non_blocking_flag)
-                b_labels = batch["label"].squeeze().to(device, non_blocking=non_blocking_flag)
+                #b_labels = batch["label"].squeeze().to(device, non_blocking=non_blocking_flag)
+                b_labels = batch["label"].reshape(-1).to(device, non_blocking=non_blocking_flag).long()
                 print(f"    🧩 Labels:       {b_labels.cpu().numpy().tolist()}")
 
                 # guard against NaN/Inf values in inputs/labels
@@ -300,10 +301,10 @@ def predict():
                     pass
 
                 # Forward
-                with torch.no_grad():  # disable gradient tracking for speed & memory efficiency
-                    outputs = model_instance(csi_seq, meta_seq)   # (N, C)
-                    probs_tensor = torch.softmax(outputs, dim=1)  # (N, C)
-                    preds_tensor = torch.argmax(outputs, dim=1)   # (N,)               
+                #with torch.no_grad():  # disable gradient tracking for speed & memory efficiency
+                outputs = model_instance(csi_seq, meta_seq)   # (N, C)
+                probs_tensor = torch.softmax(outputs, dim=1)  # (N, C)
+                preds_tensor = torch.argmax(outputs, dim=1)   # (N,)               
                 print(f"    🧩 Predictions : {preds_tensor.cpu().numpy().tolist()} ")
  
                 b_files = batch.get("file")
