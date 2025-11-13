@@ -1,102 +1,57 @@
-<!-- src/app/predict/predict.component.html -->
 <div class="predict-root">
-  <div class="upload-area card">
-    <h2>Gait ID — Prediction</h2>
+  <h2>Upload file for prediction</h2>
 
-    <div class="file-input">
-      <label class="file-label">
-        Select CSV files
-        <input type="file" (change)="onFileSelected($event)" multiple accept=".csv" />
-      </label>
-      <div class="file-list" *ngIf="files.length">
-        <div *ngFor="let f of files" class="file-line">
-          <span class="fname">{{ f.name }}</span>
-          <span class="fsize">{{ (f.size / 1024 | number:'1.0-0') }} KB</span>
-        </div>
-      </div>
-
-      <div class="actions">
-        <button (click)="startUpload()" [disabled]="uploading || files.length===0">Start Prediction</button>
-        <button (click)="cancelUpload()" *ngIf="uploading">Cancel</button>
-        <button (click)="loadLatest()" class="ghost">Load latest result</button>
-      </div>
-
-      <div *ngIf="uploading" class="progress">
-        <div class="progress-bar" [style.width]="uploadProgress + '%'"></div>
-        <div class="progress-label">{{ uploadProgress }}%</div>
-      </div>
-
-      <div *ngIf="uploadError" class="error">⚠️ {{ uploadError }}</div>
-      <div *ngIf="latestJsonError" class="error">⚠️ {{ latestJsonError }}</div>
-    </div>
+  <div class="upload-row">
+    <input type="file" (change)="onFileChange($event)" id="fileInput" />
+    <button (click)="upload()" [disabled]="!selectedFile || uploading">Upload & Process</button>
+    <button (click)="clear()">Clear</button>
   </div>
 
-  <div *ngIf="result" class="report-area">
-    <div class="summary card">
-      <div class="row">
-        <div><strong>Total windows:</strong> {{ result.summary.total_windows }}</div>
-        <div><strong>Correct:</strong> {{ result.summary.total_correct }}</div>
-        <div><strong>Incorrect:</strong> {{ result.summary.total_incorrect }}</div>
-      </div>
-      <div class="notes">{{ result.summary.notes }}</div>
-    </div>
+  <div *ngIf="uploading" class="progress">
+    <label>Uploading: {{ progress }}%</label>
+    <progress [value]="progress" max="100"></progress>
+  </div>
 
-    <div class="per-file card" *ngIf="result.per_file_summary?.length">
-      <h3>Per-file majority summary</h3>
-      <table class="summary-table">
-        <thead><tr><th>File</th><th>Predicted</th><th>Actual</th><th>Windows</th></tr></thead>
-        <tbody>
-          <tr *ngFor="let pf of result.per_file_summary">
-            <td>{{ pf.file }}</td>
-            <td>{{ pf.majority_predicted ?? '-' }}</td>
-            <td>{{ pf.majority_actual ?? '-' }}</td>
-            <td>{{ pf.n_windows }}</td>
-          </tr>
-        </tbody>
-      </table>
+  <div *ngIf="error" class="error">{{ error }}</div>
+
+  <section *ngIf="result" class="result-area">
+    <div class="summary">
+      <h3>Summary</h3>
+      <p><strong>Files:</strong> <span *ngFor="let f of result.file_list">{{ f }} </span></p>
+      <p><strong>Batches:</strong> {{ result.batches?.length || 0 }}</p>
+      <p><strong>Total samples:</strong> {{ result.batches?.reduce((s:any,b:any)=>s+(b.total||0),0) || 0 }}</p>
     </div>
 
     <div class="batches">
-      <div *ngFor="let b of result.batches" class="batch card">
-        <div class="batch-header" (click)="toggleBatch(b.batch_index)">
-          <div>🧩 Batch {{ b.batch_index }}</div>
-          <div class="meta">Loss: {{ b.loss ?? '-' }} • Acc: {{ b.acc ?? '-' }}</div>
-          <div class="chev">{{ isExpanded(b.batch_index) ? '▲' : '▼' }}</div>
+      <div class="batch" *ngFor="let b of result.batches">
+        <div class="batch-header">
+          <strong>Batch {{ b.batch }}</strong>
+          <span>{{ b.correct }}/{{ b.total }} correct • loss: {{ b.loss | number:'1.3-3' }}</span>
         </div>
-
-        <div class="batch-body" *ngIf="isExpanded(b.batch_index)">
-          <div class="verify-title">✅ VERIFICATION of Prediction for Batch {{ b.batch_index }}</div>
-
-          <div class="window-list">
-            <div *ngFor="let w of b.windows; let i=index" class="window-row" [style.border-left]="'4px solid ' + (w.correct ? 'var(--ok)' : 'var(--fail)')">
-              <div class="idx">{{ i+1 }}.</div>
-              <div class="content">
-                <div class="line">
-                  <span class="icon" [style.color]="colorFor(w.correct)">{{ iconFor(w.correct) }}</span>
-                  <span class="mono"> true: <b>{{ w.true ?? '-' }}</b> &nbsp; pred: <b>{{ w.pred ?? '-' }}</b></span>
-                  <span class="result"> = {{ w.correct ? 'True' : 'False' }} Prediction</span>
-                </div>
-
-                <div class="top3" *ngIf="w.top3?.length">
-                  <div *ngFor="let t of w.top3" class="top3-row">
-                    <div class="label">s{{ t.label_raw }}</div>
-                    <div class="bar">
-                      <div class="bar-inner" [style.width]="(t.prob*100) + '%'" [style.background]="colorFor(w.correct)"></div>
-                    </div>
-                    <div class="pct">{{ fmtProb(t.prob) }}</div>
-                  </div>
-                </div>
-              </div>
-            </div>
+        <div class="batch-body">
+          <div class="list">
+            <h4>Predicted</h4>
+            <div class="chips"><span *ngFor="let p of b.predicted_value" class="chip">{{p}}</span></div>
+            <div class="meta">Unique: {{ unique(b.predicted_value).join(', ') }}</div>
           </div>
-
-          <div class="batch-footer">Batch {{ b.batch_index }}: loss={{ b.loss }}, acc={{ b.acc }}</div>
+          <div class="list">
+            <h4>True</h4>
+            <div class="chips"><span *ngFor="let t of b.true_value" class="chip">{{t}}</span></div>
+            <div class="meta">Unique: {{ unique(b.true_value).join(', ') }}</div>
+          </div>
+          <div class="list stats">
+            <h4>Quick</h4>
+            <div>Accuracy: {{ b.accuracy }}</div>
+            <div>Correct: {{ b.correct }}</div>
+            <div>Loss: {{ b.loss | number:'1.3-3' }}</div>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <div *ngIf="!result && !uploading" class="hint card">
-    Tip: select one or more CSV files (matching your dataset format) and click “Start Prediction”.
-  </div>
+    <div class="raw">
+      <h4>Raw JSON</h4>
+      <pre>{{ result | json }}</pre>
+    </div>
+  </section>
 </div>

@@ -8,7 +8,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # copy package manifests and install dependencies (cache friendly)
-COPY package.json package-lock.json ./
+COPY package*.json ./
 
 # use npm ci (no --silent so errors are visible)
 RUN npm ci

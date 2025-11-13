@@ -1,82 +1,50 @@
-// src/app/predict/predict.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpEvent, HttpEventType, HttpRequest } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
-
-// Interfaces for returned JSON shape (lightweight)
-export interface Top3Entry { label_idx: number; label_raw: number; prob: number; }
-export interface WindowRow {
-  true?: number | null;
-  pred?: number | null;
-  correct?: boolean;
-  top3?: Top3Entry[];
-}
-export interface BatchResult {
-  batch_index: number;
-  windows: WindowRow[];
-  loss?: number | null;
-  acc?: string | null;
-}
-export interface PerFileSummary {
-  file: string;
-  majority_predicted?: number | null;
-  majority_actual?: number | null;
-  n_windows?: number;
-}
-export interface PredictionJSON {
-  batches: BatchResult[];
-  summary: {
-    total_windows: number;
-    total_correct: number;
-    total_incorrect: number;
-    notes?: string;
-  };
-  per_file_summary?: PerFileSummary[];
-}
+import { Observable, of, throwError } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PredictService {
-  // Change these endpoints if your Flask app is served on another path/origin
-  private predictEndpoint = '/gaitid/predict';
-  private latestJsonEndpoint = '/gaitid/prediction_result_latest.json';
+  // use proxy in dev (ng serve --proxy-config) so this can be '/api/predict'
+  private endpoint = '/gaitid/predict';
 
   constructor(private http: HttpClient) {}
 
-  /**
-   * Upload files to backend and emit progress updates.
-   * Observable emits objects: { progress?: number, done?: boolean, response?: any }
-   */
-  uploadFiles(files: File[], endpoint: string = this.predictEndpoint): Observable<{ progress?: number; done?: boolean; response?: PredictionJSON | any }> {
+  uploadFile(file: File): Observable<any> {
     const form = new FormData();
-    files.forEach(f => form.append('file', f, f.name));
+    form.append('file', file, file.name);
 
-    const req = new HttpRequest('POST', endpoint, form, {
-      reportProgress: true,
-      responseType: 'json'
+    const req = new HttpRequest('POST', this.endpoint, form, {
+      reportProgress: true
     });
 
     return this.http.request(req).pipe(
       map((event: HttpEvent<any>) => {
-        switch (event.type) {
-          case HttpEventType.Sent:
-            return { progress: 0 };
-          case HttpEventType.UploadProgress:
-            const percent = event.total ? Math.round(100 * (event.loaded / event.total)) : 0;
-            return { progress: percent };
-          case HttpEventType.Response:
-            return { progress: 100, done: true, response: event.body };
-          default:
-            return {};
+        if (event.type === HttpEventType.UploadProgress) {
+          const percent = Math.round(100 * (event.loaded || 0) / (event.total || 1));
+          return { type: 'progress', progress: percent };
+        } else if (event.type === HttpEventType.Response) {
+          return { type: 'result', result: event.body };
+        } else {
+          return { type: 'event', event };
         }
-      })
+      }),
+      catchError((err) => throwError(() => err))
     );
   }
 
-  /** Fetch latest static JSON (if Flask saves a latest JSON file) */
-  fetchLatestJSON(url: string = this.latestJsonEndpoint): Observable<PredictionJSON> {
-    return this.http.get<PredictionJSON>(url);
+  // offline/demo fallback
+  simulate(fileName: string) {
+    const sample = {
+      batches: [
+        { accuracy: '2/8', batch: 1, correct: 2, loss: 2.942568302154541, predicted_value: [10,23,23,23,22,10,10,22], total: 8, true_value: [22,22,22,22,22,22,22,22] },
+        { accuracy: '1/8', batch: 2, correct: 1, loss: 5.350837230682373, predicted_value: [5,6,10,9,3,22,10,23], total: 8, true_value: [22,22,22,22,22,22,22,22] },
+        { accuracy: '1/2', batch: 3, correct: 1, loss: 0.9598658084869385, predicted_value: [10,22], total: 2, true_value: [22,22] }
+      ],
+      file_list: [`/tmp/uploads/${fileName}`]
+    };
+    return of(sample);
   }
 }
