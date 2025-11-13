@@ -1,8 +1,8 @@
 {
-  "/api": {
-    "target": "http://localhost:5002",
+  "/gaitid": {
+    "target": "http://webmaster-ai:5002",
     "secure": false,
     "changeOrigin": true,
-    "logLevel": "info"
+    "logLevel": "debug"
   }
 }
