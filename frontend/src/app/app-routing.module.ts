@@ -1,14 +1,15 @@
-﻿import { NgModule } from '@angular/core';
+﻿// src/app/app-routing.module.ts
+import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { PredictComponent } from './predict/predict.component';
 
 const routes: Routes = [
-  { path: '', redirectTo: 'predict', pathMatch: 'full' },
-  { path: 'predict', loadChildren: () => import('./predict/predict.module').then(m => m.PredictModule) },
-  { path: '**', redirectTo: 'predict' }
+  { path: '', component: PredictComponent },
+  // add more routes here if needed
 ];
 
 @NgModule({
-  imports: [RouterModule.forRoot(routes, { scrollPositionRestoration: 'enabled' })],
+  imports: [RouterModule.forRoot(routes)],
   exports: [RouterModule]
 })
-export class AppRoutingModule { }
+export class AppRoutingModule {}

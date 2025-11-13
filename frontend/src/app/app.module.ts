@@ -1,25 +1,28 @@
-﻿// app.module.ts (edit)
+﻿// src/app/app.module.ts
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { HttpClientModule } from '@angular/common/http';
+import { FormsModule } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
-// App components
 import { AppComponent } from './app.component';
 
-// Import the feature module instead of declaring the component twice
-import { PredictModule } from './predict/predict.module';
+// Import routing and feature module(s)
+import { AppRoutingModule } from './app-routing.module';
+import { PredictModule } from './predict/predict.module'; // assume predict.module.ts exists
 
 @NgModule({
   declarations: [
     AppComponent,
-    // <-- DO NOT declare PredictComponent here if it's declared in PredictModule
+    // DO NOT declare PredictComponent here if it is declared in PredictModule
   ],
   imports: [
     BrowserModule,
     HttpClientModule,
+    FormsModule,
     BrowserAnimationsModule,
-    PredictModule,   // <-- import the feature module
+    AppRoutingModule,
+    PredictModule
   ],
   providers: [],
   bootstrap: [AppComponent]
