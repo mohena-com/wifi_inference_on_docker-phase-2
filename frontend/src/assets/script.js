@@ -35,7 +35,8 @@ const uploadFile = async () => {
     formData.append("file", file);
 
     try {
-        const response = await fetch("/gaitid/predict", {
+        const response = // await fetch("/gaitid/predict", {
+            await fetch("http://webmaster-ai:5002/gaitid/predict", {
             method: "POST",
             body: formData, // Send the file as form data
             // Do NOT set Content-Type header manually!

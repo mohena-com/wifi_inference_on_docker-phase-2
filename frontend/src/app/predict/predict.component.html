@@ -3,7 +3,7 @@
 
   <div class="upload-row">
     <input type="file" (change)="onFileChange($event)" id="fileInput" />
-    <button (click)="upload()" [disabled]="!selectedFile || uploading">Upload & Process</button>
+    <button (click)="uploadFile()" [disabled]="!selectedFile || uploading"  id="uploadButton" >Upload & Process</button>
     <button (click)="clear()">Clear</button>
   </div>
 
