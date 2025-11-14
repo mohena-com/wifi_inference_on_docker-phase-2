@@ -1,0 +1,23 @@
+#version: "3.8"
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    image: wifi_inference_api:latest
+    container_name: wifi_inference_api
+    ports:
+      - "5002:5002"
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.frontend
+    image: wifi_inference_frontend:latest
+    container_name: wifi_inference_frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - api
+    restart: unless-stopped

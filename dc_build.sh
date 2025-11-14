@@ -24,5 +24,16 @@ echo "API at http://localhost:5002"
 
 echo
 
+# see running containers
+docker-compose ps
+echo 
+
 echo 📜 Showing logs...
-docker-compose logs -f
+# watch logs
+docker-compose logs -f frontend
+docker-compose logs -f api
+
+   
+
+
+#docker-compose logs -f

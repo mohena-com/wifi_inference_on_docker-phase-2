@@ -1,23 +1,51 @@
-#version: "3.8"
+version: "3.8"
+
 services:
   api:
     build:
       context: .
-      dockerfile: Dockerfile.api
-    image: wifi_inference_api:latest
-    container_name: wifi_inference_api
+      dockerfile: Dockerfile.api      # change path if your Dockerfile.api is in another folder
+    image: wifi-api:latest
+    container_name: wifi_api
+    restart: on-failure
     ports:
-      - "5002:5002"
-    restart: unless-stopped
+      - "5002:5002"                  # expose API for direct testing (optional)
+    environment:
+      - FLASK_ENV=production
+      - UPLOAD_DIR=/tmp/uploads
+    volumes:
+      - uploads:/tmp/uploads         # shared upload/results folder
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5002/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - wifi-net
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile.frontend
-    image: wifi_inference_frontend:latest
-    container_name: wifi_inference_frontend
-    ports:
-      - "8080:80"
+    image: wifi-frontend:latest
+    container_name: wifi_frontend
     depends_on:
       - api
-    restart: unless-stopped
+    restart: on-failure
+    ports:
+      - "8080:80"                    # map nginx (inside container) port 80 to host 8080
+    volumes:
+      - uploads:/tmp/uploads         # mount same uploads so frontend can display files if needed
+      - ./frontend/nginx.conf:/etc/nginx/conf.d/default.conf:ro  # override nginx config
+    environment:
+      - API_URL=http://api:5002     # useful if you read backend host from env at runtime
+    networks:
+      - wifi-net
+
+networks:
+  wifi-net:
+    driver: bridge
+
+volumes:
+  uploads:
+    driver: local
