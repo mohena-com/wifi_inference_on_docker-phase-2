@@ -1,6 +1,23 @@
 # 1️⃣ Recreate node_modules (install dependencies)
 npm install
 
+# (optional but recommended) remove node_modules and lockfile to avoid leftover conflicts
+rm -rf node_modules package-lock.json
+
+# install matching CDK + Material (explicitly pin to 18.2.14)
+npm install @angular/cdk@18.2.14 @angular/material@18.2.14
+
+# then run the schematic to wire up themes, animations, etc.
+npx ng add @angular/material@18.2.14
+
+C:\Sanjeev\VNIT_CLASSES\VNIT-AAI-SEM4\wifi_inference_on_docker-phase-2\frontend>npm ls @angular/material @angular/cdk
+wifi-frontend@1.0.0 C:\Sanjeev\VNIT_CLASSES\VNIT-AAI-SEM4\wifi_inference_on_docker-phase-2\frontend
++-- @angular/cdk@18.2.14
++-- @angular/material@18.2.14
+| `-- @angular/cdk@18.2.14 deduped
+`-- ng2-charts@5.0.4
+  `-- @angular/cdk@18.2.14 deduped
+  
 # 2️⃣ Rebuild Angular dist output (creates frontend/dist/)
 npm run build -- --configuration production
 
