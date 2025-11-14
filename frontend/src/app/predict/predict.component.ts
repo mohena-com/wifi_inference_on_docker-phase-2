@@ -1,6 +1,6 @@
-// src/app/predict/predict.component.ts
 import { Component } from '@angular/core';
 import { PredictService } from './predict.service';
+import { HttpEventType } from '@angular/common/http';
 
 @Component({
   selector: 'app-predict',
@@ -9,7 +9,6 @@ import { PredictService } from './predict.service';
 })
 export class PredictComponent {
   selectedFile?: File;
-  selectedFiles?: FileList;
   uploading = false;
   progress = 0;
   result: any = null;
@@ -36,21 +35,27 @@ export class PredictComponent {
     this.progress = 0;
     this.error = '';
 
-    this.svc.uploadFile(this.selectedFile).subscribe({
-      next: (evt) => {
+    const fd = new FormData();
+    fd.append('file', this.selectedFile);
+
+    this.svc.uploadFile(fd).subscribe({
+      next: (evt: any) => {
         if (evt.type === 'progress') {
           this.progress = evt.progress;
-        } else if (evt.type === 'result') {
-          this.result = evt.result;
+        } else if (evt.type === 'result' || evt.type === HttpEventType.Response) {
+          // If using HttpClient with 'events', evt can be HttpEventType.Response
+          const body = evt.result ?? (evt.body ?? evt);
+          this.result = body;
           this.uploading = false;
         }
       },
       error: (err) => {
         console.error('Upload failed', err);
+        this.error = 'Upload failed — falling back to simulated result.';
+        this.uploading = false;
+        // fallback simulation
         this.svc.simulate(this.selectedFile!.name).subscribe(res => {
           this.result = res;
-          this.uploading = false;
-          this.error = 'Server unreachable — using simulated response.';
         });
       }
     });
@@ -63,13 +68,13 @@ export class PredictComponent {
     this.error = '';
   }
 
-  unique(arr: number[] = []) {
-    return Array.from(new Set(arr));
+  unique(arr: number[] = []): number[] {
+    return Array.from(new Set(arr || []));
   }
 
-  // NEW: compute total samples across batches
+  // compute total samples across batches safely
   totalSamples(): number {
-    if (!this.result || !this.result.batches) return 0;
+    if (!this.result || !Array.isArray(this.result.batches)) return 0;
     return this.result.batches.reduce((acc: number, b: any) => acc + (b.total || 0), 0);
   }
 }

@@ -1,28 +1,42 @@
-﻿// src/app/app.module.ts
-import { NgModule } from '@angular/core';
+﻿import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { HttpClientModule } from '@angular/common/http';
-import { FormsModule } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
+// App components
 import { AppComponent } from './app.component';
+import { PredictComponent } from './predict/predict.component';
 
-// Import routing and feature module(s)
+// Material Modules
+import { MatCardModule } from '@angular/material/card';
+import { MatButtonModule } from '@angular/material/button';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatInputModule } from '@angular/material/input';
+
+// HTTP client
+import { HttpClientModule } from '@angular/common/http';
+
+// Routing
 import { AppRoutingModule } from './app-routing.module';
-import { PredictModule } from './predict/predict.module'; // assume predict.module.ts exists
 
 @NgModule({
   declarations: [
     AppComponent,
-    // DO NOT declare PredictComponent here if it is declared in PredictModule
+    PredictComponent
   ],
   imports: [
     BrowserModule,
+    BrowserAnimationsModule,   // Required for Angular Material
+
+    // Material
+    MatCardModule,
+    MatButtonModule,
+    MatProgressBarModule,
+    MatProgressSpinnerModule,
+    MatInputModule,
+
     HttpClientModule,
-    FormsModule,
-    BrowserAnimationsModule,
-    AppRoutingModule,
-    PredictModule
+    AppRoutingModule
   ],
   providers: [],
   bootstrap: [AppComponent]

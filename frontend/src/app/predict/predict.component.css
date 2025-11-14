@@ -1,11 +1,129 @@
-.predict-root { max-width: 1100px; margin: 20px auto; font-family: Arial, sans-serif; }
-.upload-row { display:flex; gap:10px; align-items:center; margin-bottom:12px; }
-.progress { margin: 8px 0; }
-.result-area { margin-top: 18px; }
-.batch { border-radius:8px; padding:12px; margin-bottom:10px; box-shadow:0 6px 18px rgba(0,0,0,0.06); background:#fff; }
-.batch-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
-.batch-body { display:flex; gap:12px; }
-.list { flex:1; }
-.chips { display:flex; flex-wrap:wrap; gap:6px; }
-.chip { background:#eef; padding:6px 8px; border-radius:6px; font-weight:600; }
-.raw pre { background:#101218; color:#dfefff; padding:10px; border-radius:6px; overflow:auto; max-height:300px; }
+/* Page container */
+.predict-root {
+  max-width: 1100px;
+  margin: 18px auto;
+  font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+  color: #0b2233;
+  padding: 0 14px;
+}
+
+/* Upload card */
+.upload-card {
+  padding: 12px;
+  margin-bottom: 18px;
+  border-radius: 10px;
+  box-shadow: 0 8px 30px rgba(8, 40, 60, 0.06);
+}
+.upload-row { display:flex; gap:12px; align-items:center; justify-content:space-between; }
+
+/* Summary top */
+.summary-top {
+  display:flex;
+  gap:14px;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:14px;
+}
+.file-chip {
+  display:inline-block; background:#eef6ff; padding:6px 8px; margin-right:6px; border-radius:6px; font-weight:600;
+}
+.actions { display:flex; gap:8px; }
+
+/* List */
+.batches-list { display: flex; flex-direction: column; gap: 16px; }
+
+/* Each batch row: grid with main area and right summary */
+.batch-row {
+  display: grid;
+  grid-template-columns: 1fr 240px;
+  gap: 16px;
+  align-items: start;
+  padding: 12px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #ffffff, #fbfdff);
+  box-shadow: 0 6px 20px rgba(6, 40, 80, 0.06);
+}
+
+/* Left main column */
+.batch-main { padding: 6px 8px; }
+.batch-header { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; }
+.batch-title { font-weight:700; font-size:1.05rem; }
+.batch-sub { font-size:0.85rem; color:rgba(0,0,0,0.6); }
+
+/* Two stacked value blocks */
+.values { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+
+/* Value block */
+.value-block {
+  background: rgba(245, 249, 255, 0.9);
+  border-radius: 8px;
+  padding: 8px;
+  min-height: 72px;
+  box-shadow: 0 6px 16px rgba(10,30,60,0.03);
+}
+.value-title { font-weight:700; font-size:0.9rem; margin-bottom:8px; }
+
+/* Chips */
+.chips { display:flex; flex-wrap:wrap; gap:8px; }
+.chip {
+  background: #e6f3ff;
+  color: #024b7a;
+  padding:6px 9px;
+  border-radius:8px;
+  font-weight:600;
+  font-size:0.88rem;
+  box-shadow:0 2px 6px rgba(2,36,66,0.04);
+}
+.true-chip { background:#fff6e6; color:#6b3f00; }
+
+/* Unique line */
+.unique { margin-top:8px; font-size:0.82rem; color:rgba(0,0,0,0.6); }
+
+/* Summary card on the right */
+.batch-summary {
+  background: linear-gradient(180deg, #0b78a3, #007095);
+  color:#fff;
+  padding:12px;
+  border-radius:10px;
+  min-height:96px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  box-shadow: 0 8px 30px rgba(2,40,80,0.12);
+}
+.summary-title { font-weight:800; font-size:0.95rem; margin-bottom:8px; }
+.summary-body { font-size:0.9rem; line-height:1.45; }
+
+/* Visual acc bar */
+.acc-bar {
+  height: 12px;
+  background: rgba(255,255,255,0.18);
+  border-radius: 8px;
+  margin-top: 10px;
+  overflow: hidden;
+}
+.acc-bar-inner {
+  height: 100%;
+  background: linear-gradient(90deg, #e6fff5, #9df2d8);
+  border-radius: 8px 0 0 8px;
+  transition: width 400ms ease;
+}
+.acc-label { margin-top:6px; font-size:0.85rem; color:rgba(255,255,255,0.95); font-weight:600; }
+
+/* Raw JSON */
+.raw pre {
+  max-height: 260px;
+  overflow: auto;
+  background: #0b1220;
+  color: #e6eef8;
+  padding: 12px;
+  border-radius: 8px;
+}
+
+/* Responsive: stack summary under main on small screens */
+@media (max-width: 880px) {
+  .batch-row { grid-template-columns: 1fr; }
+  .values { grid-template-columns: 1fr; }
+  .batch-summary { margin-top: 8px; min-height: auto; }
+  .chip { font-size: 0.86rem; padding: 5px 8px; }
+}
