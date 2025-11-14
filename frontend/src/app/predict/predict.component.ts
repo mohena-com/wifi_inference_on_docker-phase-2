@@ -59,10 +59,10 @@ export class PredictComponent {
   }
 
   clear() {
-    this.selectedFile = null;
+    this.selectedFile = undefined;
     this.result = null;
     this.progress = 0;
-    this.error = null;
+    this.error = '';
   }
 
   unique(arr: number[] = []): number[] {
