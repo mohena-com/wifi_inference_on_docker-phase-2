@@ -53,7 +53,9 @@
                 <span class="chip" *ngFor="let v of b.predicted_value">{{ v }}</span>
               </div>
               <div class="unique">Unique: {{ unique(b.predicted_value).join(', ') }}</div>
-            <!-- </div>             <div class="value-block"> -->
+            </div>             
+            
+            <div class="value-block">
               <div class="value-title">True</div>
               <div class="chips">
                 <span class="chip true-chip" *ngFor="let t of b.true_value">{{ t }}</span>
