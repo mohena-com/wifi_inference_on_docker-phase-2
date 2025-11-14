@@ -1,6 +1,8 @@
+<!-- src/app/predict/predict.component.html -->
 <div class="predict-root">
   <h2 class="page-title">Batches</h2>
 
+  <!-- Upload card -->
   <mat-card class="upload-card" *ngIf="!result">
     <div class="upload-row">
       <input type="file" id="csvFile" (change)="onFileChange($event)" />
@@ -17,8 +19,10 @@
     <div class="error" *ngIf="error">{{ error }}</div>
   </mat-card>
 
+  <!-- Top summary when result exists -->
   <div *ngIf="result" class="summary-top">
-    <div><strong>Files:</strong>
+    <div>
+      <strong>Files:</strong>
       <span *ngFor="let f of result.file_list" class="file-chip">{{ f }}</span>
     </div>
     <div><strong>Batches:</strong> {{ result.batches?.length || 0 }}</div>
@@ -28,9 +32,10 @@
     </div>
   </div>
 
+  <!-- Batches list -->
   <div class="batches-list" *ngIf="result?.batches?.length">
     <ng-container *ngFor="let b of result.batches">
-      <div class="batch-row" aria-label="Batch {{ b.batch }}">
+      <div class="batch-row" [attr.aria-label]="'Batch ' + b.batch">
         <!-- LEFT: Predicted / True column -->
         <div class="batch-main">
           <div class="batch-header">
@@ -60,7 +65,7 @@
         </div>
 
         <!-- RIGHT: Summary card with visual accuracy bar -->
-        <aside class="batch-summary" role="complementary" aria-label="Summary for batch {{ b.batch }}">
+        <aside class="batch-summary" role="complementary" [attr.aria-label]="'Summary for batch ' + b.batch">
           <div class="summary-title">Summary</div>
           <div class="summary-body">
             <div><strong>Accuracy:</strong> {{ b.accuracy }}</div>
@@ -74,8 +79,9 @@
                 [style.width.%]="(b.total ? (b.correct / b.total) * 100 : 0)">
               </div>
             </div>
+
             <div class="acc-label">
-              {{ b.total ? ((b.correct / b.total) * 100) | number:'1.0-0' : 0 }}% correct
+              {{ (b.total ? ((b.correct / b.total) * 100) : 0) | number:'1.0-0' }}% correct
             </div>
           </div>
         </aside>

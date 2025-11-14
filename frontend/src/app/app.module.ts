@@ -1,42 +1,25 @@
-﻿import { NgModule } from '@angular/core';
+﻿// src/app/app.module.ts
+import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-
-// App components
-import { AppComponent } from './app.component';
-import { PredictComponent } from './predict/predict.component';
-
-// Material Modules
-import { MatCardModule } from '@angular/material/card';
-import { MatButtonModule } from '@angular/material/button';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatInputModule } from '@angular/material/input';
-
-// HTTP client
 import { HttpClientModule } from '@angular/common/http';
 
-// Routing
+import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
+
+// Import the feature module (which now includes CommonModule and Material)
+import { PredictModule } from './predict/predict.module';
 
 @NgModule({
   declarations: [
-    AppComponent,
-    PredictComponent
+    AppComponent
   ],
   imports: [
     BrowserModule,
-    BrowserAnimationsModule,   // Required for Angular Material
-
-    // Material
-    MatCardModule,
-    MatButtonModule,
-    MatProgressBarModule,
-    MatProgressSpinnerModule,
-    MatInputModule,
-
+    BrowserAnimationsModule,   // required for angular material
     HttpClientModule,
-    AppRoutingModule
+    AppRoutingModule,
+    PredictModule
   ],
   providers: [],
   bootstrap: [AppComponent]

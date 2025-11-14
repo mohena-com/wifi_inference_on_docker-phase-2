@@ -40,16 +40,13 @@ export class PredictComponent {
 
     this.svc.uploadFile(fd).subscribe({
       next: (evt: any) => {
-        if (evt.type === 'progress') {
-          this.progress = evt.progress;
-        } else if (evt.type === 'result' || evt.type === HttpEventType.Response) {
-          // If using HttpClient with 'events', evt can be HttpEventType.Response
-          const body = evt.result ?? (evt.body ?? evt);
-          this.result = body;
+        if (evt.type === HttpEventType.UploadProgress) {
+          this.progress = Math.round(100 * (evt.loaded / (evt.total || 1)));
+        } else if (evt.type === HttpEventType.Response) {
+          this.result = evt.body;
           this.uploading = false;
         }
-      },
-      error: (err) => {
+      },error: (err) => {
         console.error('Upload failed', err);
         this.error = 'Upload failed — falling back to simulated result.';
         this.uploading = false;
