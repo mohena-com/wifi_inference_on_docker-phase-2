@@ -127,3 +127,26 @@
   .batch-summary { margin-top: 8px; min-height: auto; }
   .chip { font-size: 0.86rem; padding: 5px 8px; }
 }
+
+/* Overall summary card */
+.overall-summary-card {
+  background: linear-gradient(180deg, #004c6d, #00769d);
+  color: #fff;
+  padding: 16px;
+  border-radius: 12px;
+  margin-bottom: 22px;
+  box-shadow: 0 10px 30px rgba(0, 50, 80, 0.18);
+}
+
+.overall-summary-card .summary-title {
+  font-weight: 800;
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+}
+
+.overall-summary-card .summary-body {
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* reuse existing acc-bar styles */

@@ -59,19 +59,55 @@ export class PredictComponent {
   }
 
   clear() {
-    this.selectedFile = undefined;
+    this.selectedFile = null;
     this.result = null;
     this.progress = 0;
-    this.error = '';
+    this.error = null;
   }
 
   unique(arr: number[] = []): number[] {
     return Array.from(new Set(arr || []));
   }
 
-  // compute total samples across batches safely
+  /** -----------------------------
+   *  OVERALL SUMMARY CALCULATIONS
+   * ----------------------------- */
   totalSamples(): number {
-    if (!this.result || !Array.isArray(this.result.batches)) return 0;
-    return this.result.batches.reduce((acc: number, b: any) => acc + (b.total || 0), 0);
+    if (!this.result?.batches) return 0;
+    return this.result.batches.reduce(
+      (sum: number, b: any) => sum + (b.total || 0),
+      0
+    );
+  }
+
+  totalCorrect(): number {
+    if (!this.result?.batches) return 0;
+    return this.result.batches.reduce(
+      (sum: number, b: any) => sum + (b.correct || 0),
+      0
+    );
+  }
+
+  overallAccuracy(): number {
+    const total = this.totalSamples();
+    if (!total) return 0;
+    return this.totalCorrect() / total;
+  }
+
+  overallLoss(): number {
+    if (!this.result?.batches) return 0;
+
+    let totalWeightedLoss = 0;
+    let totalCount = 0;
+
+    this.result.batches.forEach((b: any) => {
+      if (b.loss !== undefined && b.total > 0) {
+        totalWeightedLoss += b.loss * b.total;
+        totalCount += b.total;
+      }
+    });
+
+    if (totalCount === 0) return 0;
+    return totalWeightedLoss / totalCount;
   }
 }
