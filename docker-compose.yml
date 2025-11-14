@@ -32,7 +32,9 @@ services:
       - api
     restart: on-failure
     ports:
-      - "8080:80"                    # map nginx (inside container) port 80 to host 8080
+      - "8080:80"  
+    depends_on:
+      - api                  # map nginx (inside container) port 80 to host 8080
     volumes:
       - uploads:/tmp/uploads         # mount same uploads so frontend can display files if needed
       - ./frontend/nginx.conf:/etc/nginx/conf.d/default.conf:ro  # override nginx config

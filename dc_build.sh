@@ -1,39 +1,48 @@
-echo "🧩    Updating repository..."
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Friendly script to build and run docker-compose with better defaults and logs.
+
+REPO_ROOT="$(cd "$(dirname "$0")" && pwd)"
+
+echo "🧩 Updating repository..."
+cd "$REPO_ROOT"
+git pull --ff-only || {
+  echo "⚠ git pull failed or no changes."
+}
+
 echo
-git pull --ff-only
-
-echo 🛑 Stopping containers...
-docker-compose down
-echo
-
-echo 🧩 Rebuilding images...
-# docker-compose build --no-cache
-# docker-compose build 
-DOCKER_BUILDKIT=1 docker-compose build --no-cache=false
+echo "🛑 Stopping existing containers (if any)..."
+docker-compose down || echo "No containers to stop or docker-compose down failed."
 
 echo
+echo "🧩 Rebuilding images (using BuildKit, pulling latest base images)..."
+# Use BuildKit for faster builds / better caching. Pull base images and build without cache to avoid stale base images.
+export DOCKER_BUILDKIT=1
 
-echo 🚀 Starting containers...
-docker-compose up -d
+# Try to pull latest base images first (helps avoid interactive keychain issues)
+echo "-> Pulling base images (best-effort)..."
+docker-compose pull --ignore-pull-failures || echo "Note: some images failed to pull (this may be OK)."
+
+# Build all services with no cache to ensure fresh layers. Remove --no-cache if you want faster incremental builds.
+docker-compose build --pull --no-cache
+
 echo
+echo "🚀 Starting containers (detached)..."
+docker-compose up -d --remove-orphans
 
-
-echo "frontend at http://localhost:8080"
 echo
+echo "✅ Services started (give them a moment to become healthy)..."
+sleep 2
+
+echo "Frontend at http://localhost:8080"
 echo "API at http://localhost:5002"
-
 echo
 
-# see running containers
+echo "📦 Container status:"
 docker-compose ps
-echo 
+echo
 
-echo 📜 Showing logs...
-# watch logs
-docker-compose logs -f frontend
-docker-compose logs -f api
-
-   
-
-
-#docker-compose logs -f
+echo "📜 Following combined logs (press Ctrl+C to stop)..."
+# Follow logs for all services (tail last 200 lines then stream)
+docker-compose logs -f --tail=200

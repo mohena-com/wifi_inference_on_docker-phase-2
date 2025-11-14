@@ -1,51 +1,25 @@
-# frontend/Dockerfile (multi-stage; Debian-slim builder for robust native builds)
-FROM node:18-bullseye-slim AS builder
+# frontend/Dockerfile.frontend (copy-paste this file)
+# Stage 1: build the Angular app
+FROM node:18-alpine AS build-stage
 WORKDIR /app
 
-# install build deps required by some npm packages (node-gyp, etc.)
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends python3 g++ make build-essential && \
-    rm -rf /var/lib/apt/lists/*
-
-# copy package manifests and install dependencies (cache friendly)
+# Install dependencies
 COPY package*.json ./
+RUN npm ci --silent
 
-# use npm ci (no --silent so errors are visible)
-RUN npm ci
-
-# copy rest of source and build
+# Copy source and build
 COPY . .
-RUN npm run build -- --configuration production --output-path=dist
+RUN npm run build -- --configuration production
 
-# ---------- runtime stage ----------
-FROM nginx:stable-alpine AS runtime
+# Stage 2: serve with nginx
+FROM nginx:stable-alpine AS production-stage
+# Remove default nginx website
 RUN rm -rf /usr/share/nginx/html/*
+# Copy compiled app from build stage
+COPY --from=build-stage /app/dist /usr/share/nginx/html
 
-# copy built artifacts (handles dist/ or dist/<project>/ in builder)
-COPY --from=builder /app/dist /usr/share/nginx/html/dist_tmp
-RUN set -eux; \
-    if [ -f /usr/share/nginx/html/dist_tmp/index.html ]; then \
-        mv /usr/share/nginx/html/dist_tmp/* /usr/share/nginx/html/; \
-    else \
-        subdir=$(find /usr/share/nginx/html/dist_tmp -mindepth 1 -maxdepth 1 -type d | head -n 1) || true; \
-        if [ -n "$subdir" ] && [ -f "$subdir/index.html" ]; then \
-            mv "$subdir"/* /usr/share/nginx/html/; \
-        else \
-            mv /usr/share/nginx/html/dist_tmp/* /usr/share/nginx/html/ || true; \
-        fi; \
-    fi; \
-    rm -rf /usr/share/nginx/html/dist_tmp
-
-# Optional: copy nginx.conf if you need SPA fallback + /gaitid proxy
-# COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-EXPOSE 8080
-
-# final stage: nginx
-FROM nginx:stable-alpine
-COPY --from=build-stage /app/dist/your-app-name /usr/share/nginx/html
-# optionally add a default config if not provided via docker-compose mount
+# Copy our custom nginx config if present (compose mounts will override)
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
-
