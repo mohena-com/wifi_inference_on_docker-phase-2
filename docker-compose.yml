@@ -47,4 +47,4 @@ networks:
 
 volumes:
   uploads:
-    driver: local
+    driver: local 
