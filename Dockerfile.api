@@ -1,4 +1,3 @@
-
 # ===============================
 #  Flask API Production Dockerfile
 # ===============================
@@ -17,17 +16,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Copy requirements first for caching
 COPY requirements.txt .
+
 # Install dependencies
-#RUN pip install --no-cache-dir -r requirements.txt
-#RUN pip install   -r requirements.txt
-# RUN pip install --no-cache-dir -r requirements.txt 
 RUN --mount=type=cache,target=/root/.cache/pip \
     pip install -r requirements.txt
 
 RUN mkdir -p /tmp/uploads
 # Copy source code and other necessary folders
 COPY src/config_reader.py /app/config_reader.py
-# COPY src/CSI_ID_MLOPS_advanced_v1.3.py /app/CSI_ID_MLOPS_advanced_v1.3.py
+
 COPY src/CSI_Model_Eval_helper.py /app/CSI_Model_Eval_helper.py
 COPY src/DL_CSILSTMNet.py /app/DL_CSILSTMNet.py
 COPY src/DL_DenseNet1D.py /app/DL_DenseNet1D.py
@@ -36,11 +33,12 @@ COPY src/DL_MobileNetV3.py /app/DL_MobileNetV3.py
 COPY src/DS_WifiCSIDataset.py /app/DS_WifiCSIDataset.py
 COPY src/flask_real_time_inference.py /app/flask_real_time_inference.py
 
-
-         
+# Copy configuration files        
 COPY config/gait_id_config.properties /app/config/
+
 # Only copy model version marker first
 COPY models/.model_version /app/models/.model_version
+
 # later copy full models (only when marker changes)
 COPY models/*.pt /app/models/
  
