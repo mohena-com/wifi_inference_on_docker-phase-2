@@ -160,7 +160,7 @@ def instantiate_from_runname(params, device=None):
     # Build a synthetic sample batch with shapes matching expectations
     # These sizes are typical for your dataset; adapt if needed.
     batch_size = max(1, int(params.get('batch_size', 1)))
-    window_size = 64
+    window_size = cr.get_int('window_size', 128)
     csi_channels = 90
     meta_features = 11
 
