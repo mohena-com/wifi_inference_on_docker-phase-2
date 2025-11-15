@@ -18,7 +18,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY requirements.txt .
 
 # Install dependencies
-RUN --mount=type=cache,target=/Users/sanjeev/root/.cache/pip \
+RUN --mount=type=cache,target=/root/.cache/pip \
     pip install -r requirements.txt
 
 RUN mkdir -p /tmp/uploads
