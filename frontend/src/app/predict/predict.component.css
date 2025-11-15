@@ -150,3 +150,43 @@
 }
 
 /* reuse existing acc-bar styles */
+/* New column layout */
+.values-col {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 10px;
+}
+
+/* A row: label | values */
+.row-line {
+  display: grid;
+  grid-template-columns: 120px 1fr; 
+  align-items: start;
+  gap: 12px;
+  background: #f5f9ff;
+  padding: 8px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(10,30,60,0.04);
+}
+
+.row-label {
+  font-weight: 700;
+  font-size: 0.9rem;
+  margin-top: 6px;
+}
+
+.row-values {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.unique.wide {
+  margin-top: -6px;
+  background: #f0f6ff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+}
