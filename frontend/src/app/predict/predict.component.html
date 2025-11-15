@@ -46,7 +46,7 @@
             </div>
           </div>
 
-          <div class="values">
+        <!--<div class="values">
             <div class="value-block">
               <div class="value-title">Predicted</div>
               <div class="chips">
@@ -62,7 +62,29 @@
               </div>
               <div class="unique">Unique: {{ unique(b.true_value).join(', ') }}</div>
             </div>
+          </div> -->  
+          <div class="values-col">
+
+            <!-- Predicted row -->
+            <div class="row-line">
+              <div class="row-label">Predicted</div>
+              <div class="row-values">
+                <span class="chip" *ngFor="let v of b.predicted_value">{{ v }}</span>
+              </div>
+            </div>
+            <div class="unique wide">Unique: {{ unique(b.predicted_value).join(', ') }}</div>
+
+            <!-- True row -->
+            <div class="row-line">
+              <div class="row-label">True</div>
+              <div class="row-values">
+                <span class="chip true-chip" *ngFor="let t of b.true_value">{{ t }}</span>
+              </div>
+            </div>
+            <div class="unique wide">Unique: {{ unique(b.true_value).join(', ') }}</div>
+
           </div>
+
         </div>
 
         <!-- RIGHT SUMMARY -->
