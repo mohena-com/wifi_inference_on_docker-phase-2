@@ -56,7 +56,8 @@
   display: grid;
   grid-template-columns: 1fr 260px;
   gap: 16px;
-  align-items: stretch !important; /* ensure both columns match height */
+  /* center summary vertically relative to left column */
+  align-items: center;       /* <-- changed: center instead of stretch */
   padding: 12px;
   border-radius: 10px;
   background: linear-gradient(180deg, #ffffff, #fbfdff);
@@ -103,34 +104,36 @@
    --------------------------- */
 .batch-summary {
   background: linear-gradient(180deg, #0b78a3, #007095);
-  color:#fff;
-  padding:14px;
-  border-radius:10px;
-  min-height: 120px;
-  height: 70%;
-  display:flex;
-  flex-direction:column;
-  justify-content:space-evenly;
-  box-shadow: 0 8px 30px rgba(2,40,80,0.12);
+  color: #fff;
+  padding: 14px;
+  border-radius: 10px;
+  min-width: 220px;
+  max-width: 260px;
 
-  /* tightened typography */
-  font-size: 15px;
-}
-
-/* Summary title (top) */
-.summary-title {
-  font-weight:800;
-  font-size:18px;      /* larger title */
-  margin-bottom:6px;   /* reduced spacing */
-}
-
-/* Body: tighten internal spacing and ensure column layout */
-.summary-body {
+  /* let the card size itself and be vertically centered by grid align-items */
+  height: auto;
   display: flex;
   flex-direction: column;
-  gap: 4px;            /* small gap between lines */
+  justify-content: space-between;
+
+  box-shadow: 0 8px 30px rgba(2,40,80,0.12);
+
+  /* tightened typography for the compact look */
   font-size: 15px;
-  line-height: 1.25;
+}
+
+/* Ensure the title sits near the top inside the card */
+.batch-summary .summary-title {
+  font-weight: 800;
+  font-size: 18px;
+  margin-bottom: 6px;
+}
+
+/* Compact summary body spacing */
+.batch-summary .summary-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
   margin: 0;
 }
 
@@ -253,4 +256,17 @@
   border-radius: 6px;
   font-size: 0.82rem;
   box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+}
+/* Progress bar spacing tightened */
+.batch-summary .acc-bar {
+  margin-top: 6px;
+  margin-bottom: 4px;
+}
+
+/* Percentage label */
+.batch-summary .acc-label {
+  margin-top: 2px;
+  font-size: 15px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.95);
 }
