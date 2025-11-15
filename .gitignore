@@ -10,3 +10,7 @@ __pycache__/
 *.pyd
 
 sample_test_data/
+
+doc_config.sh
+
+buildcache/
