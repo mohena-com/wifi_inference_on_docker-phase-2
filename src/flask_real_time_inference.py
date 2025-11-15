@@ -252,7 +252,7 @@ def predict():
     try:
         batch_size = int(params.get('batch_size', 8))
         print(f"🧩 Creating test dataset and loader with batch_size={batch_size}")
-        test_dataset = WifiCSIDataset(logger=logger, file_list=saved_file_paths, window_size=128, stride=64)
+        test_dataset = WifiCSIDataset(logger=logger, file_list=saved_file_paths, window_size=64, stride=32)
         test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True, num_workers=0)
 
         # Debug

@@ -26,7 +26,6 @@ from sklearn.preprocessing import label_binarize
 
 # Import your custom classes
 from config_reader import ConfigReader
-from DS_WifiCSIDataset import WifiCSIDataset
 from DL_CSILSTMNet import CSILSTMNet
 from DL_DenseNet1D import DenseNet1D
 from DL_EfficientNet1DLSTM import EfficientNet1DLSTM
@@ -161,7 +160,7 @@ def instantiate_from_runname(params, device=None):
     # Build a synthetic sample batch with shapes matching expectations
     # These sizes are typical for your dataset; adapt if needed.
     batch_size = max(1, int(params.get('batch_size', 1)))
-    window_size = 128
+    window_size = 64
     csi_channels = 90
     meta_features = 11
 
