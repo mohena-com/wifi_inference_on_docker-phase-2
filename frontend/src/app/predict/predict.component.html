@@ -88,7 +88,7 @@
         </div>
 
         <!-- RIGHT SUMMARY -->
-        <aside class="mary">
+        <aside class="batch-summary">
           <div class="summary-title">Summary</div>
           <div class="summary-body">
             <div><strong>Accuracy:</strong> {{ b.accuracy }}</div>
@@ -103,7 +103,7 @@
             </div>
 
             <div class="acc-label">
-              {{ (b.total ? ((b.correct / b.total) * 100) : 0) | number:'1.0-0' }}% correct
+              {{ ( (b.total && b.total>0) ? ((b.correct/b.total)*100) : (b.accuracy ? b.accuracy*100 : 0) ) | number:'1.0-0' }}% correct
             </div>
           </div>
         </aside>
