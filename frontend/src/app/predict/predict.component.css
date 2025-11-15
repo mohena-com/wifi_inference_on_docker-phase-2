@@ -6,11 +6,20 @@
   color: #0b2233;
   padding: 0 14px;
 }
+
+/* Backwards-compatibility alias: if HTML uses .mary */
 .mary {
+  /* match .batch-summary rules below */
+  background: linear-gradient(180deg, #0b78a3, #007095);
+  color: #fff;
+  padding: 14px;
+  border-radius: 10px;
+  min-height: 120px;
   height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  box-shadow: 0 8px 30px rgba(2,40,80,0.12);
 }
 /* Upload card */
 .upload-card {
@@ -30,7 +39,12 @@
   margin-bottom:14px;
 }
 .file-chip {
-  display:inline-block; background:#eef6ff; padding:6px 8px; margin-right:6px; border-radius:6px; font-weight:600;
+  display:inline-block;
+  background:#eef6ff;
+  padding:6px 8px;
+  margin-right:6px;
+  border-radius:6px;
+  font-weight:600;
 }
 .actions { display:flex; gap:8px; }
 
@@ -40,9 +54,9 @@
 /* Each batch row: grid with main area and right summary */
 .batch-row {
   display: grid;
-  grid-template-columns: 1fr 240px;
+  grid-template-columns: 1fr 260px;
   gap: 16px;
-  align-items: stretch !important;
+  align-items: stretch !important; /* ensure both columns match height */
   padding: 12px;
   border-radius: 10px;
   background: linear-gradient(180deg, #ffffff, #fbfdff);
@@ -55,7 +69,7 @@
 .batch-title { font-weight:700; font-size:1.05rem; }
 .batch-sub { font-size:0.85rem; color:rgba(0,0,0,0.6); }
 
-/* Two stacked value blocks */
+/* Two stacked value blocks (fallback layout) */
 .values { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
 
 /* Value block */
@@ -84,28 +98,49 @@
 /* Unique line */
 .unique { margin-top:8px; font-size:0.82rem; color:rgba(0,0,0,0.6); }
 
-/* Summary card on the right */
+/* ---------------------------
+   Batch Summary Card (right)
+   --------------------------- */
 .batch-summary {
   background: linear-gradient(180deg, #0b78a3, #007095);
   color:#fff;
-  padding:12px;
+  padding:14px;
   border-radius:10px;
-  min-height: 150px;
+  min-height: 120px;
   height: 100%;
   display:flex;
   flex-direction:column;
   justify-content:space-between;
   box-shadow: 0 8px 30px rgba(2,40,80,0.12);
+
+  /* tightened typography */
+  font-size: 15px;
 }
-.summary-title { font-weight:800; font-size:0.95rem; margin-bottom:8px; }
-.summary-body { font-size:0.9rem; line-height:1.45; }
+
+/* Summary title (top) */
+.summary-title {
+  font-weight:800;
+  font-size:18px;      /* larger title */
+  margin-bottom:6px;   /* reduced spacing */
+}
+
+/* Body: tighten internal spacing and ensure column layout */
+.summary-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;            /* small gap between lines */
+  font-size: 15px;
+  line-height: 1.25;
+  margin: 0;
+}
 
 /* Visual acc bar */
 .acc-bar {
   height: 12px;
   background: rgba(255,255,255,0.18);
   border-radius: 8px;
-  margin-top: 10px;
+  margin-top: 6px;     /* smaller top gap */
+  margin-bottom: 4px;  /* small bottom gap */
   overflow: hidden;
 }
 .acc-bar-inner {
@@ -114,7 +149,20 @@
   border-radius: 8px 0 0 8px;
   transition: width 400ms ease;
 }
-.acc-label { margin-top:6px; font-size:0.85rem; color:rgba(255,255,255,0.95); font-weight:600; }
+
+/* percentage label below the bar - tightened */
+.acc-label {
+  margin-top: 2px !important;
+  font-size: 15px;
+  color: rgba(255,255,255,0.95);
+  font-weight:700;
+}
+
+/* make strong tags a little larger for emphasis */
+.batch-summary strong {
+  font-size: 15px;
+  font-weight: 700;
+}
 
 /* Raw JSON */
 .raw pre {
@@ -134,29 +182,39 @@
   .chip { font-size: 0.86rem; padding: 5px 8px; }
 }
 
-/* Overall summary card */
+/* ---------------------------
+   Overall Summary Card
+   --------------------------- */
 .overall-summary-card {
   background: linear-gradient(180deg, #004c6d, #00769d);
   color: #fff;
-  padding: 16px;
+  padding: 18px;
   border-radius: 12px;
   margin-bottom: 22px;
   box-shadow: 0 10px 30px rgba(0, 50, 80, 0.18);
+
+  font-size: 15px; /* increased base font */
 }
 
 .overall-summary-card .summary-title {
   font-weight: 800;
-  font-size: 1.1rem;
-  margin-bottom: 8px;
+  font-size: 20px; /* larger overall title */
+  margin-bottom: 6px;
 }
 
 .overall-summary-card .summary-body {
-  font-size: 0.95rem;
-  line-height: 1.5;
+  font-size: 15px;
+  line-height: 1.25;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
 }
 
-/* reuse existing acc-bar styles */
-/* New column layout */
+/* reuse existing acc-bar styles for overall card too */
+
+/* ---------------------------
+   New column layout (Predicted/True rows)
+   --------------------------- */
 .values-col {
   display: flex;
   flex-direction: column;
@@ -167,7 +225,7 @@
 /* A row: label | values */
 .row-line {
   display: grid;
-  grid-template-columns: 120px 1fr; 
+  grid-template-columns: 120px 1fr;
   align-items: start;
   gap: 12px;
   background: #f5f9ff;
@@ -178,7 +236,7 @@
 
 .row-label {
   font-weight: 700;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   margin-top: 6px;
 }
 
