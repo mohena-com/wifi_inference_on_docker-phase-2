@@ -161,6 +161,8 @@ def instantiate_from_runname(params, device=None):
     # These sizes are typical for your dataset; adapt if needed.
     batch_size = max(1, int(params.get('batch_size', 1)))
     window_size = cr.get_int('window_size', 128)
+    print(f"💻 Using window size: {window_size}")
+    
     csi_channels = 90
     meta_features = 11
 

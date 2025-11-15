@@ -250,9 +250,12 @@ def predict():
 
     # Build dataset, loader and run inference
     try:
+        w_size = cr.get_int('window_size', 64)
+        s_size = cr.get_int('stride', 32)
         batch_size = int(params.get('batch_size', 8))
+        print(f"🧩 Using window_size={w_size}, stride={s_size}, batch_size={batch_size} for dataset creation."  )
         print(f"🧩 Creating test dataset and loader with batch_size={batch_size}")
-        test_dataset = WifiCSIDataset(logger=logger, file_list=saved_file_paths, window_size=64, stride=32)
+        test_dataset = WifiCSIDataset(logger=logger, file_list=saved_file_paths, window_size=w_size, stride=s_size)
         test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True, num_workers=0)
 
         # Debug
