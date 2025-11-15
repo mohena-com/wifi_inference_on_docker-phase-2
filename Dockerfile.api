@@ -20,7 +20,9 @@ COPY requirements.txt .
 # Install dependencies
 #RUN pip install --no-cache-dir -r requirements.txt
 #RUN pip install   -r requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt 
+# RUN pip install --no-cache-dir -r requirements.txt 
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install -r requirements.txt
 
 RUN mkdir -p /tmp/uploads
 # Copy source code and other necessary folders
