@@ -6,7 +6,12 @@
   color: #0b2233;
   padding: 0 14px;
 }
-
+.mary {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
 /* Upload card */
 .upload-card {
   padding: 12px;
