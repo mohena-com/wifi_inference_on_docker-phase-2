@@ -3,7 +3,13 @@ services:
   api:
     build:
       context: .
-      dockerfile: Dockerfile.api      # change path if your Dockerfile.api is in another folder
+      dockerfile: Dockerfile.api
+      # cache-from: use local cache previously exported to ./buildcache
+      cache_from:
+        - type=local,src=./buildcache
+      # cache-to: export cache to ./buildcache so future builds reuse it
+      cache_to:
+        - type=local,dest=./buildcache,mode=max
     image: wifi-api:latest
     container_name: wifi_api
     restart: on-failure
@@ -26,6 +32,10 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile.frontend
+      cache_from:
+        - type=local,src=./buildcache
+      cache_to:
+        - type=local,dest=./buildcache,mode=max
     image: wifi-frontend:latest
     container_name: wifi_frontend
     depends_on:
