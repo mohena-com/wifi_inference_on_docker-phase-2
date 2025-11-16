@@ -19,6 +19,7 @@ COPY requirements.txt .
 
 # Install dependencies
 RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --upgrade pip wheel setuptools && \
     pip install -r requirements.txt
 
 RUN mkdir -p /tmp/uploads
