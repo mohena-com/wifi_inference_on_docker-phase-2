@@ -23,7 +23,17 @@
   <div *ngIf="result" class="summary-top">
     <div>
       <strong>Files:</strong>
-      <span *ngFor="let f of result.file_list" class="file-chip">{{ f.file_name   }}</span>
+        <script>
+          console.log(result.file_list)          
+        </script>
+      <span *ngFor="let f of result.file_list" class="file-chip">{{ f   }}
+        <script>
+          console.log("0. fle name : ",f)          
+          console.log("1. fle name : ",f.name)          
+          console.log("2. fle name : ",f.filename)          
+          console.log("3. fle name : ",f.file_name)          
+        </script>
+      </span>
     </div>
     <div><strong>Batches:</strong> {{ result.batches?.length || 0 }}</div>
     <div><strong>Total samples:</strong> {{ totalSamples() }}</div>

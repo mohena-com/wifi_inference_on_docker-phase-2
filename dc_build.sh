@@ -1,3 +1,5 @@
+export DOCKER_BUILDKIT=1
+
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -18,8 +20,7 @@ docker-compose down || echo "No containers to stop or docker-compose down failed
 echo
 echo "🧩 Rebuilding images (using BuildKit, pulling latest base images)..."
 # Use BuildKit for faster builds / better caching. Pull base images and build without cache to avoid stale base images.
-export DOCKER_BUILDKIT=1
-
+ 
 # Try to pull latest base images first (helps avoid interactive keychain issues)
 echo "-> Pulling base images (best-effort)..."
 docker-compose pull --ignore-pull-failures || echo "Note: some images failed to pull (this may be OK)."
