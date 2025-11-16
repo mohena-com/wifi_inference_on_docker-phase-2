@@ -16,21 +16,24 @@ warnings.filterwarnings('ignore', category=DeprecationWarning)
 warnings.filterwarnings('ignore', category=FutureWarning)
 
 config = None
+
+"""
+Initialize model once at startup. Returns (model_instance, device, params, total_params, best_model_path).
+"""
+CONFIG_FILE = os.environ.get('CONFIG_FILE', 'config/gait_id_config.properties')
+print(f"🧩 Using config file: {CONFIG_FILE}", "config")
+
+# read config and determine best model path
+config = ConfigReader(CONFIG_FILE)
+
 # Flask app
 app = Flask(__name__)
 CORS(app)  # <-- Add here 
 import torch
 def init_model():
-    """
-    Initialize model once at startup. Returns (model_instance, device, params, total_params, best_model_path).
-    """
-    CONFIG_FILE = os.environ.get('CONFIG_FILE', 'config/gait_id_config.properties')
-    print(f"🧩 Using config file: {CONFIG_FILE}", "config")
-
-    # read config and determine best model path
-    config = ConfigReader(CONFIG_FILE)
+    
     best_model_path = get_best_model_path(config)
-
+    print(f"📦 Best model path: {best_model_path}", "model_path")
     # get model skeleton and metadata (do not load weights yet)
     model_instance, params, total_params, device = get_best_model_and_params(str(best_model_path))
     print(f"📦 Model class: {model_instance.__class__.__name__}  path: {best_model_path}", "load_model")
