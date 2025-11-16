@@ -2,8 +2,10 @@
 #  Flask API Production Dockerfile
 # ===============================
 
-# Use a lightweight Python base image
-FROM python:3.11-slim
+# ----------------------------
+#  Base Image
+# ----------------------------
+FROM python:3.11-slim AS api
 
 # Set working directory inside container
 ENV APP_HOME=/app
@@ -14,13 +16,22 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements first for caching
-COPY requirements.txt .
+# ----------------------------
+#  Copy requirements + wheelhouse
+# ----------------------------
 
-# Install dependencies
+COPY requirements.txt .
+COPY wheelhouse/ /wheels/
+
+# ----------------------------
+#  Install dependencies using wheels (NO INTERNET NEEDED)
+# ----------------------------
+RUN pip install --upgrade pip wheel setuptools && \
+    pip install --no-index --find-links=/wheels -r requirements.txt
+
+# If any packages are missing wheels, fallback to online install:
 RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install --upgrade pip wheel setuptools && \
-    pip install -r requirements.txt
+    pip install -r requirements.txt || true
 
 RUN mkdir -p /tmp/uploads
 # Copy source code and other necessary folders
