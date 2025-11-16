@@ -250,8 +250,8 @@ def predict():
 
     # Build dataset, loader and run inference
     try:
-        w_size = cr.get_int('window_size', 64)
-        s_size = cr.get_int('stride', 32)
+        w_size = config.get_int('window_size', 64)
+        s_size = config.get_int('stride', 32)
         batch_size = int(params.get('batch_size', 8))
         print(f"🧩 Using window_size={w_size}, stride={s_size}, batch_size={batch_size} for dataset creation."  )
         print(f"🧩 Creating test dataset and loader with batch_size={batch_size}")
