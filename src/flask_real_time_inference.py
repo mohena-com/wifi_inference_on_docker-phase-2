@@ -256,7 +256,9 @@ def predict():
     try:
         w_size = config.get_int('window_size', 64)
         s_size = config.get_int('stride', 32)
-        batch_size = int(params.get('batch_size', 8))
+        # batch_size = int(params.get('batch_size', 8))
+        batch_size = config.get_int('batch_size', 8)
+
         print(f"🧩 Using window_size={w_size}, stride={s_size}, batch_size={batch_size} for dataset creation."  )
         print(f"🧩 Creating test dataset and loader with batch_size={batch_size}")
         test_dataset = WifiCSIDataset(logger=logger, file_list=saved_file_paths, window_size=w_size, stride=s_size)
