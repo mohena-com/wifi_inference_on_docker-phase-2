@@ -1,1 +1,1 @@
-best_overall_model_final_DenseNet1D_lr1e-04_bs8_adam_wd1e-05_ep150_valacc0.9531.pt
+best_overall_model_final_DenseNet1D_lr1e-04_bs64_adam_wd1e-05_ep100_valacc0.9861.pt
