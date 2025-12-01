@@ -217,7 +217,7 @@ class WifiCSIDataset(Dataset):
                     act.append(sa_row[1])
                 else:
                     subj.append(s)
-                    act.append(a)
+                    act.append(c)
               #  print(f"Row {i} loaded. Subject: {subj[-1]} Activity: {act[-1]}"  )
                     
 
