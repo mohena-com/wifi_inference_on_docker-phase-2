@@ -393,7 +393,7 @@ def serve_prediction_latest():
 
 def cleanup():
     filelist = glob.glob(os.path.join('/tmp/uploads', '**', '*.csv'), recursive=True)
-    print(f"Predict: Found {len(filelist)} CSV files in /tmp/uploads for dataset creation.")  
+    print(f"🧩 Predict: Found {len(filelist)} CSV 📂 files in /tmp/uploads for dataset creation.")  
     # Delete uploaded files after processing
     for file in filelist:
         try:

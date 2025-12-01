@@ -35,7 +35,7 @@ class WifiCSIDataset(Dataset):
         # First pass: collect all data for scaling
         all_meta, all_csi = [], []
         i = 0
-        print(f"A_00. Starting first pass for scaling.")
+        #print(f"A_00. Starting first pass for scaling.")
         for f in file_list:
             X_meta, X_csi, _, _, _ = self.load_csv_as_numpy(f)
             print(f"{i} A_00 X_meta: {X_meta.shape} X_csi: {X_csi.shape}")
@@ -45,7 +45,7 @@ class WifiCSIDataset(Dataset):
             all_meta.append(X_meta)
             all_csi.append(X_csi)
             i = i+1
-        self.logger.critical(f"A_00. Completed first pass for scaling.")   
+        self.logger.critical(f"✅ Completed first pass for scaling.")   
         print(f"A_01. all_meta: {(len(all_meta[0]))} all_csi: {len(all_csi[0])}")
 
         all_meta = np.vstack(all_meta)
@@ -55,7 +55,7 @@ class WifiCSIDataset(Dataset):
         print(f"A_02. all_meta: {all_meta.shape} all_csi: {all_csi.shape}")
 
         # Second pass: windowed sequences
-        print(f"A_01. Starting Second pass: windowed sequences.{file_list}")
+        #print(f"A_01. Starting Second pass: windowed sequences.{file_list}")
         
         for j, f in enumerate(file_list, start=1):
             X_meta, X_csi, y, _, _ = self.load_csv_as_numpy(f)
@@ -76,7 +76,7 @@ class WifiCSIDataset(Dataset):
                 self.samples.append((m_seq, csi_seq, y))
               #  print(f"A_03_{i}. Windowed sample added from {f}, start:{start}")   
 
-        print(f"Completed Second pass: sample length:{len(self.samples)}. Each Sample have {window_size} entries")
+        print(f"✅ Completed Second pass: sample length:{len(self.samples)}. Each Sample have {window_size} entries")
 
     def __len__(self):
         return len(self.samples)
@@ -214,10 +214,7 @@ class WifiCSIDataset(Dataset):
 
                 # Append the row data
                 X_meta.append(meta_row)
-                if(i%20==0):
-                    print(f"✅ Rows  {i} loaded. Subject: {subject} class_label: {class_label} "  )
-                   # print(f" ✅      {i} mag_row {mag_row} "  )
-                   # print(f" ✅      {i} phase_row {phase_row} "  )
+                
                 X_mag.append(mag_row)
                 X_raw_phase.append(phase_row)
                 
