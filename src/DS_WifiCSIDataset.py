@@ -38,21 +38,21 @@ class WifiCSIDataset(Dataset):
         #print(f"A_00. Starting first pass for scaling.")
         for f in file_list:
             X_meta, X_csi, _, _, _ = self.load_csv_as_numpy(f)
-            print(f"{i} A_00 X_meta: {X_meta.shape} X_csi: {X_csi.shape}")
-            print(f"    A_00 Len X_meta: {len(X_meta[0])}, {len(X_meta[1])} ")
-            print(f"    A_00 Len X_csi: {len(X_csi[0])}, {len(X_csi[1])} ")
+            print(f"🔍 {i} X_meta: {X_meta.shape} X_csi: {X_csi.shape}")
+            print(f"    Len X_meta: {len(X_meta[0])}, {len(X_meta[1])} ")
+            print(f"    Len X_csi: {len(X_csi[0])}, {len(X_csi[1])} ")
 
             all_meta.append(X_meta)
             all_csi.append(X_csi)
             i = i+1
         self.logger.critical(f"✅ Completed first pass for scaling.")   
-        print(f"A_01. all_meta: {(len(all_meta[0]))} all_csi: {len(all_csi[0])}")
+        print(f"🔍 all_meta: {(len(all_meta[0]))} all_csi: {len(all_csi[0])}")
 
         all_meta = np.vstack(all_meta)
         all_csi = np.vstack(all_csi)
         self.scaler_meta.fit(all_meta)
         self.scaler_csi.fit(all_csi)
-        print(f"A_02. all_meta: {all_meta.shape} all_csi: {all_csi.shape}")
+        print(f"✅ all_meta: {all_meta.shape} all_csi: {all_csi.shape}")
 
         # Second pass: windowed sequences
         #print(f"A_01. Starting Second pass: windowed sequences.{file_list}")
@@ -62,8 +62,8 @@ class WifiCSIDataset(Dataset):
             X_meta = self.scaler_meta.transform(X_meta)
             X_csi = self.scaler_csi.transform(X_csi)
             T = len(X_meta)
-            print(f"{j} len(X_meta), len(X_csi), len(y), window_size, stride")
-            print(f"✅  {len(X_meta)}, {len(X_csi)}, {len(y)}, {window_size}, {stride}")
+            
+            print(f"✅ {j} 🔍 {len(X_meta)}, {len(X_csi)}, {len(y)}, {window_size}, {stride}")
              
             if T < window_size:
                 window_size = int(T/2)  # Adjust window size if sequence is shorter
@@ -108,24 +108,14 @@ class WifiCSIDataset(Dataset):
         Extract subject (Sxx) and class (C03) numbers from filename.
         Example: 'E1_S01_C03_A03_T01.csv' -> (1, 3)
         """
-        print(f"Extracting S and C from filename: {filename}")
+        print(f"🧩 Extracting S and C from 📂 filename: {filename}")
         match = re.search(r'S(\d+).*C(\d+)', filename)
         if match:
             a, b =  int(match.group(1)), int(match.group(2))
-            print(f"Extracted: S={a}, C={b}")
+            print(f"✅ Extracted: S={a}, C={b}")
             return a, b
         return None, None
-    '''
-    def extract_S_C_numbers(self, filename):
-        """
-        Extract subject (Sxx) and class (C03) numbers from filename.
-        Example: 'E1_S01_C03_A03_T01.csv' -> (1, 3)
-        """
-        match = re.search(r'S(\d+).*C(\d+)', filename)
-        if match:
-            return int(match.group(1)), int(match.group(2))
-        return None, None
-    '''
+ 
     # Place this helper method within the same class (self)
    # from scipy import unwrap # Use 'from numpy import unwrap' if available in your numpy version
     
@@ -246,10 +236,10 @@ class WifiCSIDataset(Dataset):
             # where T is the number of time steps (rows) and 198 = 99*2
             X_csi = np.concatenate((X_mag, X_sanitized_phase), axis=1, dtype=np.float32)
 
-            self.logger.debug(f"B_01. X_meta: {X_meta.shape} X_csi: {X_csi.shape}")
+            print(f"🔍  X_meta: {X_meta.shape} X_csi: {X_csi.shape}")
             # X_csi.shape will now be (T, 198) if the number of subcarriers is 99
             
-            self.logger.debug(f"B_02. Subject: {len(subj)}, Class: {len(class_labels)}")
+            print(f"✅  Subject: {len(subj)}, Class: {len(class_labels)}")
             y = {"subject": subj, "class": class_labels}
 
         return X_meta, X_csi, y, meta_cols, csi_cols
