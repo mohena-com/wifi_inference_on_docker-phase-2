@@ -216,8 +216,8 @@ class WifiCSIDataset(Dataset):
                 X_meta.append(meta_row)
                 if(i%20==0):
                     print(f"✅ Rows  {i} loaded. Subject: {s} Class: {c} "  )
-                    print(f" ✅      {i} mag_row {mag_row} "  )
-                    print(f" ✅      {i} phase_row {phase_row} "  )
+                   # print(f" ✅      {i} mag_row {mag_row} "  )
+                   # print(f" ✅      {i} phase_row {phase_row} "  )
                 X_mag.append(mag_row)
                 X_raw_phase.append(phase_row)
                 
