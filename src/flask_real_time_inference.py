@@ -233,7 +233,7 @@ def predict():
             else:
                 logger.info(f"{os.path.basename(csv_path)} has {current_len} rows — no padding needed.")
         except Exception as e:
-            logger.exception(f"Padding failed for {csv_path}: {e}")
+            logger.exception(f"❌ Padding failed for {csv_path}: {e}")
 
     # Save uploads
     try:
@@ -244,12 +244,12 @@ def predict():
             filename = secure_filename(uploaded_file.filename)
             save_path = os.path.join(upload_dir, filename)
             uploaded_file.save(save_path)
-            logger.info(f"Saved uploaded file to {save_path}")
+            logger.info(f"💾 Saved uploaded file to {save_path}")
             pad_csv_if_needed(save_path, min_rows=128)
             saved_file_paths.append(save_path)
 
     except Exception as e:
-        logger.exception("Failed saving uploaded files")
+        logger.exception("❌ Failed saving uploaded files")
         return jsonify({"error": str(e), "trace": traceback.format_exc()}), 500
 
     # Build dataset, loader and run inference
@@ -265,9 +265,9 @@ def predict():
         test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True, num_workers=0)
 
         # Debug
-        logger.info(f"DEBUG: dataset size (len): {len(test_dataset)}")
-        logger.info(f"DEBUG: expected batches (ceil): {math.ceil(len(test_dataset) / batch_size)}")
-        logger.info(f"DEBUG: expected batches (floor): {len(test_dataset) // batch_size}")
+        print(f"🔍 dataset size (len): {len(test_dataset)}")
+        print(f"🔍 expected batches (ceil): {math.ceil(len(test_dataset) / batch_size)}")
+        print(f"🔍 expected batches (floor): {len(test_dataset) // batch_size}")
 
         # We'll iterate test_loader here, but leverage the existing evaluate_model_on_input_data
         # which already prints batch info and returns (val_true, val_pred, val_prob).
@@ -374,7 +374,7 @@ def predict():
         return jsonify(inference_response), 200
 
     except Exception as e:
-        logger.exception("Prediction failed")
+        logger.exception("❌ Prediction failed")
         return jsonify({"error": str(e), "trace": traceback.format_exc()}), 500
 
  
@@ -388,7 +388,7 @@ def serve_prediction_latest():
             return jsonify({"error": "no prediction file found"}), 404
         return send_from_directory(upload_dir, "prediction_result_latest.json")
     except Exception as e:
-        logger.exception("serve_prediction_latest failed")
+        logger.exception("❌ serve_prediction_latest failed")
         return jsonify({"error": str(e)}), 500
 
 def cleanup():
@@ -398,7 +398,7 @@ def cleanup():
     for file in filelist:
         try:
             os.remove(file)
-            print(f"Deleted uploaded file: {file}")
+            print(f"❌ Deleted uploaded 📂 file: {file}")
         except Exception as e:
             logger.warning(f"Failed to delete file {file}: {e}")
     
