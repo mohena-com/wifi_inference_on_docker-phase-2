@@ -91,6 +91,6 @@ const displayResults = (results) => {
         resultsDiv.appendChild(container);
     });
 };
-document.getElementById("uploadButton").onclick = uploadFile;
+//document.getElementById("uploadButton").onclick = uploadFile;
 
-//document.getElementById("uploadButton").addEventListener("click", uploadFile);
+document.getElementById("uploadButton").addEventListener("click", uploadFile);
