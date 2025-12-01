@@ -108,11 +108,24 @@ class WifiCSIDataset(Dataset):
         Extract subject (Sxx) and class (C03) numbers from filename.
         Example: 'E1_S01_C03_A03_T01.csv' -> (1, 3)
         """
+        print(f"Extracting S and C from filename: {filename}")
+        match = re.search(r'S(\d+).*C(\d+)', filename)
+        if match:
+            a, b =  int(match.group(1)), int(match.group(2))
+            print(f"Extracted: S={a}, C={b}")
+            return a, b
+        return None, None
+    '''
+    def extract_S_C_numbers(self, filename):
+        """
+        Extract subject (Sxx) and class (C03) numbers from filename.
+        Example: 'E1_S01_C03_A03_T01.csv' -> (1, 3)
+        """
         match = re.search(r'S(\d+).*C(\d+)', filename)
         if match:
             return int(match.group(1)), int(match.group(2))
         return None, None
-
+    '''
     # Place this helper method within the same class (self)
    # from scipy import unwrap # Use 'from numpy import unwrap' if available in your numpy version
     
