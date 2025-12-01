@@ -103,17 +103,16 @@ class WifiCSIDataset(Dataset):
             # If still not parsable, default to 0
             return 0.0 + 0.0j
 
-    def extract_S_C_numbers(self, filename):
+    def extract_S_C_A_numbers(self, filename):
         """
         Extract subject (Sxx) and class (C03) numbers from filename.
         Example: 'E1_S01_C03_A03_T01.csv' -> (1, 3)
         """
-        print(f"🧩 Extracting S and C from 📂 filename: {filename}")
-        match = re.search(r'S(\d+).*C(\d+)', filename)
+        match = re.search(r'S(\d+).*C(\d+).*A(\d+)', filename)
         if match:
-            a, b =  int(match.group(1)), int(match.group(2))
-            print(f"✅ Extracted: S={a}, C={b}")
-            return a, b
+            a, b, c =  int(match.group(1)), int(match.group(2), int(match.group(3))
+            print(f"✅ Extracted: S={a}, C={b}, A={c}")
+            return a, b, c
         return None, None
  
     # Place this helper method within the same class (self)
@@ -176,21 +175,19 @@ class WifiCSIDataset(Dataset):
             ]
             sa_cols = ['subject', 'activity']
             
-            # to be commented out           
-            X_meta, X_csi = [], []
-            subj, act = [], []
-            # to be commented out  
+              
              # --- MODIFIED: Separate lists for Magnitude and Raw Phase ---
             X_meta, X_mag, X_raw_phase = [], [], []
-            subj, class_labels = [], []
+            subj, class_labels, action_labels = [], [], []
 
-            subject, class_label = self.extract_S_C_numbers(os.path.basename(filename))
+            subject, class_label, action_label = self.extract_S_C_A_numbers(os.path.basename(filename))
+			'''
             fromrow = False
             if subject is None or class_label is None:
                 fromrow = True
             else:
                 fromrow = False
-
+			'''
             for i, row in enumerate(reader):
                 # metadata
                 meta_row = [float(row[c]) for c in meta_cols]
@@ -204,14 +201,13 @@ class WifiCSIDataset(Dataset):
 
                 # Append the row data
                 X_meta.append(meta_row)
-                
                 X_mag.append(mag_row)
-                X_raw_phase.append(phase_row)
+                X_raw_phase.append(phase_row)                                
                 
                 subj.append(subject)
                 class_labels.append(class_label)
-
-                
+                action_labels.append(action_label)
+                '''
                 if fromrow:
                     sa_row = [int(row[c]) for c in sa_cols]
                     subj.append(sa_row[0])
@@ -219,6 +215,7 @@ class WifiCSIDataset(Dataset):
                 else:
                     subj.append(subject)
                     class_labels.append(class_label)
+				'''
               #  print(f"Row {i} loaded. Subject: {subj[-1]} Activity: {act[-1]}"  )
                     
 
@@ -226,6 +223,8 @@ class WifiCSIDataset(Dataset):
             X_meta = np.array(X_meta, dtype=np.float32) 
             X_mag = np.array(X_mag, dtype=np.float32) 
             X_raw_phase = np.array(X_raw_phase, dtype=np.float32) # (T, 99)
+            X_class_labels = np.array(class_labels, dtype=np.int32)
+            X_action_labels = np.array(action_labels, dtype=np.int32)
             
             # --- CRITICAL STEP: Phase Sanitization (Unwrap and Trend Removal) ---
             # The phase data must be processed column-wise (per subcarrier)
@@ -234,7 +233,7 @@ class WifiCSIDataset(Dataset):
             # 4. Combine Magnitude and Sanitized Phase into the final CSI feature matrix
             # The final matrix X_csi will be (T, 198) 
             # where T is the number of time steps (rows) and 198 = 99*2
-            X_csi = np.concatenate((X_mag, X_sanitized_phase), axis=1, dtype=np.float32)
+            X_csi = np.concatenate((X_mag, X_sanitized_phase, X_class_labels[:, None], X_action_labels[:, None]), axis=1, dtype=np.float32)
 
             print(f"🔍  X_meta: {X_meta.shape} X_csi: {X_csi.shape}")
             # X_csi.shape will now be (T, 198) if the number of subcarriers is 99
