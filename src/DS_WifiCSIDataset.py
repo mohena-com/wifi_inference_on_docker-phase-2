@@ -194,9 +194,9 @@ class WifiCSIDataset(Dataset):
             X_meta, X_mag, X_raw_phase = [], [], []
             subj, class_labels = [], []
 
-            s, c = self.extract_S_C_numbers(os.path.basename(filename))
+            subject, class_label = self.extract_S_C_numbers(os.path.basename(filename))
             fromrow = False
-            if s is None or c is None:
+            if subject is None or class_label is None:
                 fromrow = True
             else:
                 fromrow = False
@@ -215,23 +215,23 @@ class WifiCSIDataset(Dataset):
                 # Append the row data
                 X_meta.append(meta_row)
                 if(i%20==0):
-                    print(f"✅ Rows  {i} loaded. Subject: {s} Class: {c} "  )
+                    print(f"✅ Rows  {i} loaded. Subject: {subject} class_label: {class_label} "  )
                    # print(f" ✅      {i} mag_row {mag_row} "  )
                    # print(f" ✅      {i} phase_row {phase_row} "  )
                 X_mag.append(mag_row)
                 X_raw_phase.append(phase_row)
                 
-                subj.append(s)
-                class_labels.append(c)
+                subj.append(subject)
+                class_labels.append(class_label)
 
                 
                 if fromrow:
                     sa_row = [int(row[c]) for c in sa_cols]
                     subj.append(sa_row[0])
-                    act.append(sa_row[1])
+                    class_labels.append(sa_row[1])
                 else:
-                    subj.append(s)
-                    act.append(c)
+                    subj.append(subject)
+                    class_labels.append(class_label)
               #  print(f"Row {i} loaded. Subject: {subj[-1]} Activity: {act[-1]}"  )
                     
 
