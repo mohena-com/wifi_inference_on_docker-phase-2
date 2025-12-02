@@ -36,8 +36,10 @@ echo
 echo "✅ Services started (give them a moment to become healthy)..."
 sleep 2
 
-echo "Frontend at http://localhost:8080"
-echo "API at http://localhost:5002"
+echo "Frontend at http://webmaster-ai:8080"
+echo "API at http://webmaster-ai:5002"
+echo "MLFLOW Tracking URI at http://webmaster-ai:5001"
+
 echo
 
 echo "📦 Container status:"
