@@ -363,7 +363,7 @@ def predict():
                 ))
         # Finished all batches    
         ########################## MODEL TRACKING #################################
-        # serve_model.py (excerpt)
+        ''' 
         import os, time, threading, queue
         import mlflow
         from mlflow.tracking import MlflowClient
@@ -391,6 +391,7 @@ def predict():
             mlflow.log_metric("latency_ms", latency_ms)
             #mlflow.log_metric("confidence", conf)
             mlflow.log_param("predicted_subject", preds)
+        '''
         ########################## END MODEL TRACKING #################################
         # optional cleanup of uploaded csvs (your existing cleanup_files)
         try:
