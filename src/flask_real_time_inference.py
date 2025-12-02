@@ -262,7 +262,7 @@ def predict():
         print(f"🧩 Using window_size={w_size}, stride={s_size}, batch_size={batch_size} for dataset creation."  )
         print(f"🧩 Creating test dataset and loader with batch_size={batch_size}")
         test_dataset = WifiCSIDataset(logger=logger, file_list=saved_file_paths, window_size=w_size, stride=s_size)
-        test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True, num_workers=0)
+        test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
 
         # Debug
         print(f"🔍 dataset size (len): {len(test_dataset)}")

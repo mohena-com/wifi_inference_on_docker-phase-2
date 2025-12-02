@@ -130,7 +130,7 @@ class WifiCSIDataset(Dataset):
             np.ndarray: Sanitized phase data.
         """
         T, N = raw_phase_matrix.shape
-        sanitized_phase = np.zeros_like(raw_phase_matrix)
+        sanitized_phase = np.zeros_like(raw_phase_matrix, dtype=np.float32)
         time_index = np.arange(T)
 
         # Process each subcarrier column-wise
