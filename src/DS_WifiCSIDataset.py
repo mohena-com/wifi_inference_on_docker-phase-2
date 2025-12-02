@@ -110,7 +110,7 @@ class WifiCSIDataset(Dataset):
         """
         match = re.search(r'S(\d+).*C(\d+).*A(\d+)', filename)
         if match:
-            a, b, c =  int(match.group(1)), int(match.group(2), int(match.group(3))
+            a, b, c =  int(match.group(1)), int(match.group(2)), int(match.group(3))
             print(f"✅ Extracted: S={a}, C={b}, A={c}")
             return a, b, c
         return None, None
