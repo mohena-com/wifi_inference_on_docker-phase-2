@@ -26,30 +26,6 @@ print(f"🧩 Using config file: {CONFIG_FILE}", "config")
 # read config and determine best model path
 config = ConfigReader(CONFIG_FILE)
 
-########################## MODEL TRACKING #################################
-# serve_model.py (excerpt)
-import os, time, threading, queue
-import mlflow
-from mlflow.tracking import MlflowClient
-from fastapi import FastAPI
-import uvicorn
-
-MLFLOW_URI = config.get("MLFLOW_TRACKING_URI", "http://mlflow:5001")
-print(f"📦 MLFLOW_URI: {MLFLOW_URI}" )
-
-EXPERIMENT = config.get("MLFLOW_EXPERIMENT", "wifi-har_id-inference-monitoring")
-print(f"📦 EXPERIMENT: {EXPERIMENT}" )
-
-best_model_path = get_best_model_path(config)
-MODEL_NAME = os.path.splitext(os.path.basename(best_model_path))[0]
-print(f"📦 MODEL_NAME: {MODEL_NAME}" )
-
-mlflow.set_tracking_uri(MLFLOW_URI)
-
- 
-########################## END MODEL TRACKING #################################
-
-
 # Flask app
 app = Flask(__name__)
 CORS(app)  # <-- Add here 
@@ -394,10 +370,10 @@ def predict():
         from fastapi import FastAPI
         import uvicorn
 
-        MLFLOW_URI = config.get("MLFLOW_TRACKING_URI", "http://mlflow:5001")
+        MLFLOW_URI = config.get("MLFLOW_TRACKING_URI" )
         print(f"📦 MLFLOW_URI: {MLFLOW_URI}" )
 
-        EXPERIMENT = config.get("MLFLOW_EXPERIMENT", "wifi-har_id-inference-monitoring")
+        EXPERIMENT = config.get("MLFLOW_EXPERIMENT" )
         print(f"📦 EXPERIMENT: {EXPERIMENT}" )
 
         best_model_path = get_best_model_path(config)
