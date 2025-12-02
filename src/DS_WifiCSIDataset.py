@@ -179,15 +179,15 @@ class WifiCSIDataset(Dataset):
              # --- MODIFIED: Separate lists for Magnitude and Raw Phase ---
             X_meta, X_mag, X_raw_phase = [], [], []
             subj, class_labels, action_labels = [], [], []
-
+            
             subject, class_label, action_label = self.extract_S_C_A_numbers(os.path.basename(filename))
-			'''
+            '''
             fromrow = False
             if subject is None or class_label is None:
                 fromrow = True
             else:
                 fromrow = False
-			'''
+            '''
             for i, row in enumerate(reader):
                 # metadata
                 meta_row = [float(row[c]) for c in meta_cols]
