@@ -46,37 +46,7 @@ print(f"📦 MODEL_NAME: {MODEL_NAME}" )
 
 mlflow.set_tracking_uri(MLFLOW_URI)
 
-client = MlflowClient()
-exp = client.get_experiment_by_name(EXPERIMENT)
-
-if exp is None:
-    exp_id = client.create_experiment(EXPERIMENT)
-else:
-    exp_id = exp.experiment_id
-
-parent = client.create_run(exp_id, tags={"role":"inference","model":MODEL_NAME})
-parent_run_id = parent.info.run_id
-print(f"📦 Created parent run id: {parent_run_id} for experiment id: {exp_id}")
-_q = queue.Queue()
-def enqueue(key, value):
-    _q.put((key, float(value), int(time.time()*1000), 0))
-
-def worker():
-    while True:
-        entries = []
-        try:
-            for _ in range(20):  # batch size
-                entries.append(_q.get(timeout=5))
-        except Exception:
-            pass
-        if not entries:
-            continue
-        metrics = [{"key":k,"value":v,"timestamp":ts,"step":step} for (k,v,ts,step) in entries]
-        client.log_batch(parent_run_id, metrics=metrics, params=None, tags=None)
-
-t = threading.Thread(target=worker, daemon=True)
-t.start()
-print("📦 Started MLflow logging thread")
+ 
 ########################## END MODEL TRACKING #################################
 
 
@@ -86,7 +56,7 @@ CORS(app)  # <-- Add here
 import torch
 def init_model():
     
-    #best_model_path = get_best_model_path(config)
+    best_model_path = get_best_model_path(config)
     print(f"📦 Best model path: {best_model_path}", "model_path")
     # get model skeleton and metadata (do not load weights yet)
     model_instance, params, total_params, device = get_best_model_and_params(str(best_model_path))
@@ -416,7 +386,36 @@ def predict():
                  loss=batch_loss
                 ))
         # Finished all batches    
-        
+        ########################## MODEL TRACKING #################################
+        # serve_model.py (excerpt)
+        import os, time, threading, queue
+        import mlflow
+        from mlflow.tracking import MlflowClient
+        from fastapi import FastAPI
+        import uvicorn
+
+        MLFLOW_URI = config.get("MLFLOW_TRACKING_URI", "http://mlflow:5001")
+        print(f"📦 MLFLOW_URI: {MLFLOW_URI}" )
+
+        EXPERIMENT = config.get("MLFLOW_EXPERIMENT", "wifi-har_id-inference-monitoring")
+        print(f"📦 EXPERIMENT: {EXPERIMENT}" )
+
+        best_model_path = get_best_model_path(config)
+        MODEL_NAME = os.path.splitext(os.path.basename(best_model_path))[0]
+        print(f"📦 MODEL_NAME: {MODEL_NAME}" )
+        MODEL_VERSION = "v1.0.0"  
+        mlflow.set_tracking_uri(MLFLOW_URI)
+
+        mlflow.set_tracking_uri(MLFLOW_URI)
+        mlflow.set_experiment(EXPERIMENT)
+
+        with mlflow.start_run(run_name=f"infer_{MODEL_NAME}_{MODEL_VERSION}", nested=False):
+            mlflow.log_param("model_name", MODEL_NAME)
+            mlflow.log_param("model_version", MODEL_VERSION)
+            mlflow.log_metric("latency_ms", latency_ms)
+            #mlflow.log_metric("confidence", conf)
+            mlflow.log_param("predicted_subject", preds)
+        ########################## END MODEL TRACKING #################################
         # optional cleanup of uploaded csvs (your existing cleanup_files)
         try:
             file_list = cleanup()
