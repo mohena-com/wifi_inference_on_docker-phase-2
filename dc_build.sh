@@ -1,5 +1,5 @@
 export DOCKER_BUILDKIT=1
-
+  
 #!/usr/bin/env bash
 set -euo pipefail
 
