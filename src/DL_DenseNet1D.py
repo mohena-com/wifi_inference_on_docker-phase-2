@@ -86,6 +86,8 @@ class DenseNet1D(nn.Module):
         output = self.fc(combined)
         # --- OUTGOING DATA ---
         print(f"🧾 [Output] Logits shape (B, num_classes): {list(output.shape)}")
+        for a in output:  # Print only first sample for brevity
+            print(f"🧬 [Output] Logits sample: {a}")
         print("🧪 [DEBUG] ----- FORWARD END -----\n")
         return output
 
