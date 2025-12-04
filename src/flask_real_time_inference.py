@@ -38,6 +38,7 @@ def init_model():
     model_instance, params, total_params, device = get_best_model_and_params(str(best_model_path))
     print(f"📦 Model class: {model_instance.__class__.__name__}  path: {best_model_path}", "load_model")
     print(f"ℹ️ params: {params} total_params: {total_params} device: {device}", "info")
+    print(f"📦 Model instance: {model_instance}")
 
     # load checkpoint safely
     try:
@@ -365,39 +366,7 @@ def predict():
                  accuracy=f"{batch_correct}/{batch_total}",
                  loss=batch_loss
                 ))
-        # Finished all batches    
-        ########################## MODEL TRACKING #################################
-        ''' 
-        import os, time, threading, queue
-        import mlflow
-        from mlflow.tracking import MlflowClient
-        from fastapi import FastAPI
-        import uvicorn
 
-        MLFLOW_URI = config.get("MLFLOW_TRACKING_URI" )
-        print(f"📦 MLFLOW_URI: {MLFLOW_URI}" )
-
-        EXPERIMENT = config.get("MLFLOW_EXPERIMENT" )
-        print(f"📦 EXPERIMENT: {EXPERIMENT}" )
-
-        best_model_path = get_best_model_path(config)
-        MODEL_NAME = os.path.splitext(os.path.basename(best_model_path))[0]
-        print(f"📦 MODEL_NAME: {MODEL_NAME}" )
-        MODEL_VERSION = "v1.0.0"  
-        mlflow.set_tracking_uri(MLFLOW_URI)
-
-        mlflow.set_tracking_uri(MLFLOW_URI)
-        mlflow.set_experiment(EXPERIMENT)
-
-        with mlflow.start_run(run_name=f"infer_{MODEL_NAME}_{MODEL_VERSION}", nested=False):
-            mlflow.log_param("model_name", MODEL_NAME)
-            mlflow.log_param("model_version", MODEL_VERSION)
-            mlflow.log_metric("latency_ms", latency_ms)
-            #mlflow.log_metric("confidence", conf)
-            mlflow.log_param("predicted_subject", preds)
-        '''
-        ########################## END MODEL TRACKING #################################
-        # optional cleanup of uploaded csvs (your existing cleanup_files)
         try:
             file_list = cleanup()
         except Exception:
