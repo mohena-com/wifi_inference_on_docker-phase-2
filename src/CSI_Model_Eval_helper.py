@@ -101,6 +101,8 @@ def parse_run_name(run_name: str) -> dict:
         # If parsing fails, return None or raise an exception
         raise ValueError(f"Failed to parse run name '{run_name}': {str(e)}")
 
+n_classes = cr.get_int('num_classes', 30)   
+
 def create_model_instance(model_class, model_name, batch, device):
     print(f"Creating model instance for {model_class} / {model_name} ")
         # Model instantiation according to constructor
@@ -110,19 +112,19 @@ def create_model_instance(model_class, model_name, batch, device):
             csi_input_size=batch["csi_seq"].shape[2],
             meta_input_size=batch["metadata_seq"].shape[2],
             window_size=batch["metadata_seq"].shape[1],
-            num_classes=31
+            num_classes=n_classes
         ) 
     elif model_name in ["DenseNet1D", "MobileNetV3_1D_LSTM"]:
         model = model_class(
             csi_channels=batch["csi_seq"].shape[2],
             meta_feature_dim=batch["metadata_seq"].shape[2],
-            num_classes=31
+            num_classes=n_classes
         ) 
     elif model_name == "EfficientNet1DLSTM":
         model = model_class(
             csi_input_channels=batch["csi_seq"].shape[2],
             meta_input_size=batch["metadata_seq"].shape[-1],
-            num_classes=31
+            num_classes=n_classes
         ) 
     else:
         raise ValueError("Unknown model")
