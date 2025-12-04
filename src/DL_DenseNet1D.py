@@ -55,23 +55,27 @@ class DenseNet1D(nn.Module):
         print("\n🧪 [DEBUG] ----- FORWARD START -----")
         print(f"🔍 [Input] CSI seq shape (B, L, C): {list(csi_seq.shape)}")
         print(f"🔍 [Input] Meta seq shape (B, L, F): {list(meta_seq.shape)}")
-
+        print(f"🔍 [Input] CSI seq shape (csi_seq): {csi_seq}")
         # --- CSI Branch (DenseNet1D) ---
         print("\n📡 [CSI] Branch start")
         x = csi_seq.permute(0, 2, 1)
         print(f"📡 [CSI] After permute (B, C, L): {list(x.shape)}")
-
+        print(f"🔍 [CSI] After permute x : {x}")
         x = self.initial_conv(x)
         print(f"📡 [CSI] After initial_conv (B, 64, L/2): {list(x.shape)}")
+        print(f"📡 [CSI] After initial_conv x: {x}")
 
         x = self.dense_block(x)
         print(f"📡 [CSI] After DenseBlock (B, 192, L/2): {list(x.shape)}")
+        print(f"📡 [CSI] After DenseBlock x: {x}")
 
         x = self.transition(x)
         print(f"📡 [CSI] After Transition (B, 128, L/4): {list(x.shape)}")
+        print(f"📡 [CSI] After Transition x: {x}")
 
         x = self.global_pool(x).squeeze(-1)
         print(f"📡 [CSI] After GlobalPool + squeeze (B, 128): {list(x.shape)}")
+        print(f"📡 [CSI] After GlobalPool + squeeze x: {x}")
         csi_features = x
 
         # --- Meta Branch (LSTM) ---
@@ -87,7 +91,7 @@ class DenseNet1D(nn.Module):
         print("\n🧾 [FC] Combining features")
         combined = torch.cat([csi_features, meta_features], dim=1)
         print(f"🧾 [FC] Combined features shape (B, 128 + 128): {list(combined.shape)}")
-
+        print(f"🧾 [FC] Combined features shape combined: {combined}")
         # Extra: stats on combined features
         print(f"    ▶ combined min={combined.min().item():.4f}, "
               f"max={combined.max().item():.4f}, "
