@@ -60,20 +60,26 @@ class DenseNet1D(nn.Module):
         # B, L, C -> B, C, L
         x = csi_seq.permute(0, 2, 1)
         print(f"📡 [CSI] After permute (B, C, L): {list(x.shape)}")
+
         x = self.initial_conv(x)
         print(f"📡 [CSI] After initial_conv (B, 64, L/2): {list(x.shape)}")
+
         x = self.dense_block(x)
         print(f"📡 [CSI] After DenseBlock (B, 192, L/2): {list(x.shape)}")
+
         x = self.transition(x)
         print(f"📡 [CSI] After Transition (B, 128, L/4): {list(x.shape)}")
+
         x = self.global_pool(x).squeeze(-1)
         print(f"📡 [CSI] After GlobalPool + squeeze (B, 128): {list(x.shape)}")
+
         csi_features = x
 
         # --- Meta Branch (LSTM) ---
         print("\n🧬 [META] Branch start")
         _, (h_n, c_n) = self.lstm(meta_seq)
         print(f"🧬 [META] LSTM h_n shape (D*layers, B, H): {list(h_n.shape)}")
+
         # Concatenate the final forward and backward layer states
         h_n = torch.cat([h_n[-2], h_n[-1]], dim=1)
         print(f"🧬 [META] Final concatenated features (B, 64*2): {list(h_n.shape)}")
@@ -83,6 +89,7 @@ class DenseNet1D(nn.Module):
         print("\n🧾 [FC] Combining features")
         combined = torch.cat([csi_features, meta_features], dim=1)
         print(f"🧾 [FC] Combined features shape (B, 128 + 128): {list(combined.shape)}")
+        
         output = self.fc(combined)
         # --- OUTGOING DATA ---
         print(f"🧾 [Output] Logits shape (B, num_classes): {list(output.shape)}")
