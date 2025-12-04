@@ -55,9 +55,9 @@ class DenseNet1D(nn.Module):
         print("\n🧪 [DEBUG] ----- FORWARD START -----")
         print(f"🔍 [Input] CSI seq shape (B, L, C): {list(csi_seq.shape)}")
         print(f"🔍 [Input] Meta seq shape (B, L, F): {list(meta_seq.shape)}")
+
         # --- CSI Branch (DenseNet1D) ---
         print("\n📡 [CSI] Branch start")
-        # B, L, C -> B, C, L
         x = csi_seq.permute(0, 2, 1)
         print(f"📡 [CSI] After permute (B, C, L): {list(x.shape)}")
 
@@ -72,7 +72,6 @@ class DenseNet1D(nn.Module):
 
         x = self.global_pool(x).squeeze(-1)
         print(f"📡 [CSI] After GlobalPool + squeeze (B, 128): {list(x.shape)}")
-
         csi_features = x
 
         # --- Meta Branch (LSTM) ---
@@ -80,7 +79,6 @@ class DenseNet1D(nn.Module):
         _, (h_n, c_n) = self.lstm(meta_seq)
         print(f"🧬 [META] LSTM h_n shape (D*layers, B, H): {list(h_n.shape)}")
 
-        # Concatenate the final forward and backward layer states
         h_n = torch.cat([h_n[-2], h_n[-1]], dim=1)
         print(f"🧬 [META] Final concatenated features (B, 64*2): {list(h_n.shape)}")
         meta_features = h_n
@@ -89,13 +87,43 @@ class DenseNet1D(nn.Module):
         print("\n🧾 [FC] Combining features")
         combined = torch.cat([csi_features, meta_features], dim=1)
         print(f"🧾 [FC] Combined features shape (B, 128 + 128): {list(combined.shape)}")
-        
+
+        # Extra: stats on combined features
+        print(f"    ▶ combined min={combined.min().item():.4f}, "
+              f"max={combined.max().item():.4f}, "
+              f"mean={combined.mean().item():.4f}")
+
+        # Extra: FC layer parameter shapes
+        print(f"    ▶ fc.weight shape: {list(self.fc.weight.shape)}  "
+              f"(out_features={self.fc.out_features}, in_features={self.fc.in_features})")
+        print(f"    ▶ fc.bias   shape: {list(self.fc.bias.shape)}")
+
+        # Extra: inspect first sample's combined features
+        x0 = combined[0]      # shape: (256,)
+        print(f"    ▶ combined[0] sample (first 10 values): "
+              f"{x0[:10].detach().cpu().numpy()}")
+
+        # Compute logits through the FC layer (usual path)
         output = self.fc(combined)
+
+        # Extra: manually recompute logits for first sample
+        with torch.no_grad():
+            w = self.fc.weight  # (31, 256)
+            b = self.fc.bias    # (31,)
+            manual_logits0 = torch.matmul(w, x0) + b
+            print(f"    ▶ manual logits[0] (from W·x + b) (first 10): "
+                  f"{manual_logits0[:10].detach().cpu().numpy()}")
+
+            print(f"    ▶ output[0] from fc (first 10): "
+                  f"{output[0, :10].detach().cpu().numpy()}")
+
         # --- OUTGOING DATA ---
         print(f"🧾 [Output] Logits shape (B, num_classes): {list(output.shape)}")
-        for a in output:  # Print only first sample for brevity
+        for a in output:
             print(f"🧬 [Output] Logits sample: {a}")
         print("🧪 [DEBUG] ----- FORWARD END -----\n")
+
         return output
+
 
 
