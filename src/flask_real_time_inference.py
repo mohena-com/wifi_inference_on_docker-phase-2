@@ -312,9 +312,13 @@ def predict():
                 # Forward
                 #with torch.no_grad():  # disable gradient tracking for speed & memory efficiency
                 outputs = model_instance(csi_seq, meta_seq)   # (N, C)
+                print(f"    🔍 outputs : {outputs}")
+
                 probs_tensor = torch.softmax(outputs, dim=1)  # (N, C)
+                print(f"    🔍 probs_tensor : {probs_tensor}")
+
                 preds_tensor = torch.argmax(outputs, dim=1)   # (N,)               
-                print(f"    🧩 Predictions : {preds_tensor.cpu().numpy().tolist()} ")
+                print(f"    🔍 Predictions : {preds_tensor.cpu().numpy().tolist()} ")
  
                 b_files = batch.get("file")
                 b_starts = batch.get("start")
