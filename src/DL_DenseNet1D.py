@@ -118,16 +118,37 @@ class DenseNet1D(nn.Module):
             print(f"    ▶ manual logits[0] (from W·x + b) (first 10): "
                   f"{manual_logits0[:10].detach().cpu().numpy()}")
 
-            print(f"    ▶ output[0] from fc (first 10): "
-                  f"{output[0, :10].detach().cpu().numpy()}")
+	        # Per-sample contribution analysis
+	        print("\n🧠 [EXPLAIN] Top feature contributions per sample")
+	        num_samples_to_show = min(3, output.size(0))   # don’t spam logs
 
-        # --- OUTGOING DATA ---
-        print(f"🧾 [Output] Logits shape (B, num_classes): {list(output.shape)}")
-        for a in output:
-            print(f"🧬 [Output] Logits sample: {a}")
-        print("🧪 [DEBUG] ----- FORWARD END -----\n")
+	        for i in range(num_samples_to_show):
+	            logits_i = output[i]                       # (num_classes,)
+	            pred_cls = torch.argmax(logits_i).item()   # winning class index
 
-        return output
+	            w_cls = w[pred_cls]                        # (256,)
+	            x_i = combined[i]                          # (256,)
+	            contrib = w_cls * x_i                      # element-wise contribution
+
+	            top_vals, top_idx = torch.topk(contrib, 5) # top-5 contributing features
+
+	            print(f"\n🔍 ----- Sample {i} -----")
+	            print(f"    ▶ predicted class: {pred_cls}")
+	            print(f"    ▶ logit[pred_cls]: {logits_i[pred_cls].item():.4f}")
+	            print(f"    ▶ top-5 feature contributions for class {pred_cls}:")
+	            for k in range(5):
+	                j = top_idx[k].item()
+	                print(f"       • feat[{j:3d}]  x={x_i[j].item(): .4f}  "
+	                      f"w={w_cls[j].item(): .4f}  "
+	                      f"contrib={top_vals[k].item(): .4f}")
+
+	    # --- OUTGOING DATA ---
+	    print(f"\n🧾 [Output] Logits shape (B, num_classes): {list(output.shape)}")
+	    for a in output:
+	        print(f"🧬 [Output] Logits sample: {a}")
+	    print("🧪 [DEBUG] ----- FORWARD END -----\n")
+
+	    return output
 
 
 
