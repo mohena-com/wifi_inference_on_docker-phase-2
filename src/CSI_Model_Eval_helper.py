@@ -9,8 +9,11 @@ import torch.optim as optim
 from torch.utils.data import DataLoader, random_split
 import numpy as np
 import matplotlib.pyplot as plt
-import mlflow
-import mlflow.pytorch
+
+#import mlflow
+#import mlflow.pytorch
+#from mlflow.models.signature import infer_signature
+
 from sklearn.metrics import (
     confusion_matrix,
     classification_report,
@@ -20,7 +23,7 @@ from sklearn.metrics import (
     roc_auc_score
 )
 import psutil
-from mlflow.models.signature import infer_signature
+
 import itertools
 from sklearn.preprocessing import label_binarize
 
