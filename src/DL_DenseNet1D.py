@@ -30,7 +30,7 @@ class DenseBlock1D(nn.Module):
         return final_output
 
 class DenseNet1D(nn.Module):
-    def __init__(self, csi_channels, meta_feature_dim, num_classes):
+    def __init__(self, csi_channels, meta_feature_dim, num_classes, dropout_p=0.3):
         print(f"🧱 [INIT][DenseNet1D] CSI={csi_channels}, Meta={meta_feature_dim}, Classes={num_classes}")
         super().__init__()
         # --- CSI Branch Components ---
@@ -46,8 +46,14 @@ class DenseNet1D(nn.Module):
         self.global_pool = nn.AdaptiveAvgPool1d(1)
 
         # --- Meta Branch Components ---
-        self.lstm = nn.LSTM(meta_feature_dim, 64, 2, batch_first=True, bidirectional=True)
-        # --- Final Classifier ---
+        self.lstm = nn.LSTM(
+            meta_feature_dim, 
+            64,
+            num_layers=2,
+            batch_first=True, 
+            bidirectional=True,
+            dropout=dropout_p
+        )
         self.fc = nn.Linear(128 + 64*2, num_classes)
 
     def forward(self, csi_seq, meta_seq):
@@ -106,7 +112,8 @@ class DenseNet1D(nn.Module):
         x0 = combined[0]      # shape: (256,)
         print(f"    ▶ combined[0] sample (first 10 values): "
               f"{x0[:10].detach().cpu().numpy()}")
-
+		
+		combined = self.dropout(combined)  # dropout active in train mode
         # Compute logits through the FC layer (usual path)
         output = self.fc(combined)
 
