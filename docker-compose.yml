@@ -20,7 +20,7 @@ services:
       - UPLOAD_DIR=/tmp/uploads
     volumes:
       - uploads:/tmp/uploads         # shared upload/results folder
-      - /Users/sanjeev/VNIT/FINAL_PRJ_PHASE2/wifi_inference_on_docker-phase-2/models:/app/models:ro
+    #  - /Users/sanjeev/VNIT/FINAL_PRJ_PHASE2/wifi_inference_on_docker-phase-2/models:/app/models:ro
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5002/health || exit 1"]
       interval: 10s

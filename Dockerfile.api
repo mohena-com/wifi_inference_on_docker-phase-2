@@ -41,10 +41,10 @@ COPY config/gait_id_config.properties /app/config/
 RUN mkdir -p /app/models
 
 # Only copy model version marker first
-#COPY models/.model_version /app/models/.model_version
+COPY models/.model_version /app/models/.model_version
 
 # later copy full models (only when marker changes)
-#COPY models/*.pt /app/models/
+COPY models/*.pt /app/models/
 # Optional: declare it as a volume (hint only)
 VOLUME ["/app/models"]
  
