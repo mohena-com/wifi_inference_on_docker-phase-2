@@ -289,7 +289,6 @@ def predict():
                 # Move inputs
                 csi_seq = batch["csi_seq"].to(device, non_blocking=non_blocking_flag)
                 meta_seq = batch["metadata_seq"].to(device, non_blocking=non_blocking_flag)
-                #b_labels = batch["label"].squeeze().to(device, non_blocking=non_blocking_flag)
                 b_labels = batch["label"].reshape(-1).to(device, non_blocking=non_blocking_flag).long()
                 print(f"    🧩 Labels:       {b_labels.cpu().numpy().tolist()}")
 
@@ -299,19 +298,7 @@ def predict():
                 if torch.isnan(meta_seq).any() or torch.isinf(meta_seq).any():
                     meta_seq = torch.nan_to_num(meta_seq, nan=0.0, posinf=1e6, neginf=-1e6)
                 if torch.isnan(b_labels).any() or torch.isinf(b_labels).any():
-                    b_labels = torch.nan_to_num(b_labels, nan=0).long()
-
-                '''
-                #already acheived in WifiCSIDataset creation
-                # same per-batch normalization used in training
-                try:
-                    mean = csi_seq.mean(dim=(0, 1), keepdim=True)
-                    std = csi_seq.std(dim=(0, 1), keepdim=True) + 1e-8
-                    csi_seq = (csi_seq - mean) / std
-                except Exception as e :
-                    print(f"⚠️ Warning: Normalization failed for this batch; using raw inputs. Error: {e}")
-                    pass
-                '''
+                    b_labels = torch.nan_to_num(b_labels, nan=0).long()           
 
                 # Forward
                 #with torch.no_grad():  # disable gradient tracking for speed & memory efficiency

@@ -113,7 +113,7 @@ class WifiCSIDataset(Dataset):
             a, b, c =  int(match.group(1)), int(match.group(2)), int(match.group(3))
             print(f"✅ Extracted: S={a}, C={b}, A={c}")
             return a, b, c
-        return None, None
+        return None, None, None
  
     # Place this helper method within the same class (self)
    # from scipy import unwrap # Use 'from numpy import unwrap' if available in your numpy version
@@ -173,9 +173,7 @@ class WifiCSIDataset(Dataset):
                 'rssi_a','rssi_b','rssi_c','agc',
                 'perm_1','perm_2','perm_3'
             ]
-            sa_cols = ['subject', 'activity']
             
-              
              # --- MODIFIED: Separate lists for Magnitude and Raw Phase ---
             X_meta, X_mag, X_raw_phase = [], [], []
             subj, class_labels, action_labels = [], [], []
@@ -243,7 +241,7 @@ class WifiCSIDataset(Dataset):
             # X_csi.shape will now be (T, 198) if the number of subcarriers is 99
             
             print(f"✅  Subject: {len(subj)}, Class: {len(class_labels)}")
-            y = {"subject": subj, "class": class_labels}
+            y = {"subject": subj}
 
         return X_meta, X_csi, y, meta_cols, csi_cols
 
