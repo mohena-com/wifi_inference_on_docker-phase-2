@@ -112,8 +112,8 @@ class DenseNet1D(nn.Module):
         x0 = combined[0]      # shape: (256,)
         print(f"    ▶ combined[0] sample (first 10 values): "
               f"{x0[:10].detach().cpu().numpy()}")
-		
-		combined = self.dropout(combined)  # dropout active in train mode
+        
+        combined = self.dropout(combined)  # dropout active in train mode
         # Compute logits through the FC layer (usual path)
         output = self.fc(combined)
 
