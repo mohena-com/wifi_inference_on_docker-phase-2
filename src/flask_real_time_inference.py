@@ -26,6 +26,14 @@ print(f"🧩 Using config file: {CONFIG_FILE}", "config")
 # read config and determine best model path
 config = ConfigReader(CONFIG_FILE)
 
+state_dict = {
+    "model_state" : None, 
+    "scaler_meta" : None,
+    "scaler_mag" : None,
+    "scaler_phase" : None, 
+    "feature_info" : None
+}
+
 # Flask app
 app = Flask(__name__)
 CORS(app)  # <-- Add here 
@@ -69,6 +77,13 @@ def init_model():
     # load weights into model and set eval mode
     try:
         model_instance.load_state_dict(state_dict)
+
+        model_state  = state_dict["model_state"]
+        scaler_meta  = state_dict["scaler_meta"]
+        scaler_mag   = state_dict["scaler_mag"]
+        scaler_phase = state_dict["scaler_phase"]
+        feature_info = state_dict["feature_info"]   
+
         #model_instance.eval()
         print(f"✅ Loaded model weights from: {best_model_path}", "success")
     except Exception as e:
@@ -262,7 +277,10 @@ def predict():
 
         print(f"🧩 Using window_size={w_size}, stride={s_size}, batch_size={batch_size} for dataset creation."  )
         print(f"🧩 Creating test dataset and loader with batch_size={batch_size}")
-        test_dataset = WifiCSIDataset(logger=logger, file_list=saved_file_paths, window_size=w_size, stride=s_size)
+        test_dataset = WifiCSIDataset(logger=logger, file_list=saved_file_paths, window_size=w_size, stride=s_size)        
+
+        test_dataset.set_scalers(state_dict["scaler_meta"], state_dict["scaler_mag"], state_dict["scaler_phase"] )
+        
         test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
 
         # Debug
