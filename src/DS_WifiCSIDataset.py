@@ -181,13 +181,7 @@ class WifiCSIDataset(Dataset):
             subj, class_labels, action_labels = [], [], []
             
             subject, class_label, action_label = self.extract_S_C_A_numbers(os.path.basename(filename))
-            '''
-            fromrow = False
-            if subject is None or class_label is None:
-                fromrow = True
-            else:
-                fromrow = False
-            '''
+       
             for i, row in enumerate(reader):
                 # metadata
                 meta_row = [float(row[c]) for c in meta_cols]
@@ -207,15 +201,7 @@ class WifiCSIDataset(Dataset):
                 subj.append(subject)
                 class_labels.append(class_label)
                 action_labels.append(action_label)
-                '''
-                if fromrow:
-                    sa_row = [int(row[c]) for c in sa_cols]
-                    subj.append(sa_row[0])
-                    class_labels.append(sa_row[1])
-                else:
-                    subj.append(subject)
-                    class_labels.append(class_label)
-				'''
+               
               #  print(f"Row {i} loaded. Subject: {subj[-1]} Activity: {act[-1]}"  )
                     
 
