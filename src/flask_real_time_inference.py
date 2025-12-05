@@ -301,6 +301,8 @@ def predict():
                 if torch.isnan(b_labels).any() or torch.isinf(b_labels).any():
                     b_labels = torch.nan_to_num(b_labels, nan=0).long()
 
+                '''
+                #already acheived in WifiCSIDataset creation
                 # same per-batch normalization used in training
                 try:
                     mean = csi_seq.mean(dim=(0, 1), keepdim=True)
@@ -309,6 +311,7 @@ def predict():
                 except Exception as e :
                     print(f"⚠️ Warning: Normalization failed for this batch; using raw inputs. Error: {e}")
                     pass
+                '''
 
                 # Forward
                 #with torch.no_grad():  # disable gradient tracking for speed & memory efficiency
@@ -354,8 +357,6 @@ def predict():
                 batch_correct = int((preds_tensor == b_labels).sum().item())
                 batch_total = int(b_labels.size(0))
                 print(f"    ✅ VERIFICATION of Prediction  ✅ {batch_correct}/{batch_total} correct, ❌ loss: {batch_loss}")
-
-                
 
                 inference_response.batches.append(BatchResult(
                  batch=batch_idx,
