@@ -222,6 +222,7 @@ def predict():
     import torch
     import math
     ensure_model_loaded()
+    print(f"📦 scaler_bundle : {scaler_bundle}")
     upload_dir = '/tmp/uploads'
     os.makedirs(upload_dir, exist_ok=True)
 
