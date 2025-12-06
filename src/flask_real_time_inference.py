@@ -27,7 +27,7 @@ print(f"🧩 Using config file: {CONFIG_FILE}", "config")
 config = ConfigReader(CONFIG_FILE)
 
 
-scaler_bundle = None
+
 # Flask app
 app = Flask(__name__)
 CORS(app)  # <-- Add here 
@@ -89,20 +89,20 @@ def init_model():
         print(f"❌ Error when loading state_dict into model: {e}", "error")
         raise
 
-    return model_instance, device, params, total_params, best_model_path
+    return model_instance, device, params, total_params, best_model_path, scaler_bundle
 
 import threading
 
 _model_lock = threading.Lock()
-model_instance = device = params = total_params = best_model_path = None
+model_instance = device = params = total_params = best_model_path = scaler_bundle = None
 is_model_loaded = False
 def ensure_model_loaded():
-    global model_instance, device, params, total_params, best_model_path
+    global model_instance, device, params, total_params, best_model_path, scaler_bundle
     if model_instance is None:
         with _model_lock:
             if model_instance is None :
                 print(f"📦 INIT model START: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-                model_instance, device, params, total_params, best_model_path = init_model()
+                model_instance, device, params, total_params, best_model_path, scaler_bundle = init_model()
                 print(f"📦 INIT model DONE: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
                 is_model_loaded = True
  
@@ -222,7 +222,7 @@ def predict():
     import torch
     import math
     ensure_model_loaded()
-    print(f"📦 scaler_bundle : {scaler_bundle}")
+    print(f"📦 scaler_bundle: {scaler_bundle}")
     upload_dir = '/tmp/uploads'
     os.makedirs(upload_dir, exist_ok=True)
 
