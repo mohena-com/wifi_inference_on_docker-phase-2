@@ -62,17 +62,32 @@
 .batches-list { display: flex; flex-direction: column; gap: 16px; }
 
 /* Each batch row: grid with main area and right summary */
+/*
 .batch-row {
   display: grid;
   grid-template-columns: 1fr 260px;
   gap: 16px;
+  */
   /* center summary vertically relative to left column */
-  align-items: center;       /* <-- changed: center instead of stretch */
+   /* <-- changed: center instead of stretch */
+  /*
+  align-items: center;      
   padding: 12px;
   border-radius: 10px;
   background: linear-gradient(180deg, #ffffff, #fbfdff);
   box-shadow: 0 6px 20px rgba(6, 40, 80, 0.06);
 }
+*/
+
+.batch-row {
+  border: 2px solid #dbe9ff;
+  border-radius: 14px;
+  padding: 18px 22px;
+  margin-bottom: 30px;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
 
 /* Left main column */
 .batch-main { padding: 6px 8px; }
@@ -253,11 +268,19 @@
   margin-top: 6px;
 }
 
+ 
+
 .row-values {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  overflow-x: auto;          /* enables horizontal scroll if chips exceed space */
+  white-space: nowrap;       /* prevents wrapping */
+  gap: 8px;                  /* even spacing */
+  padding-bottom: 6px;
+  scrollbar-width: thin;
 }
+/* hide scrollbar visually while still scrollable */
+.row-values::-webkit-scrollbar { height: 6px; }
+.row-values::-webkit-scrollbar-thumb { background:#b4d3ff; border-radius:4px; }
 
 .unique.wide {
   margin-top: -6px;
