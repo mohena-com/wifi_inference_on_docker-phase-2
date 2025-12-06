@@ -55,9 +55,13 @@ def init_model():
         bundle = checkpoint
         # scalers + meta
         scaler_meta  = bundle.get("scaler_meta")
+        print(f"    ℹ️ℹ️ scaler_meta: {scaler_meta}")
         scaler_mag   = bundle.get("scaler_mag")
+        print(f"    ℹ️ℹ️ scaler_mag: {scaler_mag}")        
         scaler_phase = bundle.get("scaler_phase")
+        print(f"    ℹ️ℹ️ scaler_phase: {scaler_phase}")
         feature_info = bundle.get("feature_info", {})
+        print(f"    ℹ️ℹ️ feature_info: {feature_info}")
     except Exception as e:
         print(f"❌ Failed to load checkpoint from {best_model_path}: {e}", "error")
         raise
@@ -86,9 +90,9 @@ def init_model():
         model_instance.load_state_dict(state_dict)
         print(f"✅ Loaded state_dict  ")
         #model_state  = state_dict["model_state"]
-        scaler_meta  = state_dict["scaler_meta"]
-        scaler_mag   = state_dict["scaler_mag"]
-        scaler_phase = state_dict["scaler_phase"]
+        #scaler_meta  = state_dict["scaler_meta"]
+        #scaler_mag   = state_dict["scaler_mag"]
+        #scaler_phase = state_dict["scaler_phase"]
         #feature_info = state_dict["feature_info"]   
        
         #model_instance.eval()
