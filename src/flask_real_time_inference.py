@@ -52,6 +52,12 @@ def init_model():
     try:
         checkpoint = torch.load(best_model_path, map_location=device)
         print(f"ℹ️ℹ️ℹ️ℹ️ℹ️ checkpoint.keys: {checkpoint.keys()}")
+        bundle = checkpoint
+        # scalers + meta
+        scaler_meta  = bundle.get("scaler_meta")
+        scaler_mag   = bundle.get("scaler_mag")
+        scaler_phase = bundle.get("scaler_phase")
+        feature_info = bundle.get("feature_info", {})
     except Exception as e:
         print(f"❌ Failed to load checkpoint from {best_model_path}: {e}", "error")
         raise
