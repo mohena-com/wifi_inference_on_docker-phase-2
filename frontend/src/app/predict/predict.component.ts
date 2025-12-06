@@ -65,19 +65,51 @@ export class PredictComponent {
     this.error = '';
   }
 
-  unique(arr: number[] = []): number[] {
+  unique_old(arr: number[] = []): number[] {
     return Array.from(new Set(arr || []));
   }
 
+  unique(arr: Array<number | string> = []): Array<number | string> {
+    const seen = new Set<string>();
+    const out: Array<number | string> = [];
+    for (const v of arr) {
+      const key = String(v);
+      if (!seen.has(key)) {
+        seen.add(key);
+        out.push(v);
+      }
+    }
+    return out;
+  }             
   /** -----------------------------
    *  OVERALL SUMMARY CALCULATIONS
    * ----------------------------- */
-  totalSamples(): number {
+  totalSamples_old(): number {
     if (!this.result?.batches) return 0;
     return this.result.batches.reduce(
       (sum: number, b: any) => sum + (b.total || 0),
       0
     );
+  }
+  totalSamples(): number {
+    if (!this.result || !Array.isArray(this.result.batches)) {
+      return 0;
+    }
+    return this.result.batches.reduce((sum: number, b: any) => {
+      if (typeof b.total === 'number') {
+        return sum + b.total;
+      }
+      if (Array.isArray(b.predicted_value)) {
+        return sum + b.predicted_value.length;
+      }
+      return sum;
+    }, 0);
+  }
+    /** For collapsible Raw JSON panel */
+  showRawJson = false;
+
+  toggleRawJson(): void {
+    this.showRawJson = !this.showRawJson;
   }
 
   totalCorrect(): number {
@@ -110,4 +142,53 @@ export class PredictComponent {
     if (totalCount === 0) return 0;
     return totalWeightedLoss / totalCount;
   }
+
+  // Map raw class IDs → readable labels
+  labelMap: { [key: number]: string } = {
+  0: 'Class 0',
+  1: 'Class 1',
+  2: 'Class 2',
+  3: 'Class 3',
+  4: 'Class 4',
+  5: 'Class 5',
+  6: 'Class 6',
+  7: 'Class 7',
+  8: 'Class 8',
+  9: 'Class 9',
+  10: 'Class 10',
+  11: 'Class 11',
+  12: 'Class 12',
+  13: 'Class 13',
+  14: 'Class 14',
+  15: 'Class 15',
+  16: 'Class 16',
+  17: 'Class 17',
+  18: 'Class 18',
+  19: 'Class 19',
+  20: 'Class 20',
+  21: 'Class 21',
+  22: 'Class 22',
+  23: 'Class 23',
+  24: 'Class 24',
+  25: 'Class 25',
+  26: 'Class 26',
+  27: 'Class 27',
+  28: 'Class 28',
+  29: 'Class 29',
+  30: 'Class 30'
+};
+
+  formatLabel(v: number | string): string {
+    const id = Number(v);
+    return this.labelMap[id] ?? `Class ${id}`;
+  }
+
+  isCorrect(batch: any, index: number): boolean {
+    if (!batch || !batch.true_value || !batch.predicted_value) {
+      return false;
+    }
+    return batch.true_value[index] === batch.predicted_value[index];
+  }
 }
+
+

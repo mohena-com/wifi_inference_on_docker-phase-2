@@ -1,6 +1,6 @@
 <!-- src/app/predict/predict.component.html -->
 <div class="predict-root">
-  <h2 class="page-title">Batches</h2>
+  <h2 class="page-title">Inference Batches</h2>
 
   <!-- Upload card -->
   <mat-card class="upload-card" *ngIf="!result">
@@ -8,7 +8,7 @@
       <input type="file" id="csvFile" (change)="onFileChange($event)" />
       <div class="controls">
         <button mat-flat-button color="primary" (click)="upload()" [disabled]="!selectedFile || uploading">
-          <span *ngIf="!uploading">Upload & Process</span>
+          <span *ngIf="!uploading">Upload &amp; Process</span>
           <mat-progress-spinner *ngIf="uploading" diameter="18" mode="indeterminate"></mat-progress-spinner>
         </button>
         <button mat-button (click)="clear()">Clear</button>
@@ -23,18 +23,18 @@
   <div *ngIf="result" class="summary-top">
     <div>
       <strong>Files:</strong>
-        <script>
-          console.log(result.file_list)          
-        </script>
-      <span *ngFor="let f of result.file_list" class="file-chip">{{ f   }}
-        <script>           
-          console.log("4. window size : ",result.window_size)         
-        </script>
+      <span
+        *ngFor="let f of (result.file_list || [])"
+        class="file-chip"
+      >
+        {{ f }}
       </span>
-    </div>
+    </div> 
+       
+    
     <div><strong>Batches:</strong> {{ result.batches?.length || 0 }}</div>
     <div><strong>Total sample windows:</strong> {{ totalSamples() }}</div>
-    <div><strong>Window Size:128</strong> </div>
+    <div><strong>Window Size</strong>  {{ result.window_size || 128 }} </div>
     <div class="actions">
       <button mat-stroked-button (click)="clear()">Process another</button>
     </div>
@@ -64,20 +64,35 @@
             <div class="row-line">
               <div class="row-label">True</div>
               <div class="row-values">
-                <span class="chip true-chip" *ngFor="let t of b.true_value">{{ t }}</span>
+                <span 
+                    class="chip true-chip" 
+                    *ngFor="let t of b.true_value">
+                    {{ formatLabel(t) }}
+                </span>
               </div>
             </div>
-            <div class="unique wide">Unique: {{ unique(b.true_value).join(', ') }}</div>
+            <div class="unique wide">
+                Unique: {{ unique(b.true_value).map(formatLabel.bind(this)).join(', ') }}
+            </div>
 
             <!-- Predicted row -->
             <div class="row-line">
               <div class="row-label">Predicted</div>
               <div class="row-values">
-                <span class="chip" *ngFor="let v of b.predicted_value">{{ v }}</span>
+                <span 
+                  class="chip" 
+                  *ngFor="let v of b.predicted_value; let i = index"
+                  [ngClass]="{
+                    'chip-correct': isCorrect(b, i),
+                    'chip-wrong': !isCorrect(b, i)
+                  }">
+                  {{ formatLabel(v) }}
+                </span>
               </div>
             </div>
-            <div class="unique wide">Unique: {{ unique(b.predicted_value).join(', ') }}</div>           
-
+            <div class="unique wide">
+              Unique: {{ unique(b.predicted_value).map(formatLabel.bind(this)).join(', ') }}
+            </div>
           </div>
 
         </div>
@@ -110,22 +125,41 @@
   <div *ngIf="result" class="overall-summary-card">
     <div class="summary-title">Overall Summary</div>
     <div class="summary-body">
-      <div><strong>Accuracy:</strong> {{ totalCorrect() }}/{{ totalSamples() }}</div>
-      <div><strong>Percentage:</strong> {{ (overallAccuracy() * 100) | number:'1.0-0' }}%</div>
-      <div><strong>Loss:</strong> {{ overallLoss() | number:'1.3-3' }}</div>
-
-      <div class="acc-bar">
-        <div class="acc-bar-inner" [style.width.%]="overallAccuracy() * 100"></div>
+      <div>
+        <strong>Accuracy:</strong> {{ totalCorrect() }}/{{ totalSamples() }}
+      </div>
+      <div>
+        <strong>Percentage:</strong>
+        {{ (overallAccuracy() * 100) | number: '1.0-0' }}%
+      </div>
+      <div>
+        <strong>Loss:</strong> {{ overallLoss() | number: '1.3-3' }}
       </div>
 
-      <div class="acc-label">{{ (overallAccuracy() * 100) | number:'1.0-0' }}% correct</div>
+      <div class="acc-bar">
+        <div
+          class="acc-bar-inner"
+          [style.width.%]="overallAccuracy() * 100"
+        ></div>
+      </div>
+
+      <div class="acc-label">
+        {{ (overallAccuracy() * 100) | number: '1.0-0' }}% correct
+      </div>
     </div>
   </div>
 
-
   <!-- Raw JSON -->
   <div class="raw" *ngIf="result">
-    <h4>Raw JSON</h4>
-    <pre>{{ result | json }}</pre>
+    <div
+      style="display: flex; justify-content: space-between; align-items: center;"
+    >
+      <h4>Raw JSON</h4>
+      <button mat-stroked-button color="primary" (click)="toggleRawJson()">
+        {{ showRawJson ? 'Hide' : 'Show' }}
+      </button>
+    </div>
+
+    <pre *ngIf="showRawJson">{{ result | json }}</pre>
   </div>
 </div>
