@@ -122,6 +122,7 @@
 
 /* Chips */
 .chips { display:flex; flex-wrap:wrap; gap:8px; }
+/*
 .chip {
   background: #e6f3ff;
   color: #024b7a;
@@ -131,6 +132,7 @@
   font-size:0.88rem;
   box-shadow:0 2px 6px rgba(2,36,66,0.04);
 }
+  */
 .true-chip { background:#fff6e6; color:#6b3f00; }
 
 /* Unique line */
@@ -342,8 +344,9 @@
 }
 
 /* TRUE block - pill style button */
+/*
 .chip.true-chip {
-  background: #ffeec9;         /* soft pastel orange */
+  background: #ffeec9;         
   color: #a66300;
   border-radius: 20px;
   padding: 6px 14px;
@@ -352,7 +355,7 @@
   box-shadow: 0 2px 6px rgba(255, 170, 0, 0.25);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
-
+*/
 .chip.true-chip:hover {
   transform: translateY(-2px) scale(1.05);
   box-shadow: 0 4px 10px rgba(255, 140, 0, 0.35);
@@ -360,6 +363,7 @@
 
 
 /* CORRECT predicted - soft teal button */
+/*
 .chip-correct {
   background: #d4ffe9;
   color: #007f4f;
@@ -370,11 +374,13 @@
   box-shadow: 0 2px 6px rgba(0, 164, 113, 0.22);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
-
+*/
 .chip-correct:hover {
   transform: translateY(-2px) scale(1.05);
   box-shadow: 0 4px 10px rgba(0, 164, 113, 0.35);
 }
+/*
+
 .chip-wrong {
   background: #ff4d4d;
   color: #fff78a;
@@ -385,8 +391,44 @@
   box-shadow: 0 2px 8px rgba(255, 0, 0, 0.35);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
-
+*/
 .chip-wrong:hover {
   transform: translateY(-2px) scale(1.05);
   box-shadow: 0 5px 12px rgba(255, 0, 0, 0.45);
+}
+
+
+/* ===== Smaller Pill Buttons (Fit More Per Row) ===== */
+.chip {
+  display: inline-block;
+  padding: 3px 10px;          /* smaller */
+  font-size: 12px;            /* shrink text */
+  border-radius: 14px;        /* smaller curves */
+  margin: 2px 4px;            /* reduced margin */
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+/* True Label — Soft Orange */
+.chip.true-chip {
+  background: #ffeec9;
+  color: #a66300;
+  border: 1px solid #ffba4d;
+  box-shadow: 0 1px 4px rgba(255,170,0,.18);
+}
+
+/* Correct Prediction — Soft Green/Teal */
+.chip-correct {
+  background: #d7ffea;
+  color: #007f4f;
+  border: 1px solid #5de2a2;
+  box-shadow: 0 1px 4px rgba(0,164,113,.15);
+}
+
+/* Wrong Prediction — Red/Yellow Pill */
+.chip-wrong {
+  background: #ff4d4d;
+  color: #fff78a;
+  border: 1px solid #ffb800;
+  box-shadow: 0 1px 4px rgba(255,0,0,.28);
 }
