@@ -77,7 +77,7 @@ def init_model():
     # load weights into model and set eval mode
     try:
         model_instance.load_state_dict(state_dict)
-        print(f"✅ Loaded state_dict {state_dict}")
+        print(f"✅ Loaded state_dict  ")
         #model_state  = state_dict["model_state"]
         scaler_meta  = state_dict["scaler_meta"]
         scaler_mag   = state_dict["scaler_mag"]
