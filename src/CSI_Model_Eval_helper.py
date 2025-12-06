@@ -168,7 +168,7 @@ def instantiate_from_runname(params, device=None):
     window_size = cr.get_int('window_size', 128)
     print(f"💻 Using window size: {window_size}")
     
-    csi_channels = 182
+    csi_channels = 180
     meta_features = 11
 
     # Torch tensors with shape (batch, window, features)
