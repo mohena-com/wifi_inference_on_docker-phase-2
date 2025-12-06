@@ -270,3 +270,18 @@
   font-weight: 700;
   color: rgba(255,255,255,0.95);
 }
+
+/* Correct / wrong prediction states */
+.chip-correct {
+  background: #e6fff3;
+  color: #0b6b3a;
+  border: 1px solid rgba(8, 160, 80, 0.4);
+}
+
+.chip-wrong {
+  background: #d40000 !important;     /* red */
+  color: #fff78a !important;          /* yellow-ish text */
+  border: 1px solid #ffb800;          /* soft gold border */
+  font-weight: 600;
+  box-shadow: 0 0 6px rgba(255, 0, 0, 0.45);
+}
