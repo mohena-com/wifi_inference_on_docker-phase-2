@@ -93,4 +93,4 @@ const displayResults = (results) => {
 };
 //document.getElementById("uploadButton").onclick = uploadFile;
 
-document.getElementById("uploadButton").addEventListener("click", uploadFile);
+//document.getElementById("uploadButton").addEventListener("click", uploadFile);
