@@ -78,19 +78,31 @@
   box-shadow: 0 6px 20px rgba(6, 40, 80, 0.06);
 }
 */
-
+/* Whole batch container */
 .batch-row {
-  border: 2px solid #dbe9ff;
-  border-radius: 14px;
-  padding: 18px 22px;
-  margin-bottom: 30px;
-  background: #ffffff;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  display: flex;
+  gap: 24px;
+  padding: 20px 22px;
+  margin-bottom: 28px;
+
+  background: #f7fbff;              /* light background for the whole batch */
+  border-radius: 18px;
+  border: 1px solid #dbe9ff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
 }
 
+/* Left side: True/Predicted area */
+.batch-main {
+  flex: 1 1 auto;
+}
 
-/* Left main column */
-.batch-main { padding: 6px 8px; }
+/* (optional) small inner background for the true/pred rows themselves */
+.values-col {
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 14px;
+  padding: 10px 12px;
+}
+
 .batch-header { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; }
 .batch-title { font-weight:700; font-size:1.05rem; }
 .batch-sub { font-size:0.85rem; color:rgba(0,0,0,0.6); }
@@ -147,6 +159,14 @@
   font-size: 15px;
 }
 
+
+.batch-summary {
+  flex: 0 0 260px;            /* fixed-ish width */
+  align-self: stretch;
+  margin-left: auto;
+}
+
+
 /* Ensure the title sits near the top inside the card */
 .batch-summary .summary-title {
   font-weight: 800;
@@ -187,10 +207,12 @@
 }
 
 /* make strong tags a little larger for emphasis */
+/*
 .batch-summary strong {
   font-size: 15px;
   font-weight: 700;
 }
+*/
 
 /* Raw JSON */
 .raw pre {
@@ -203,12 +225,27 @@
 }
 
 /* Responsive: stack summary under main on small screens */
+/*
 @media (max-width: 880px) {
   .batch-row { grid-template-columns: 1fr; }
   .values { grid-template-columns: 1fr; }
   .batch-summary { margin-top: 8px; min-height: auto; }
   .chip { font-size: 0.86rem; padding: 5px 8px; }
 }
+*/
+/* Keep responsiveness: stack on small screens */
+@media (max-width: 900px) {
+  .batch-row {
+    flex-direction: column;
+  }
+
+  .batch-summary {
+    flex: 1 1 auto;
+    margin-left: 0;
+    margin-top: 16px;
+  }
+}
+
 
 /* ---------------------------
    Overall Summary Card
