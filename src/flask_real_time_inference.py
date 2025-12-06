@@ -83,7 +83,7 @@ def init_model():
         scaler_mag   = state_dict["scaler_mag"]
         scaler_phase = state_dict["scaler_phase"]
         #feature_info = state_dict["feature_info"]   
-
+        print(f"✅ Loaded state_dict {state_dict}}")
         #model_instance.eval()
         print(f"✅ Loaded model weights from: {best_model_path}", "success")
     except Exception as e:
