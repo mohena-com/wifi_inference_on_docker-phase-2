@@ -78,11 +78,11 @@ def init_model():
     try:
         model_instance.load_state_dict(state_dict)
 
-        model_state  = state_dict["model_state"]
+        #model_state  = state_dict["model_state"]
         scaler_meta  = state_dict["scaler_meta"]
         scaler_mag   = state_dict["scaler_mag"]
         scaler_phase = state_dict["scaler_phase"]
-        feature_info = state_dict["feature_info"]   
+        #feature_info = state_dict["feature_info"]   
 
         #model_instance.eval()
         print(f"✅ Loaded model weights from: {best_model_path}", "success")
