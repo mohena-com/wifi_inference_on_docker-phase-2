@@ -47,10 +47,11 @@ def init_model():
     print(f"📦 Model class: {model_instance.__class__.__name__}  path: {best_model_path}", "load_model")
     print(f"ℹ️ params: {params} total_params: {total_params} device: {device}", "info")
     print(f"📦 Model instance: {model_instance}")
-    print(f"📦 checkpoint.keys: {checkpoint.keys()}")
+    
     # load checkpoint safely
     try:
         checkpoint = torch.load(best_model_path, map_location=device)
+        print(f"ℹ️ℹ️ℹ️ℹ️ℹ️ checkpoint.keys: {checkpoint.keys()}")
     except Exception as e:
         print(f"❌ Failed to load checkpoint from {best_model_path}: {e}", "error")
         raise
