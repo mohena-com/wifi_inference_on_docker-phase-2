@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 import numpy as np
-import tensorflow as tf
+#import tensorflow as tf
 import logging
 from datetime import datetime
 import sys
