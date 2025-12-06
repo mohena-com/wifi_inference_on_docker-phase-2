@@ -200,6 +200,23 @@ def get_best_model_path(config):
     print(f"Loading best model from: {best_model_path}")
     return best_model_path     
 
+
+def get_scaler_path(config):
+    scaler_pattern = config.get('scaler_pattern')
+    print(f"scaler_pattern: {config.get('scaler_pattern')}")
+    scaler_save_dir = Path(config.get('scaler_save_path'))
+    print(f"Scaler save directory: {scaler_save_dir.resolve()}")
+
+    scaler_files = list(scaler_save_dir.glob(scaler_pattern))
+    print(f"Found scaler files: {scaler_files}")
+    if not scaler_files:
+        raise FileNotFoundError("No model files found")
+
+    # Assume exactly one file matches the pattern; pick the first entry
+    scaler_path = scaler_files[0]
+    print(f"Loading best model from: {scaler_path}")
+    return scaler_path 
+
 def get_device():
     """
     Return a torch.device choosing MPS (Apple), then CUDA, then CPU.
@@ -229,6 +246,32 @@ def get_device():
 
     print(f"🧠 Using CPU — (No GPU acceleration)")
     return torch.device("cpu")
+
+def get_scalers_from_checkpoint(scaler_pkl_path, device):
+    """
+    Load the scalers from the checkpoint file.
+    Returns a tuple of (scaler_meta, scaler_mag, scaler_phase)
+    """
+    import pickle
+    scalers = None
+    scaler_bundle = {"scaler_meta":None, "scaler_mag":None, "scaler_phase":None}
+    try:
+        with open(scaler_pkl_path, "rb") as f:
+            scalers = pickle.load(f)
+        bundle = scalers
+        scaler_meta  = bundle.get("scaler_meta")
+        scaler_mag   = bundle.get("scaler_mag")
+        scaler_phase = bundle.get("scaler_phase")
+
+        scaler_bundle["scaler_meta"] = scaler_meta
+        scaler_bundle["scaler_mag"] = scaler_mag
+        scaler_bundle["scaler_phase"] = scaler_phase
+        print(f"✅ Loaded scalers from {scaler_pkl_path} : {scaler_bundle}")        
+
+    except Exception as e:
+        print(f"❌ Failed to load scalers from {scaler_pkl_path}: {e}", "error")
+        raise
+    return scaler_bundle
 
 def get_best_model_and_params(best_model_fname=None):
     if best_model_fname is not None:

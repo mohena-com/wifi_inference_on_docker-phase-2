@@ -9,7 +9,7 @@ import warnings
 import pandas as pd
 from config_reader import ConfigReader
 from flask_cors import CORS
-from CSI_Model_Eval_helper import get_best_model_and_params, get_best_model_path
+from CSI_Model_Eval_helper import get_best_model_and_params, get_best_model_path, get_scaler_path,get_scalers_from_checkpoint
 # Suppress TensorFlow warnings
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 warnings.filterwarnings('ignore', category=DeprecationWarning)
@@ -26,13 +26,7 @@ print(f"🧩 Using config file: {CONFIG_FILE}", "config")
 # read config and determine best model path
 config = ConfigReader(CONFIG_FILE)
 
-state_dict = {
-    "model_state" : None, 
-    "scaler_meta" : None,
-    "scaler_mag" : None,
-    "scaler_phase" : None, 
-    "feature_info" : None
-}
+
 
 # Flask app
 app = Flask(__name__)
@@ -41,9 +35,14 @@ import torch
 def init_model():
     
     best_model_path = get_best_model_path(config)
+    scaler_path    = get_scaler_path(config)
+
     print(f"📦 Best model path: {best_model_path}", "model_path")
+    print(f"    📦 scaler path: {scaler_path}", "scaler_path")
     # get model skeleton and metadata (do not load weights yet)
     model_instance, params, total_params, device = get_best_model_and_params(str(best_model_path))
+    scaler_bundle = get_scalers_from_checkpoint(scaler_path, device)
+    print(f"📦 Loaded scalers from checkpoint: {scaler_bundle}")
     print(f"📦 Model class: {model_instance.__class__.__name__}  path: {best_model_path}", "load_model")
     print(f"ℹ️ params: {params} total_params: {total_params} device: {device}", "info")
     print(f"📦 Model instance: {model_instance}")
@@ -52,16 +51,9 @@ def init_model():
     try:
         checkpoint = torch.load(best_model_path, map_location=device)
         print(f"ℹ️ℹ️ℹ️ℹ️ℹ️ checkpoint.keys: {checkpoint.keys()}")
-        bundle = checkpoint
+        
         # scalers + meta
-        scaler_meta  = bundle.get("scaler_meta")
-        print(f"    ℹ️ℹ️ scaler_meta: {scaler_meta}")
-        scaler_mag   = bundle.get("scaler_mag")
-        print(f"    ℹ️ℹ️ scaler_mag: {scaler_mag}")        
-        scaler_phase = bundle.get("scaler_phase")
-        print(f"    ℹ️ℹ️ scaler_phase: {scaler_phase}")
-        feature_info = bundle.get("feature_info", {})
-        print(f"    ℹ️ℹ️ feature_info: {feature_info}")
+       
     except Exception as e:
         print(f"❌ Failed to load checkpoint from {best_model_path}: {e}", "error")
         raise
@@ -89,11 +81,7 @@ def init_model():
     try:
         model_instance.load_state_dict(state_dict)
         print(f"✅ Loaded state_dict  ")
-        #model_state  = state_dict["model_state"]
-        #scaler_meta  = state_dict["scaler_meta"]
-        #scaler_mag   = state_dict["scaler_mag"]
-        #scaler_phase = state_dict["scaler_phase"]
-        #feature_info = state_dict["feature_info"]   
+ 
        
         #model_instance.eval()
         print(f"✅ Loaded model weights from: {best_model_path}", "success")
@@ -290,8 +278,8 @@ def predict():
         print(f"🧩 Creating test dataset and loader with batch_size={batch_size}")
         test_dataset = WifiCSIDataset(logger=logger, file_list=saved_file_paths, window_size=w_size, stride=s_size)        
 
-        test_dataset.set_scalers(state_dict["scaler_meta"], state_dict["scaler_mag"], state_dict["scaler_phase"] )
-        
+        test_dataset.set_scalers(scaler_bundle["scaler_meta"], scaler_bundle["scaler_mag"], scaler_bundle["scaler_phase"] )
+        print(f"🧩 Applied Scalers")
         test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
 
         # Debug
