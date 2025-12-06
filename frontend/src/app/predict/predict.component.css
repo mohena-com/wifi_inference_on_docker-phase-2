@@ -95,12 +95,7 @@
   flex: 1 1 auto;
 }
 
-/* (optional) small inner background for the true/pred rows themselves */
-.values-col {
-  background: rgba(255, 255, 255, 0.8);
-  border-radius: 14px;
-  padding: 10px 12px;
-}
+ 
 
 .batch-header { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; }
 .batch-title { font-weight:700; font-size:1.05rem; }
@@ -156,32 +151,29 @@
 
 
 .batch-summary {
-  flex: 0 0 260px;            /* fixed-ish width */
-  align-self: stretch;
-  margin-left: auto;
-}
-
-/* Title inside summary */
-.summary-title {
-  font-weight: 700;
-  margin: 0 0 6px 0;           /* remove extra top margin */
-  font-size: 15px;
-}
-
-/* Body text & metrics */
-.summary-body {
-  font-size: 13px;
-  line-height: 1.4;
+  flex: 0 0 200px;              /* was 280 → now narrower */
+  max-width: 200px;
+  background: #006f9c;
+  color: #fff;
+  padding: 8px 12px;            /* smaller padding = more room for classes */
+  border-radius: 14px;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.15);
   display: flex;
   flex-direction: column;
-  gap: 4px;                    /* tight spacing between Accuracy/Correct/Loss */
+  justify-content: flex-start;
 }
-
-/* Accuracy bar inside summary – a bit thinner */
+.summary-title {
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+.summary-body {
+  font-size: 12px;
+  line-height: 1.3;
+  gap: 4px;
+}
 .summary-body .acc-bar {
-  margin-top: 6px;
-  margin-bottom: 4px;
   height: 6px;
+  margin-top: 6px;
 }
 
 /* Ensure the title sits near the top inside the card */
@@ -298,12 +290,9 @@
    New column layout (Predicted/True rows)
    --------------------------- */
 .values-col {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  margin-top: 10px;
+  flex-wrap: wrap;
+  overflow-x: hidden;
 }
-
 /* A row: label | values */
 .row-line {
   display: grid;
@@ -424,26 +413,21 @@
   font-weight: 600;
 }
 
-/* True Label — Soft Orange */
-.chip.true-chip {
-  background: #ffeec9;
-  color: #a66300;
-  border: 1px solid #ffba4d;
-  box-shadow: 0 1px 4px rgba(255,170,0,.18);
+/* Smaller Class button for TRUE row */
+.true-chip {
+  font-size: 11px !important;
+  padding: 4px 8px !important;
+  margin: 3px !important;
+  border-radius: 12px;
+  background: #ffe6b3;
 }
 
-/* Correct Prediction — Soft Green/Teal */
-.chip-correct {
-  background: #d7ffea;
-  color: #007f4f;
-  border: 1px solid #5de2a2;
-  box-shadow: 0 1px 4px rgba(0,164,113,.15);
+/* Smaller chips for predicted row */
+.chip {
+  font-size: 11px !important;
+  padding: 4px 8px !important;
+  margin: 3px !important;
+  border-radius: 12px;
 }
-
-/* Wrong Prediction — Red/Yellow Pill */
-.chip-wrong {
-  background: #ff4d4d;
-  color: #fff78a;
-  border: 1px solid #ffb800;
-  box-shadow: 0 1px 4px rgba(255,0,0,.28);
-}
+.chip-correct { background: #c8ffe0; }
+.chip-wrong   { background: #ff5757 !important; color: #fff !important; }
