@@ -27,7 +27,7 @@ print(f"🧩 Using config file: {CONFIG_FILE}", "config")
 config = ConfigReader(CONFIG_FILE)
 
 
-
+scaler_bundle = None
 # Flask app
 app = Flask(__name__)
 CORS(app)  # <-- Add here 
