@@ -84,13 +84,12 @@
   gap: 24px;
   padding: 20px 22px;
   margin-bottom: 28px;
-
-  background: #f7fbff;              /* light background for the whole batch */
+  background: #f7fbff;
   border-radius: 18px;
   border: 1px solid #dbe9ff;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+  align-items: flex-start;    /* so children align at top */
 }
-
 /* Left side: True/Predicted area */
 .batch-main {
   flex: 1 1 auto;
@@ -141,24 +140,18 @@
 /* ---------------------------
    Batch Summary Card (right)
    --------------------------- */
+/* Right side summary card */
 .batch-summary {
-  background: linear-gradient(180deg, #0b78a3, #007095);
-  color: #fff;
-  padding: 14px;
-  border-radius: 10px;
-  min-width: 220px;
-  max-width: 260px;
-
-  /* let the card size itself and be vertically centered by grid align-items */
-  height: auto;
+  flex: 0 0 230px;              /* narrower card (was ~280px) */
+  margin-left: 16px;
+  border-radius: 14px;
+  background: #006f9c;          /* your blue */
+  color: #ffffff;
+  padding: 10px 14px;           /* less padding = less empty space */
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-
-  box-shadow: 0 8px 30px rgba(2,40,80,0.12);
-
-  /* tightened typography for the compact look */
-  font-size: 15px;
+  justify-content: flex-start;  /* push content to top, no big gap */
 }
 
 
@@ -168,6 +161,28 @@
   margin-left: auto;
 }
 
+/* Title inside summary */
+.summary-title {
+  font-weight: 700;
+  margin: 0 0 6px 0;           /* remove extra top margin */
+  font-size: 15px;
+}
+
+/* Body text & metrics */
+.summary-body {
+  font-size: 13px;
+  line-height: 1.4;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;                    /* tight spacing between Accuracy/Correct/Loss */
+}
+
+/* Accuracy bar inside summary – a bit thinner */
+.summary-body .acc-bar {
+  margin-top: 6px;
+  margin-bottom: 4px;
+  height: 6px;
+}
 
 /* Ensure the title sits near the top inside the card */
 .batch-summary .summary-title {
