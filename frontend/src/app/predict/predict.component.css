@@ -62,33 +62,20 @@
 .batches-list { display: flex; flex-direction: column; gap: 16px; }
 
 /* Each batch row: grid with main area and right summary */
-/*
-.batch-row {
-  display: grid;
-  grid-template-columns: 1fr 260px;
-  gap: 16px;
-  */
-  /* center summary vertically relative to left column */
-   /* <-- changed: center instead of stretch */
-  /*
-  align-items: center;      
-  padding: 12px;
-  border-radius: 10px;
-  background: linear-gradient(180deg, #ffffff, #fbfdff);
-  box-shadow: 0 6px 20px rgba(6, 40, 80, 0.06);
-}
-*/
+ 
 /* Whole batch container */
 .batch-row {
   display: flex;
   gap: 24px;
   padding: 20px 22px;
   margin-bottom: 28px;
-  background: #f7fbff;
+
+  /* 🌊 light cyan background for each batch box */
+  background: #e8f9ff;      /* <-- new */
   border-radius: 18px;
-  border: 1px solid #dbe9ff;
+  border: 1px solid #d3edf8;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
-  align-items: flex-start;    /* so children align at top */
+  align-items: flex-start;
 }
 /* Left side: True/Predicted area */
 .batch-main {
