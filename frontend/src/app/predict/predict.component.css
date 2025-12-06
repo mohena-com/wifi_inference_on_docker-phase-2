@@ -1,3 +1,13 @@
+.chip {
+  display: inline-block;
+  border-radius: 18px;
+  padding: 6px 14px;
+  font-size: 14px;
+  margin: 3px;
+  cursor: default;
+  user-select: none;
+}
+
 /* Page container */
 .predict-root {
   max-width: 1100px;
@@ -271,17 +281,52 @@
   color: rgba(255,255,255,0.95);
 }
 
-/* Correct / wrong prediction states */
-.chip-correct {
-  background: #e6fff3;
-  color: #0b6b3a;
-  border: 1px solid rgba(8, 160, 80, 0.4);
+/* TRUE block - pill style button */
+.chip.true-chip {
+  background: #ffeec9;         /* soft pastel orange */
+  color: #a66300;
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-weight: 600;
+  border: 1px solid #ffba4d;
+  box-shadow: 0 2px 6px rgba(255, 170, 0, 0.25);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-.chip-wrong {
-  background: #d40000 !important;     /* red */
-  color: #fff78a !important;          /* yellow-ish text */
-  border: 1px solid #ffb800;          /* soft gold border */
+.chip.true-chip:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 4px 10px rgba(255, 140, 0, 0.35);
+}
+
+
+/* CORRECT predicted - soft teal button */
+.chip-correct {
+  background: #d4ffe9;
+  color: #007f4f;
+  border-radius: 20px;
+  padding: 6px 14px;
   font-weight: 600;
-  box-shadow: 0 0 6px rgba(255, 0, 0, 0.45);
+  border: 1px solid #5de2a2;
+  box-shadow: 0 2px 6px rgba(0, 164, 113, 0.22);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.chip-correct:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 4px 10px rgba(0, 164, 113, 0.35);
+}
+.chip-wrong {
+  background: #ff4d4d;
+  color: #fff78a;
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-weight: 600;
+  border: 1px solid #ffb800;
+  box-shadow: 0 2px 8px rgba(255, 0, 0, 0.35);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.chip-wrong:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 5px 12px rgba(255, 0, 0, 0.45);
 }
