@@ -59,7 +59,7 @@ def init_model():
     state_dict = None
     if isinstance(checkpoint, dict):
         # prefer common keys
-        for key in ("state_dict", "model_state_dict", "model"):
+        for key in ("state_dict", "model_state_dict", "model", "scaler_meta","scaler_mag" , "scaler_phase"):
             if key in checkpoint:
                 state_dict = checkpoint[key]
                 print(f"📦 Found '{key}' in checkpoint; using it as state_dict" )
