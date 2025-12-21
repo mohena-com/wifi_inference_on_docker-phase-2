@@ -4,7 +4,9 @@ export DOCKER_BUILDKIT=1
 set -euo pipefail
 
 # Friendly script to build and run docker-compose with better defaults and logs.
-rm -rf /System/Volumes/Data/Users/sanjeev/VNIT/FINAL_PRJ_PHASE2/DEV_1.0/wifi_inference_on_docker-phase-2/buildcache/*
+
+rm -rf buildcache/*
+
 REPO_ROOT="$(cd "$(dirname "$0")" && pwd)"
 
 echo "🧩 Updating repository..."
